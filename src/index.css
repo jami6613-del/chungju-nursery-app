@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
+}
+body {
+  @apply bg-slate-900 text-slate-50;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+input,
+button,
+select,
+textarea {
+  font-family: inherit;
+}
+
+/* iOS: 입력 포커스 시 자동 확대 방지 (16px 미만이면 줌됨) */
+@media (max-width: 768px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* 주문 및 파종계획 화이트보드: 파종 내용 영역 스크롤바 상시 표시 */
+.plan-whiteboard-scroll {
+  overflow-y: scroll !important;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(100 116 139) rgba(203, 213, 225, 0.5);
+}
+.plan-whiteboard-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+.plan-whiteboard-scroll::-webkit-scrollbar-track {
+  background: rgba(203, 213, 225, 0.5);
+  border-radius: 5px;
+}
+.plan-whiteboard-scroll::-webkit-scrollbar-thumb {
+  background: rgb(100 116 139);
+  border-radius: 5px;
+}
+.plan-whiteboard-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgb(71 85 105);
+}
+
+/* 파종 및 출하현황: 모바일에서 출하수량까지 한 화면, 비고는 가로 스크롤 시에만 넓게 */
+@media (max-width: 640px) {
+  .order-list-table {
+    table-layout: fixed;
+    width: calc(100vw - 2.5rem + 18rem);
+  }
+  .order-list-table col.order-col-fit {
+    width: calc((100vw - 2.5rem) / 8);
+  }
+  .order-list-table col.order-col-note {
+    width: 18rem;
+    min-width: 18rem;
+  }
+}
+
