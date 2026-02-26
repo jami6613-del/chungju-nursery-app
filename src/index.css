@@ -11,7 +11,10 @@ body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   overflow-x: hidden;
   max-width: 100vw;
-  /* 모바일 웹앱: 상태바 아래부터 표시 (지원하는 기기만) */
+}
+
+/* 모바일 웹앱: 상단 상태바 겹침 방지. body가 아닌 #root에만 적용해 Safari 호환 */
+#root {
   padding-top: env(safe-area-inset-top, 0px);
 }
 
