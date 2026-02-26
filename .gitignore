@@ -1,0 +1,14 @@
+# 의존성 폴더 (배포 서버에서 npm install 로 새로 설치함)
+node_modules
+
+# 빌드 결과물
+dist
+
+# 로컬 환경 변수 (비밀키 등 올리면 안 됨)
+.env
+.env.local
+.env.*.local
+
+# 로그/캐시
+*.log
+.npm
