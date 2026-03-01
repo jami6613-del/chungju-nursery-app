@@ -4185,6 +4185,7 @@ function CertificatePage() {
   const [issueDateOpen, setIssueDateOpen] = React.useState(false);
   const [cropDropdownOpen, setCropDropdownOpen] = React.useState(false);
   const cropContainerRef = React.useRef<HTMLDivElement>(null);
+  const cropDropdownRef = React.useRef<HTMLDivElement>(null);
   const [stampDataUrl, setStampDataUrl] = React.useState<string>("");
 
   React.useEffect(() => {
@@ -4257,6 +4258,14 @@ function CertificatePage() {
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
+  }, [cropDropdownOpen]);
+
+  React.useEffect(() => {
+    if (cropDropdownOpen && cropDropdownRef.current) {
+      requestAnimationFrame(() => {
+        cropDropdownRef.current?.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
+      });
+    }
   }, [cropDropdownOpen]);
 
   const autocompleteCrops = React.useMemo(() => {
@@ -4505,7 +4514,7 @@ function CertificatePage() {
                   )}
                 </button>
                 {cropDropdownOpen && (
-                  <div className="absolute left-0 right-0 top-full z-30 mt-0.5 w-full min-w-[12rem] rounded-lg border border-slate-700 bg-slate-900 shadow-xl">
+                  <div ref={cropDropdownRef} className="absolute left-0 right-0 top-full z-30 mt-0.5 w-full min-w-[12rem] rounded-lg border border-slate-700 bg-slate-900 shadow-xl">
                     <div className="max-h-[calc(40px*5+2px)] overflow-y-auto overscroll-contain">
                       <label className="flex cursor-pointer items-center gap-2 px-3 py-2.5 text-left text-slate-100 hover:bg-slate-800">
                         <input
