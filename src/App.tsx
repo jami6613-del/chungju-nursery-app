@@ -2522,7 +2522,7 @@ function planQuantityToTotal(quantity: string): number {
   return b + e;
 }
 
-const UNPROCESSED_PAGE_SIZE = 20;
+const UNPROCESSED_PAGE_SIZE = 10;
 const UNPROCESSED_MAX_PAGES = 10;
 const MAX_UNPROCESSED = UNPROCESSED_PAGE_SIZE * UNPROCESSED_MAX_PAGES; // 200
 const PLAN_DATE_DAYS_AGO = 60;
@@ -2631,6 +2631,7 @@ function PlanningPage() {
   } | null>(null);
   const [planItemPopup, setPlanItemPopup] = React.useState<SowingPlanItem | null>(null);
   const [planItemEditForm, setPlanItemEditForm] = React.useState({
+    plan_date: "",
     orderer: "",
     crop: "",
     quantity_base: "",
@@ -2934,11 +2935,14 @@ function PlanningPage() {
 
   const handlePlanItemSave = async () => {
     if (!planItemPopup) return;
+    const newPlanDate = planItemEditForm.plan_date?.trim() || planItemPopup.plan_date;
+    if (!newPlanDate) return;
     setPlanItemSaveBusy(true);
     setPlanItemSaveError(null);
     try {
       const quantity = planQuantityDisplay(planItemEditForm.quantity_base, planItemEditForm.quantity_extra);
       const updated = await updateSowingPlanItem(planItemPopup.id, {
+        plan_date: newPlanDate,
         orderer: planItemEditForm.orderer,
         crop: planItemEditForm.crop,
         quantity,
@@ -2949,13 +2953,27 @@ function PlanningPage() {
       if (updated) {
         const merged: SowingPlanItem = {
           ...updated,
+          plan_date: newPlanDate,
           tray_type: planItemEditForm.tray_type,
           tray_custom: planItemEditForm.tray_type === "직접입력" ? planItemEditForm.tray_custom : "",
           seed_owner: planItemEditForm.seed_owner,
         };
-        setPlanItems((prev) =>
-          prev.map((p) => (p.id === planItemPopup.id ? merged : p)),
-        );
+        setPlanItems((prev) => {
+          const isInRange = [threeDays[0], threeDays[1], threeDays[2]].includes(newPlanDate);
+          if (isInRange) {
+            return prev.map((p) => (p.id === planItemPopup.id ? merged : p));
+          }
+          return prev.filter((p) => p.id !== planItemPopup.id);
+        });
+        if (planItemPopup.source_unprocessed_id) {
+          setUnprocessed((prev) =>
+            prev.map((o) =>
+              o.id === planItemPopup.source_unprocessed_id
+                ? { ...o, reflected_plan_date: newPlanDate }
+                : o,
+            ),
+          );
+        }
         setPlanItemPopup(null);
       }
     } catch (e) {
@@ -3177,6 +3195,7 @@ function PlanningPage() {
                                 const { base, extra } = planQuantityParse(item.quantity || "");
                                 const isDirect = item.tray_type === "직접입력";
                                 setPlanItemEditForm({
+                                  plan_date: item.plan_date || "",
                                   orderer: item.orderer,
                                   crop: item.crop,
                                   quantity_base: base,
@@ -3233,7 +3252,8 @@ function PlanningPage() {
               주문 추가
             </button>
           </div>
-          <div className="flex-1 overflow-y-auto p-2 sm:p-3">
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <div className="flex-1 overflow-y-auto p-2 sm:p-3">
             {unprocessedLoading ? (
               <div className="py-3 text-center text-xs text-slate-400 sm:py-4 sm:text-sm">로딩 중...</div>
             ) : (
@@ -3277,10 +3297,10 @@ function PlanningPage() {
                         }}
                         className={`min-w-0 flex-1 rounded-lg border px-3 py-2 text-left transition-colors sm:px-4 sm:py-3 ${
                           isDeleted
-                            ? "border-slate-700/50 bg-slate-800/40 opacity-75 hover:bg-slate-800/50"
+                            ? "border-slate-700/40 bg-slate-800/30 opacity-70 hover:bg-slate-800/40"
                             : order.reflected_at
-                              ? "border-red-900/50 bg-red-950/30 hover:bg-red-950/50"
-                              : "border-slate-700 bg-slate-900/80 hover:bg-slate-800"
+                              ? "border-slate-700/40 bg-slate-800/30 opacity-75 hover:bg-slate-800/40"
+                              : "border-violet-400/35 bg-violet-400/15 hover:bg-violet-400/20"
                         }`}
                       >
                         <div className="flex flex-wrap items-baseline gap-1.5 text-xs sm:gap-2 sm:text-sm">
@@ -3295,12 +3315,12 @@ function PlanningPage() {
                             <span className={order.reflected_at || isDeleted ? "text-slate-500" : "text-slate-400"}>
                               {order.created_by_email || "등록자"}
                             </span>
-                            <span className={`ml-2 whitespace-pre-wrap break-words ${order.reflected_at || isDeleted ? "text-slate-500" : "text-slate-200"}`}>
+                            <span className={`ml-2 whitespace-pre-wrap break-words ${order.reflected_at || isDeleted ? "text-slate-500" : "text-slate-100"}`}>
                               {isDeleted ? "삭제된 게시글 입니다" : order.content}
                             </span>
                           </span>
                           {order.reflected_at && !isDeleted && (
-                            <span className="shrink-0 rounded bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-400">
+                            <span className="shrink-0 rounded bg-slate-700/50 px-2 py-0.5 text-xs font-medium text-slate-500">
                               반영완료
                             </span>
                           )}
@@ -3324,8 +3344,11 @@ function PlanningPage() {
                   });
                   })()}
                 </ul>
+              </>
+            )}
+            </div>
                 {unprocessed.length > UNPROCESSED_PAGE_SIZE && (
-                  <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5 border-t border-slate-800 pt-2 sm:mt-3 sm:gap-2 sm:pt-3">
+                  <div className="shrink-0 flex flex-wrap items-center justify-center gap-1.5 border-t border-slate-800 p-2 sm:gap-2 sm:p-3">
                     <button
                       type="button"
                       disabled={unprocessedPage <= 1}
@@ -3371,8 +3394,6 @@ function PlanningPage() {
                     </button>
                   </div>
                 )}
-              </>
-            )}
           </div>
         </section>
       </main>
@@ -3673,6 +3694,11 @@ function PlanningPage() {
                 {planItemSaveError}
               </div>
             )}
+            <DateWheel
+              label="일자"
+              value={planItemEditForm.plan_date}
+              onChange={(v) => setPlanItemEditForm((f) => ({ ...f, plan_date: v }))}
+            />
             <TextField
               label="주문자"
               value={planItemEditForm.orderer}
@@ -3727,13 +3753,14 @@ function PlanningPage() {
               <PrimaryButton onClick={() => void handlePlanItemSave()} disabled={planItemSaveBusy}>
                 수정
               </PrimaryButton>
-              <SecondaryButton
+              <button
+                type="button"
                 onClick={() => void handlePlanItemDelete()}
                 disabled={planItemDeleteBusy}
+                className="rounded-lg bg-red-600 px-4 py-2.5 font-medium text-white hover:bg-red-700 disabled:opacity-50"
               >
                 삭제
-              </SecondaryButton>
-              <SecondaryButton onClick={() => setPlanItemPopup(null)}>닫기</SecondaryButton>
+              </button>
             </div>
           </div>
         )}

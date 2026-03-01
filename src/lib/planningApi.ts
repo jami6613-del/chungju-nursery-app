@@ -236,6 +236,7 @@ export async function unreflectUnprocessedOrder(
 export async function updateSowingPlanItem(
   id: string,
   data: {
+    plan_date?: string;
     orderer: string;
     crop: string;
     quantity: string;
@@ -249,6 +250,7 @@ export async function updateSowingPlanItem(
     crop: data.crop.trim() || "",
     quantity: data.quantity.trim() || "",
   };
+  if (data.plan_date !== undefined) fullPayload.plan_date = data.plan_date;
   if (data.tray_type !== undefined) fullPayload.tray_type = data.tray_type;
   if (data.tray_custom !== undefined) fullPayload.tray_custom = data.tray_custom;
   if (data.seed_owner !== undefined) fullPayload.seed_owner = data.seed_owner;
@@ -273,6 +275,19 @@ export async function updateSowingPlanItem(
       .single();
   }
   if (result.error) throw new Error(result.error.message);
+
+  if (data.plan_date && result.data) {
+    const row = result.data as { source_unprocessed_id?: string | null };
+    const sourceId = row?.source_unprocessed_id ?? null;
+    if (sourceId) {
+      const { error: updError } = await supabase
+        .from("unprocessed_orders")
+        .update({ reflected_plan_date: data.plan_date })
+        .eq("id", sourceId);
+      if (updError) throw new Error(updError.message);
+    }
+  }
+
   return result.data ? mapPlanRow(result.data as Record<string, unknown>) : null;
 }
 
