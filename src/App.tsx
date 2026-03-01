@@ -3352,7 +3352,7 @@ function PlanningPage() {
                                 planDateLongPressTimerRef.current = null;
                                 setReflectPlanToOrdersDate(dateStr);
                               },
-                              2000,
+                              1300,
                             );
                           }}
                           onPointerUp={handlePlanDateLongPressEnd}
@@ -3870,33 +3870,40 @@ function PlanningPage() {
         </div>
       </Modal>
 
-      {/* 파종 현황 반영 확인 팝업 (날짜 헤더 2초 롱프레스 후) */}
+      {/* 파종 현황 반영 확인 팝업 (날짜 헤더 1.3초 롱프레스 후) */}
       <Modal
         open={reflectPlanToOrdersDate !== null}
         title="파종 현황 반영"
         onClose={() => setReflectPlanToOrdersDate(null)}
       >
         <p className="text-slate-200">파종 현황에 반영하시겠습니까?</p>
-        <div className="mt-4 flex gap-2">
-          <PrimaryButton
-            onClick={async () => {
-              if (!reflectPlanToOrdersDate || !user) return;
-              setReflectPlanToOrdersBusy(true);
-              try {
-                const items = planItems.filter((i) => i.plan_date === reflectPlanToOrdersDate);
-                await addOrdersFromPlanItems(items, user.id);
-                setReflectPlanToOrdersDate(null);
-              } catch (e) {
-                alert(e instanceof Error ? e.message : "반영에 실패했습니다.");
-              } finally {
-                setReflectPlanToOrdersBusy(false);
-              }
-            }}
-            disabled={reflectPlanToOrdersBusy}
-          >
-            확인
-          </PrimaryButton>
-          <SecondaryButton onClick={() => setReflectPlanToOrdersDate(null)}>취소</SecondaryButton>
+        <div className="mt-4 flex flex-col gap-2">
+          <div className="flex gap-2">
+            <PrimaryButton
+              onClick={async () => {
+                if (!reflectPlanToOrdersDate || !user) return;
+                setReflectPlanToOrdersBusy(true);
+                try {
+                  const items = planItems.filter((i) => i.plan_date === reflectPlanToOrdersDate);
+                  await addOrdersFromPlanItems(items, user.id);
+                  setReflectPlanToOrdersDate(null);
+                } catch (e) {
+                  alert(e instanceof Error ? e.message : "반영에 실패했습니다.");
+                } finally {
+                  setReflectPlanToOrdersBusy(false);
+                }
+              }}
+              disabled={reflectPlanToOrdersBusy}
+            >
+              확인
+            </PrimaryButton>
+            <SecondaryButton onClick={() => setReflectPlanToOrdersDate(null)}>취소</SecondaryButton>
+          </div>
+          {reflectPlanToOrdersBusy && (
+            <p className="animate-fade-in text-center text-sm text-amber-300">
+              잠시만 기다려주십시오.. 반영중입니다
+            </p>
+          )}
         </div>
       </Modal>
 
