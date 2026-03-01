@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 
-const FRICTION = 0.92;
-const MIN_VELOCITY = 0.5;
+const FRICTION = 0.965;
+const MIN_VELOCITY = 0.05;
 const HORIZONTAL_SCROLL_MULTIPLIER = 2.2;
 
 /**

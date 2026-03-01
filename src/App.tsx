@@ -1173,7 +1173,7 @@ function DashboardPage() {
             <colgroup>
               <col className="order-col-fit" />
               <col className="order-col-fit" />
-              <col className="order-col-fit order-col-crop" />
+              <col className="order-col-crop" />
               <col className="order-col-fit" />
               <col className="order-col-fit" />
               <col className="order-col-fit" />
@@ -1238,7 +1238,7 @@ function DashboardPage() {
                     >
                       <td className="whitespace-nowrap px-1.5 py-1.5 sm:px-3 sm:py-2">{sowingShort}</td>
                       <td className="min-w-0 max-w-[3.5rem] truncate px-1.5 py-1.5 sm:max-w-none sm:px-3 sm:py-2">{o.customer_name}</td>
-                      <td className="order-td-crop min-w-0 truncate px-1.5 py-1.5 sm:max-w-none sm:px-3 sm:py-2">{o.crop_name}</td>
+                      <td className="order-td-crop overflow-hidden whitespace-nowrap px-1.5 py-1.5 sm:max-w-none sm:px-3 sm:py-2">{o.crop_name}</td>
                       <td className="whitespace-nowrap px-1.5 py-1.5 sm:px-3 sm:py-2">{o.seed_owner}</td>
                       <td className="whitespace-nowrap px-1.5 py-1.5 sm:px-3 sm:py-2">
                         {o.quantity_base}+{o.quantity_extra}

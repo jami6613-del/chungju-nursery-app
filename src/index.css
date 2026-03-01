@@ -89,21 +89,22 @@ textarea {
   overflow: auto;
 }
 
-/* 파종 및 출하현황: 모바일에서 파종작물 5글자, 비고 가로스크롤, 헤더 고정 */
+/* 파종 및 출하현황: 모바일에서 파종작물 5글자(줄임표 없음), 출하수량 우측 배치 */
 @media (max-width: 640px) {
   .order-list-table {
     table-layout: fixed;
-    width: calc(100vw - 2.5rem + 18rem);
+    width: calc(100vw - 2.5rem + 3rem + 18rem);
   }
   .order-list-table col.order-col-fit {
-    width: calc((100vw - 2.5rem - 5em) / 7);
+    width: calc((100vw - 2.5rem - 5.5em + 3rem) / 7);
   }
   .order-list-table col.order-col-crop {
-    min-width: 5em;
-    width: 5em;
+    min-width: 5.5em !important;
+    width: 5.5em !important;
   }
   .order-list-table .order-td-crop {
-    min-width: 5em;
+    min-width: 5.5em;
+    text-overflow: clip;
   }
   .order-list-table col.order-col-note {
     width: 18rem;
