@@ -278,10 +278,18 @@ function SupabaseSetupPage() {
   );
 }
 
+const LAST_LOGIN_EMAIL_KEY = "last_login_email";
+
 function LoginPage() {
-  const { user, isLoading, refresh, signOut } = useAuth();
+  const { user, isLoading, refresh, signOut, touchActivity } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = React.useState("");
+  const [email, setEmail] = React.useState(() => {
+    try {
+      return localStorage.getItem(LAST_LOGIN_EMAIL_KEY) ?? "";
+    } catch {
+      return "";
+    }
+  });
   const [password, setPassword] = React.useState("");
   const [mode, setMode] = React.useState<"login" | "register">("login");
   const [pendingMessage, setPendingMessage] = React.useState<string | null>(null);
@@ -312,6 +320,12 @@ function LoginPage() {
         setError("로그인에 실패했습니다. 아이디/비밀번호를 확인해주세요.");
         return;
       }
+      try {
+        localStorage.setItem(LAST_LOGIN_EMAIL_KEY, email.trim());
+      } catch {
+        // ignore
+      }
+      touchActivity();
       await refresh();
     } finally {
       setBusy(false);
@@ -909,6 +923,7 @@ function DashboardPage() {
           </button>
         </div>
 
+        {createPortal(
         <Modal
           open={searchOpen}
           onClose={() => setSearchOpen(false)}
@@ -1019,7 +1034,9 @@ function DashboardPage() {
               </p>
             )}
           </div>
-        </Modal>
+        </Modal>,
+        document.body,
+        )}
 
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400 sm:gap-3 sm:text-sm">
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-3">
@@ -1092,28 +1109,46 @@ function DashboardPage() {
                   </td>
                 </tr>
               )}
-              {displayOrders.map((o) => {
+              {displayOrders.map((o, idx) => {
+                const prev = displayOrders[idx - 1];
+                const prevDate = prev?.sowing_date ?? "";
+                const prevMonth = prevDate.length >= 7 ? prevDate.slice(0, 7) : "";
+                const currDate = o.sowing_date ?? "";
+                const currMonth = currDate.length >= 7 ? currDate.slice(0, 7) : "";
+                const isMonthBreak = prev && currMonth !== prevMonth;
+                const isDateBreak = prev && currDate !== prevDate;
                 const stage = getOrderStage(o, todayStr);
                 const sowingShort = o.sowing_date && o.sowing_date.length >= 10 ? o.sowing_date.slice(5, 10) : (o.sowing_date || "-");
                 const shippingShort = o.shipping_date && o.shipping_date.length >= 10 ? o.shipping_date.slice(5, 10) : (o.shipping_date ? o.shipping_date : "-");
                 return (
-                  <tr
-                    key={o.id}
-                    className={`cursor-pointer border-t border-slate-800 hover:opacity-90 ${rowBgByStage[stage]}`}
-                    onClick={() => openEditPopup(o)}
-                  >
-                  <td className="whitespace-nowrap px-1.5 py-1.5 sm:px-3 sm:py-2">{sowingShort}</td>
-                  <td className="min-w-0 max-w-[3.5rem] truncate px-1.5 py-1.5 sm:max-w-none sm:px-3 sm:py-2">{o.customer_name}</td>
-                  <td className="min-w-0 max-w-[3.5rem] truncate px-1.5 py-1.5 sm:max-w-none sm:px-3 sm:py-2">{o.crop_name}</td>
-                  <td className="whitespace-nowrap px-1.5 py-1.5 sm:px-3 sm:py-2">{o.seed_owner}</td>
-                  <td className="whitespace-nowrap px-1.5 py-1.5 sm:px-3 sm:py-2">
-                    {o.quantity_base}+{o.quantity_extra}
-                  </td>
-                  <td className="whitespace-nowrap px-1.5 py-1.5 sm:px-3 sm:py-2">{o.tray_type}</td>
-                  <td className="whitespace-nowrap px-1.5 py-1.5 sm:px-3 sm:py-2">{shippingShort}</td>
-                  <td className="whitespace-nowrap px-1.5 py-1.5 sm:px-3 sm:py-2">{o.shipping_quantity ?? "-"}</td>
-                  <td className="min-w-0 whitespace-normal px-1.5 py-1.5 text-left sm:max-w-none sm:px-3 sm:py-2 sm:truncate sm:max-w-[4rem]">{o.note ?? ""}</td>
-                </tr>
+                  <React.Fragment key={o.id}>
+                    {isMonthBreak && (
+                      <tr aria-hidden="true">
+                        <td colSpan={9} className="border-t border-slate-600/40 py-1.5 sm:py-2" />
+                      </tr>
+                    )}
+                    {!isMonthBreak && isDateBreak && (
+                      <tr aria-hidden="true">
+                        <td colSpan={9} className="py-0.5 sm:py-1" />
+                      </tr>
+                    )}
+                    <tr
+                      className={`cursor-pointer border-t border-slate-800 hover:opacity-90 ${rowBgByStage[stage]}`}
+                      onClick={() => openEditPopup(o)}
+                    >
+                      <td className="whitespace-nowrap px-1.5 py-1.5 sm:px-3 sm:py-2">{sowingShort}</td>
+                      <td className="min-w-0 max-w-[3.5rem] truncate px-1.5 py-1.5 sm:max-w-none sm:px-3 sm:py-2">{o.customer_name}</td>
+                      <td className="min-w-0 max-w-[3.5rem] truncate px-1.5 py-1.5 sm:max-w-none sm:px-3 sm:py-2">{o.crop_name}</td>
+                      <td className="whitespace-nowrap px-1.5 py-1.5 sm:px-3 sm:py-2">{o.seed_owner}</td>
+                      <td className="whitespace-nowrap px-1.5 py-1.5 sm:px-3 sm:py-2">
+                        {o.quantity_base}+{o.quantity_extra}
+                      </td>
+                      <td className="whitespace-nowrap px-1.5 py-1.5 sm:px-3 sm:py-2">{o.tray_type}</td>
+                      <td className="whitespace-nowrap px-1.5 py-1.5 sm:px-3 sm:py-2">{shippingShort}</td>
+                      <td className="whitespace-nowrap px-1.5 py-1.5 sm:px-3 sm:py-2">{o.shipping_quantity ?? "-"}</td>
+                      <td className="min-w-0 whitespace-normal px-1.5 py-1.5 text-left sm:max-w-none sm:px-3 sm:py-2 sm:truncate sm:max-w-[4rem]">{o.note ?? ""}</td>
+                    </tr>
+                  </React.Fragment>
                 );
               })}
             </tbody>
@@ -1301,6 +1336,7 @@ function DashboardPage() {
                 value={formState.quantity_extra}
                 onChange={(v) => handleFormChange({ quantity_extra: v })}
                 type="number"
+                step="any"
                 size="lg"
               />
             </div>
@@ -3585,7 +3621,7 @@ function PlanningPage() {
 
       {/* 전체일정 캘린더 */}
       {calendarOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+        <div className="modal-safe-area fixed inset-0 z-50 flex items-center justify-center bg-black/60">
           <button
             type="button"
             onClick={() => setCalendarOpen(false)}

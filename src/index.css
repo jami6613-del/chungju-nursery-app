@@ -5,17 +5,36 @@
 html {
   -webkit-text-size-adjust: 100%;
   overflow-x: hidden;
+  height: 100%;
+  overflow: hidden;
 }
 body {
-  @apply bg-slate-900 text-slate-50;
+  @apply bg-slate-950 text-slate-50;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  overflow-x: hidden;
+  overflow: hidden;
   max-width: 100vw;
+  min-height: 100%;
+  height: 100%;
 }
 
-/* 모바일 웹앱: 상단 상태바 겹침 방지. body가 아닌 #root에만 적용해 Safari 호환 */
+/* 모바일 웹앱: 상태바 아래에만 콘텐츠 표시. 스크롤 시에도 상태바 영역으로 올라가지 않음 */
 #root {
-  padding-top: env(safe-area-inset-top, 0px);
+  position: fixed;
+  top: env(safe-area-inset-top, 0px);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Modal 등 fixed 팝업: 상태바 영역 제외. 최소 0.75rem + safe area */
+.modal-safe-area {
+  padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
+  padding-right: max(0.75rem, env(safe-area-inset-right, 0px));
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+  padding-left: max(0.75rem, env(safe-area-inset-left, 0px));
 }
 
 input,

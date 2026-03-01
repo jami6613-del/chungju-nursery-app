@@ -105,7 +105,7 @@ export const DateWheel: React.FC<DateWheelProps> = ({
       </div>
 
       {open && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
+        <div className="modal-safe-area fixed inset-0 z-[60] flex items-center justify-center bg-black/60">
           <button
             type="button"
             onClick={() => setOpen(false)}
