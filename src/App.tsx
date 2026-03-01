@@ -1147,7 +1147,8 @@ function DashboardPage() {
         document.body,
       )}
 
-      <Modal
+      {createPortal(
+        <Modal
         open={formOpen}
         onClose={() => {
           if (!formBusy) {
@@ -1411,7 +1412,9 @@ function DashboardPage() {
             </PrimaryButton>
           </div>
         </div>
-      </Modal>
+      </Modal>,
+        document.body,
+      )}
 
       <Modal
         open={popupOrder !== null}
