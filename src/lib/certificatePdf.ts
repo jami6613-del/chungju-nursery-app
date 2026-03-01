@@ -31,15 +31,15 @@ function formatWithComma(n: number): string {
   return n.toLocaleString("ko-KR");
 }
 
-/** 필터된 주문을 인증서 행으로 변환. cropPrices 있으면 금액(원) 계산 */
+/** 필터된 주문을 인증서 행으로 변환. cropPrices 있으면 금액(원) 계산. 파종일 빠른 순 정렬, 수량(판)은 기본수량만 */
 export function ordersToRows(
   orders: Order[],
   cropPrices?: Record<string, number> | null,
 ): CertificateRow[] {
-  return orders.map((o) => {
+  const rows = orders.map((o) => {
     const tray = o.tray_type ?? "";
     const trayFormatted = /^\d+$/.test(tray) ? `${tray}구` : tray;
-    const qtyPan = Number(o.quantity_base ?? 0) + Number(o.quantity_extra ?? 0);
+    const qtyPan = Number(o.quantity_base ?? 0);
     const trayNum = parseTrayNumber(tray);
     const qtyJu = Math.round(trayNum * qtyPan);
     const cropName = o.crop_name ?? "";
@@ -56,6 +56,8 @@ export function ordersToRows(
     if (amount !== undefined && amount >= 0) row["금액(원)"] = formatWithComma(amount);
     return row;
   });
+  rows.sort((a, b) => (a.파종일 || "").localeCompare(b.파종일 || ""));
+  return rows;
 }
 
 /** HTML 요소를 PDF Blob으로 변환 (한글 지원, 도장 투명 배경) */
