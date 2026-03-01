@@ -4164,10 +4164,14 @@ function CertificatePage() {
       cropAll: false,
       selectedCrops: [] as string[],
       issueDate: today,
+      addAmountInfo: false,
+      cropPrices: {} as Record<string, number>,
     };
   }, []);
   const [form, setForm] = React.useState(getInitialFormState);
   const [issueConfirmOpen, setIssueConfirmOpen] = React.useState(false);
+  const [amountPopupOpen, setAmountPopupOpen] = React.useState(false);
+  const [amountInputs, setAmountInputs] = React.useState<Record<string, string>>({});
   const [previewOpen, setPreviewOpen] = React.useState(false);
   const [previewCertData, setPreviewCertData] = React.useState<{
     input: CertificateInput;
@@ -4270,6 +4274,11 @@ function CertificatePage() {
     return Array.from(new Set(cropOrders.map((o) => o.crop_name).filter((c): c is string => !!c && typeof c === "string")));
   }, [orders, ordererForFilter, form.year, form.dateFrom, form.dateTo]);
 
+  /** 금액 입력 대상: 선택된 기간·주문자·작물 기준 고유 작물명 (일자 무관 1회만) */
+  const uniqueCropsForAmount = React.useMemo(() => {
+    return Array.from(new Set(filteredOrders.map((o) => o.crop_name).filter((c): c is string => !!c && typeof c === "string"))).sort();
+  }, [filteredOrders]);
+
   const handleBirthIdChange = (v: string) => {
     const digits = v.replace(/\D/g, "").slice(0, 7);
     if (digits.length <= 6) setForm((p) => ({ ...p, birthId: digits }));
@@ -4278,6 +4287,8 @@ function CertificatePage() {
 
   const handleGenerate = React.useCallback(() => {
     if (!stampDataUrl) return;
+    const cropPrices =
+      form.addAmountInfo && Object.keys(form.cropPrices).length > 0 ? form.cropPrices : undefined;
     const input: CertificateInput = {
       customerName: form.customerName.trim(),
       address: form.address.trim(),
@@ -4286,8 +4297,9 @@ function CertificatePage() {
       contact: form.contact.trim(),
       cropName: form.cropAll ? null : (form.selectedCrops.join(", ") || null),
       issueDate: form.issueDate,
+      cropPrices,
     };
-    const rows = ordersToRows(filteredOrders);
+    const rows = ordersToRows(filteredOrders, cropPrices);
     setPreviewCertData({ input, rows });
     setIssueConfirmOpen(false);
     setFormOpen(false);
@@ -4377,11 +4389,13 @@ function CertificatePage() {
             setFormOpen(false);
             setForm(getInitialFormState());
             setCropDropdownOpen(false);
+            setAmountPopupOpen(false);
+            setAmountInputs({});
           }}
           title="육묘확인서 발급"
           titleSize="lg"
         >
-          <div className="flex max-h-[70vh] flex-col gap-3 overflow-y-auto sm:gap-4">
+          <div className="relative flex max-h-[70vh] flex-col gap-3 overflow-y-auto sm:gap-4">
             <div>
               <span className="mb-2 block text-sm font-semibold text-slate-300">1. 기간 설정</span>
               <div className="mb-3 flex w-full gap-2">
@@ -4556,6 +4570,100 @@ function CertificatePage() {
                 disabled={!form.cropAll && form.selectedCrops.length === 0}
               />
             </div>
+            <div>
+              <label className="flex cursor-pointer items-center gap-2 text-slate-200">
+                <input
+                  type="checkbox"
+                  checked={form.addAmountInfo}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setForm((p) => (checked ? { ...p, addAmountInfo: true } : { ...p, addAmountInfo: false, cropPrices: {} }));
+                    if (checked) {
+                      setAmountInputs(
+                        uniqueCropsForAmount.reduce(
+                          (acc, c) => ({ ...acc, [c]: form.cropPrices[c] ? String(form.cropPrices[c]) : "" }),
+                          {},
+                        ),
+                      );
+                      setAmountPopupOpen(true);
+                    }
+                  }}
+                  disabled={!form.cropAll && form.selectedCrops.length === 0}
+                  className="h-4 w-4 rounded border-slate-600 bg-slate-800 text-amber-500 disabled:opacity-50"
+                />
+                <span className="text-sm font-medium">금액정보 추가하기</span>
+              </label>
+              {form.addAmountInfo && uniqueCropsForAmount.every((c) => (form.cropPrices[c] ?? 0) > 0) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAmountInputs(
+                      uniqueCropsForAmount.reduce(
+                        (acc, c) => ({ ...acc, [c]: form.cropPrices[c] ? String(form.cropPrices[c]) : "" }),
+                        {},
+                      ),
+                    );
+                    setAmountPopupOpen(true);
+                  }}
+                  className="mt-1 text-xs text-emerald-400 underline hover:text-emerald-300"
+                >
+                  가격정보 반영완료 (클릭 시 수정)
+                </button>
+              )}
+            </div>
+            {amountPopupOpen && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-black/60 p-4">
+                <div className="w-full max-w-sm rounded-xl border border-slate-700 bg-slate-900 p-4 shadow-xl">
+                  <p className="mb-3 text-center text-sm font-medium text-slate-200">작물 가격을 입력하세요</p>
+                  <div className="mb-4 space-y-2">
+                    {uniqueCropsForAmount.map((crop) => (
+                      <div key={crop} className="flex items-center justify-between gap-2">
+                        <span className="shrink-0 text-sm text-slate-300">{crop}</span>
+                        <div className="flex flex-1 items-center gap-1">
+                          <input
+                            type="number"
+                            min={0}
+                            step={1}
+                            value={amountInputs[crop] ?? ""}
+                            onChange={(e) => setAmountInputs((p) => ({ ...p, [crop]: e.target.value }))}
+                            placeholder="0"
+                            className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-right text-slate-100"
+                          />
+                          <span className="text-sm text-slate-400">원</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <SecondaryButton
+                      onClick={() => setAmountPopupOpen(false)}
+                      className="flex-1"
+                    >
+                      취소
+                    </SecondaryButton>
+                    <PrimaryButton
+                      onClick={() => {
+                        const prices: Record<string, number> = {};
+                        for (const c of uniqueCropsForAmount) {
+                          const v = Number(amountInputs[c]);
+                          if (!Number.isFinite(v) || v < 0) return;
+                          prices[c] = Math.round(v);
+                        }
+                        setForm((p) => ({ ...p, cropPrices: prices }));
+                        setAmountPopupOpen(false);
+                      }}
+                      disabled={uniqueCropsForAmount.some((c) => {
+                        const v = Number(amountInputs[c]);
+                        return !Number.isFinite(v) || v < 0;
+                      })}
+                      className="flex-1"
+                    >
+                      입력완료
+                    </PrimaryButton>
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="mt-4 flex gap-2">
               <SecondaryButton
                 onClick={() => {
@@ -4584,7 +4692,8 @@ function CertificatePage() {
                   !form.address.trim() ||
                   (form.birthId.length < 8 && !(form.businessNumber && form.businessNumber.length >= 10)) ||
                   !form.contact.trim() ||
-                  (!form.cropAll && form.selectedCrops.length === 0)
+                  (!form.cropAll && form.selectedCrops.length === 0) ||
+                  (form.addAmountInfo && uniqueCropsForAmount.some((c) => !(form.cropPrices[c] > 0)))
                 }
                 size="lg"
               >

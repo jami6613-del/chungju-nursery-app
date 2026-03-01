@@ -75,56 +75,67 @@ export function CertificateContent({ input, rows, stampDataUrl, containerRef }: 
       </table>
 
       <h2 style={{ margin: "12px 0 4px 0", fontSize: "12pt", fontWeight: "bold" }}>2. 육묘 일반현황</h2>
-      <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 12 }}>
-        <thead>
-          <tr>
-            {[
-              { h: "품 목", w: "18%" },
-              { h: "트레이(구)", w: "11%" },
-              { h: "수량(판)", w: "10%" },
-              { h: "수량(주)", w: "10%" },
-              { h: "파종일", w: "13%" },
-              { h: "출하일", w: "13%" },
-            ].map(({ h, w }) => (
-              <th
-                key={h}
-                style={{
-                  width: w,
-                  padding: "8px 4px",
-                  backgroundColor: HEADER_BG,
-                  border: "1px solid #000",
-                  fontSize: "15pt",
-                  fontWeight: "bold",
-                  textAlign: "center",
-                  verticalAlign: "middle",
-                }}
-              >
-                {h}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.length === 0 ? (
-            <tr>
-              <td colSpan={6} style={{ padding: 10, border: "1px solid #000", textAlign: "center", fontSize: "14pt", verticalAlign: "middle" }}>
-                (데이터 없음)
-              </td>
-            </tr>
-          ) : (
-            rows.map((row, i) => (
-              <tr key={i}>
-                <td style={{ padding: "8px 4px", border: "1px solid #000", textAlign: "center", fontSize: "14pt", verticalAlign: "middle" }}>{row.품목}</td>
-                <td style={{ padding: "8px 4px", border: "1px solid #000", textAlign: "center", fontSize: "14pt", verticalAlign: "middle" }}>{row["트레이(구)"]}</td>
-                <td style={{ padding: "8px 4px", border: "1px solid #000", textAlign: "center", fontSize: "14pt", verticalAlign: "middle" }}>{row["수량(판)"]}</td>
-                <td style={{ padding: "8px 4px", border: "1px solid #000", textAlign: "center", fontSize: "14pt", verticalAlign: "middle" }}>{row["수량(주)"]}</td>
-                <td style={{ padding: "8px 4px", border: "1px solid #000", textAlign: "center", fontSize: "14pt", verticalAlign: "middle" }}>{row.파종일}</td>
-                <td style={{ padding: "8px 4px", border: "1px solid #000", textAlign: "center", fontSize: "14pt", verticalAlign: "middle" }}>{row.출하일}</td>
+      {(() => {
+        const hasAmount = rows.length > 0 && rows.some((r) => r["금액(원)"] != null && r["금액(원)"] !== "");
+        const cols = [
+          { key: "품목", h: "품 목", w: hasAmount ? "15%" : "18%" },
+          { key: "트레이(구)", h: "트레이(구)", w: hasAmount ? "10%" : "11%" },
+          { key: "수량(판)", h: "수량(판)", w: hasAmount ? "8%" : "10%" },
+          { key: "수량(주)", h: "수량(주)", w: hasAmount ? "8%" : "10%" },
+          { key: "파종일", h: "파종일", w: hasAmount ? "11%" : "13%" },
+          { key: "출하일", h: "출하일", w: hasAmount ? "11%" : "13%" },
+          ...(hasAmount ? [{ key: "금액(원)" as const, h: "금액(원)", w: "14%" as const }] : []),
+        ];
+        const colCount = cols.length;
+        return (
+          <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 12, tableLayout: "fixed" }}>
+            <thead>
+              <tr>
+                {cols.map(({ h, w }) => (
+                  <th
+                    key={h}
+                    style={{
+                      width: w,
+                      padding: hasAmount ? "6px 2px" : "8px 4px",
+                      backgroundColor: HEADER_BG,
+                      border: "1px solid #000",
+                      fontSize: hasAmount ? "13pt" : "15pt",
+                      fontWeight: "bold",
+                      textAlign: "center",
+                      verticalAlign: "middle",
+                    }}
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+            </thead>
+            <tbody>
+              {rows.length === 0 ? (
+                <tr>
+                  <td colSpan={colCount} style={{ padding: 10, border: "1px solid #000", textAlign: "center", fontSize: "14pt", verticalAlign: "middle" }}>
+                    (데이터 없음)
+                  </td>
+                </tr>
+              ) : (
+                rows.map((row, i) => (
+                  <tr key={i}>
+                    <td style={{ padding: hasAmount ? "6px 2px" : "8px 4px", border: "1px solid #000", textAlign: "center", fontSize: hasAmount ? "12pt" : "14pt", verticalAlign: "middle" }}>{row.품목}</td>
+                    <td style={{ padding: hasAmount ? "6px 2px" : "8px 4px", border: "1px solid #000", textAlign: "center", fontSize: hasAmount ? "12pt" : "14pt", verticalAlign: "middle" }}>{row["트레이(구)"]}</td>
+                    <td style={{ padding: hasAmount ? "6px 2px" : "8px 4px", border: "1px solid #000", textAlign: "center", fontSize: hasAmount ? "12pt" : "14pt", verticalAlign: "middle" }}>{row["수량(판)"]}</td>
+                    <td style={{ padding: hasAmount ? "6px 2px" : "8px 4px", border: "1px solid #000", textAlign: "center", fontSize: hasAmount ? "12pt" : "14pt", verticalAlign: "middle" }}>{row["수량(주)"]}</td>
+                    <td style={{ padding: hasAmount ? "6px 2px" : "8px 4px", border: "1px solid #000", textAlign: "center", fontSize: hasAmount ? "12pt" : "14pt", verticalAlign: "middle" }}>{row.파종일}</td>
+                    <td style={{ padding: hasAmount ? "6px 2px" : "8px 4px", border: "1px solid #000", textAlign: "center", fontSize: hasAmount ? "12pt" : "14pt", verticalAlign: "middle" }}>{row.출하일}</td>
+                    {hasAmount && (
+                      <td style={{ padding: "6px 2px", border: "1px solid #000", textAlign: "right", fontSize: "12pt", verticalAlign: "middle" }}>{row["금액(원)"] ?? "-"}</td>
+                    )}
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        );
+      })()}
 
       <h2 style={{ margin: "12px 0 4px 0", fontSize: "12pt", fontWeight: "bold" }}>3. 육묘 재배내역</h2>
       <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 24 }}>

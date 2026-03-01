@@ -8,6 +8,8 @@ export interface CertificateInput {
   contact: string;
   cropName: string | null;
   issueDate: string;
+  /** 작물별 판당 금액(원). 있으면 증명서에 금액(원) 열 표시 */
+  cropPrices?: Record<string, number>;
 }
 
 export interface CertificateRow {
@@ -17,6 +19,7 @@ export interface CertificateRow {
   "수량(주)": string;
   파종일: string;
   출하일: string;
+  "금액(원)"?: string;
 }
 
 function parseTrayNumber(tray: string): number {
@@ -24,22 +27,34 @@ function parseTrayNumber(tray: string): number {
   return m ? parseFloat(m[0]) || 0 : 0;
 }
 
-/** 필터된 주문을 인증서 행으로 변환 */
-export function ordersToRows(orders: Order[]): CertificateRow[] {
+function formatWithComma(n: number): string {
+  return n.toLocaleString("ko-KR");
+}
+
+/** 필터된 주문을 인증서 행으로 변환. cropPrices 있으면 금액(원) 계산 */
+export function ordersToRows(
+  orders: Order[],
+  cropPrices?: Record<string, number> | null,
+): CertificateRow[] {
   return orders.map((o) => {
     const tray = o.tray_type ?? "";
     const trayFormatted = /^\d+$/.test(tray) ? `${tray}구` : tray;
     const qtyPan = Number(o.quantity_base ?? 0) + Number(o.quantity_extra ?? 0);
     const trayNum = parseTrayNumber(tray);
     const qtyJu = Math.round(trayNum * qtyPan);
-    return {
-      품목: o.crop_name ?? "",
+    const cropName = o.crop_name ?? "";
+    const pricePerPan = cropPrices && cropName ? (cropPrices[cropName] ?? 0) : 0;
+    const amount = pricePerPan > 0 ? Math.round(qtyPan * pricePerPan) : undefined;
+    const row: CertificateRow = {
+      품목: cropName,
       "트레이(구)": trayFormatted,
       "수량(판)": String(qtyPan),
-      "수량(주)": trayNum > 0 ? String(qtyJu) : "-",
+      "수량(주)": trayNum > 0 ? formatWithComma(qtyJu) : "-",
       파종일: o.sowing_date ?? "",
       출하일: o.shipping_date ?? "",
     };
+    if (amount !== undefined && amount >= 0) row["금액(원)"] = formatWithComma(amount);
+    return row;
   });
 }
 
