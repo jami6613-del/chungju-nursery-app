@@ -4380,13 +4380,13 @@ function CertificatePage() {
               <span className="mb-2 block text-sm font-semibold text-slate-300">2. 고객정보</span>
               <div className="flex flex-col gap-2">
                 <div className="relative">
-                  <span className="text-xs text-slate-400">성명 (주문자 자동완성)</span>
+                  <span className="text-xs text-slate-400">성명</span>
                   <input
                     value={form.customerName}
                     onChange={(e) => setForm((p) => ({ ...p, customerName: e.target.value }))}
                     onFocus={(e) => e.target.select?.()}
-                    className="mt-0.5 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100"
-                    placeholder="주문자명"
+                    className="mt-0.5 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 placeholder:text-slate-500 placeholder:opacity-50"
+                    placeholder="육묘확인서에 실제 발급될 이름 or 법인명 입력"
                     autoComplete="off"
                   />
                   {form.customerName.trim().length >= 1 &&
