@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useRef } from "react";
 
-const FRICTION = 0.965;
-const MIN_VELOCITY = 0.05;
+const FRICTION = 0.97;
+const MIN_VELOCITY = 0.03;
 const HORIZONTAL_SCROLL_MULTIPLIER = 2.2;
+const MOMENTUM_BOOST_BASE = 1.2;
+const MOMENTUM_BOOST_PER_VELOCITY = 0.15;
 
 /**
  * 모바일에서 overflow 스크롤이 동작하지 않을 때 터치로 수동 스크롤 + 관성(모멘텀) fallback
+ * 스와이프 강도에 따라 속도·거리 비례 (강하게 → 빨리·많이, 살살 → 천천히·조금)
  */
 export function useTouchScroll<T extends HTMLElement>(ref: React.RefObject<T | null>): void {
   const lastY = useRef(0);
@@ -74,17 +77,30 @@ export function useTouchScroll<T extends HTMLElement>(ref: React.RefObject<T | n
     const canScrollX = el.scrollWidth > el.clientWidth;
     if (!canScrollY && !canScrollX) return;
 
-    const run = () => {
+    const magY = Math.abs(vY);
+    const magX = Math.abs(vX);
+    const boostY = MOMENTUM_BOOST_BASE + Math.min(magY * MOMENTUM_BOOST_PER_VELOCITY, 2.5);
+    const boostX = MOMENTUM_BOOST_BASE + Math.min(magX * MOMENTUM_BOOST_PER_VELOCITY, 2.5);
+    vY *= boostY;
+    vX *= boostX;
+
+    let lastTime = performance.now();
+
+    const run = (now: number) => {
       const target = ref.current;
       if (!target) return;
+      const dt = Math.min(now - lastTime, 32);
+      lastTime = now;
+
       const maxY = target.scrollHeight - target.clientHeight;
       const maxX = target.scrollWidth - target.clientWidth;
 
-      if (canScrollY) target.scrollTop = Math.max(0, Math.min(maxY, target.scrollTop + vY));
-      if (canScrollX) target.scrollLeft = Math.max(0, Math.min(maxX, target.scrollLeft + vX));
+      if (canScrollY) target.scrollTop = Math.max(0, Math.min(maxY, target.scrollTop + vY * dt * 0.08));
+      if (canScrollX) target.scrollLeft = Math.max(0, Math.min(maxX, target.scrollLeft + vX * dt * 0.08));
 
-      vY *= FRICTION;
-      vX *= FRICTION;
+      const decay = Math.pow(FRICTION, dt / 16);
+      vY *= decay;
+      vX *= decay;
 
       if (Math.abs(vY) >= MIN_VELOCITY || Math.abs(vX) >= MIN_VELOCITY) {
         rafId.current = requestAnimationFrame(run);
