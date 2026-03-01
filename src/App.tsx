@@ -937,14 +937,14 @@ function DashboardPage() {
         </p>
       </Modal>
 
-      <main className="order-list-main-scroll min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-3 pb-24 pt-3">
+      <main className="flex min-h-0 flex-1 flex-col overflow-hidden px-3 pb-24 pt-3">
         {user.is_approved ? null : (
-          <div className="mb-3 rounded-xl border border-yellow-600 bg-yellow-950/40 px-4 py-3 text-base text-yellow-200">
+          <div className="mb-3 shrink-0 rounded-xl border border-yellow-600 bg-yellow-950/40 px-4 py-3 text-base text-yellow-200">
             관리자 승인 대기 중입니다. 읽기 전용으로만 이용 가능합니다.
           </div>
         )}
 
-        <div className="mb-2 flex items-center justify-end gap-2 sm:mb-3">
+        <div className="mb-2 flex shrink-0 items-center justify-end gap-2 sm:mb-3">
           <button
             type="button"
             onClick={() => setYearSelectOpen(true)}
@@ -1116,7 +1116,7 @@ function DashboardPage() {
         document.body,
         )}
 
-        <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400 sm:gap-3 sm:text-sm">
+        <div className="mb-2 flex shrink-0 flex-wrap items-center justify-between gap-2 text-xs text-slate-400 sm:gap-3 sm:text-sm">
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-3">
             <span className="flex items-center gap-1">
               <span className="h-3 w-4 rounded border border-slate-600 bg-yellow-200/90 sm:h-4 sm:w-6" />
@@ -1146,7 +1146,7 @@ function DashboardPage() {
           )}
         </div>
 
-        <div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-0.5 text-sm font-medium sm:gap-x-6 sm:text-base">
+        <div className="mb-2 flex shrink-0 flex-wrap items-center gap-x-4 gap-y-0.5 text-sm font-medium sm:gap-x-6 sm:text-base">
           <span>
             <span className="text-yellow-300">발아실</span>
             <span className="ml-1 text-slate-200">: {stageCounts.germination}판</span>
@@ -1161,8 +1161,8 @@ function DashboardPage() {
           </span>
         </div>
 
-        <div className="order-list-scroll-wrapper overflow-x-auto overflow-y-visible rounded-xl border border-slate-800 bg-slate-900 sm:rounded-2xl">
-          <table className="order-list-table order-list-table-touch min-w-full text-[0.75rem] sm:text-base sm:table-auto">
+        <div className="order-list-scroll-wrapper min-h-0 flex-1 overflow-auto rounded-xl border border-slate-800 bg-slate-900 sm:rounded-2xl">
+          <table className="order-list-table min-w-full text-[0.75rem] sm:text-base sm:table-auto">
             <colgroup>
               <col className="order-col-fit" />
               <col className="order-col-fit" />
@@ -1213,22 +1213,17 @@ function DashboardPage() {
                 const stage = getOrderStage(o, todayStr);
                 const sowingShort = o.sowing_date && o.sowing_date.length >= 10 ? o.sowing_date.slice(5, 10) : (o.sowing_date || "-");
                 const shippingShort = o.shipping_date && o.shipping_date.length >= 10 ? o.shipping_date.slice(5, 10) : (o.shipping_date ? o.shipping_date : "-");
+                const spacingClass = isMonthBreak
+                  ? "border-t-2 border-slate-500/50 pt-2 sm:pt-3"
+                  : !isMonthBreak && isDateBreak
+                    ? "pt-1 sm:pt-1.5"
+                    : "";
                 return (
-                  <React.Fragment key={o.id}>
-                    {isMonthBreak && (
-                      <tr aria-hidden="true">
-                        <td colSpan={9} className="border-t border-slate-600/40 py-1.5 sm:py-2" />
-                      </tr>
-                    )}
-                    {!isMonthBreak && isDateBreak && (
-                      <tr aria-hidden="true">
-                        <td colSpan={9} className="py-0.5 sm:py-1" />
-                      </tr>
-                    )}
-                    <tr
-                      className={`cursor-pointer border-t border-slate-800 hover:opacity-90 ${rowBgByStage[stage]}`}
-                      onClick={() => openEditPopup(o)}
-                    >
+                  <tr
+                    key={o.id}
+                    className={`cursor-pointer border-t border-slate-800 hover:opacity-90 ${rowBgByStage[stage]} ${spacingClass}`}
+                    onClick={() => openEditPopup(o)}
+                  >
                       <td className="whitespace-nowrap px-1.5 py-1.5 sm:px-3 sm:py-2">{sowingShort}</td>
                       <td className="min-w-0 max-w-[3.5rem] truncate px-1.5 py-1.5 sm:max-w-none sm:px-3 sm:py-2">{o.customer_name}</td>
                       <td className="min-w-0 max-w-[3.5rem] truncate px-1.5 py-1.5 sm:max-w-none sm:px-3 sm:py-2">{o.crop_name}</td>
@@ -1241,7 +1236,6 @@ function DashboardPage() {
                       <td className="whitespace-nowrap px-1.5 py-1.5 sm:px-3 sm:py-2">{o.shipping_quantity ?? "-"}</td>
                       <td className="min-w-0 whitespace-normal px-1.5 py-1.5 text-left sm:max-w-none sm:px-3 sm:py-2 sm:truncate sm:max-w-[4rem]">{o.note ?? ""}</td>
                     </tr>
-                  </React.Fragment>
                 );
               })}
             </tbody>
