@@ -4285,7 +4285,7 @@ function CertificatePage() {
               disabled={!stampDataUrl}
               size="lg"
             >
-              {genBusy ? "생성 중..." : "확인"}
+              확인
             </PrimaryButton>
           </div>
         </Modal>,
