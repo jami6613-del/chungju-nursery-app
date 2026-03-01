@@ -6,6 +6,7 @@ import { isSupabaseConfigured, supabase } from "./supabaseClient";
 import type { Order, SowingPlanItem, UnprocessedOrder, SeedOwner } from "./types";
 import { getOrderStage, getOrderIndoorStartDate } from "./types";
 import {
+  addOrdersFromPlanItems,
   fetchPlanCountsByDate,
   fetchSowingPlanItems,
   fetchUnprocessedOrders,
@@ -2819,8 +2820,22 @@ function PlanningPage() {
   const [planItemSaveBusy, setPlanItemSaveBusy] = React.useState(false);
   const [planItemSaveError, setPlanItemSaveError] = React.useState<string | null>(null);
   const [planItemDeleteBusy, setPlanItemDeleteBusy] = React.useState(false);
+  const [reflectPlanToOrdersDate, setReflectPlanToOrdersDate] = React.useState<string | null>(null);
+  const [reflectPlanToOrdersBusy, setReflectPlanToOrdersBusy] = React.useState(false);
+  const planDateLongPressTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const threeDays = React.useMemo(() => getThreeDaysFrom(focusDate), [focusDate]);
+
+  const clearPlanDateLongPressTimer = React.useCallback(() => {
+    if (planDateLongPressTimerRef.current) {
+      clearTimeout(planDateLongPressTimerRef.current);
+      planDateLongPressTimerRef.current = null;
+    }
+  }, []);
+
+  const handlePlanDateLongPressEnd = React.useCallback(() => {
+    clearPlanDateLongPressTimer();
+  }, [clearPlanDateLongPressTimer]);
 
   React.useEffect(() => {
     const clamped = clampPlanDate(focusDate);
@@ -3326,7 +3341,25 @@ function PlanningPage() {
                     >
                       {/* 화이트보드 프레임(상단) */}
                       <div className="flex items-center justify-between border-b-2 border-slate-400 bg-gradient-to-b from-slate-300 to-slate-400 px-3 py-2.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3)] sm:px-3 sm:py-3">
-                        <span className="flex-1 text-center text-lg font-bold leading-tight text-slate-800 drop-shadow-sm sm:text-xl [font-size:clamp(0.75rem,5vw,1.75rem)]">
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onPointerDown={() => {
+                            if (!canReflectToPlan(user) || items.length === 0) return;
+                            clearPlanDateLongPressTimer();
+                            planDateLongPressTimerRef.current = setTimeout(
+                              () => {
+                                planDateLongPressTimerRef.current = null;
+                                setReflectPlanToOrdersDate(dateStr);
+                              },
+                              2000,
+                            );
+                          }}
+                          onPointerUp={handlePlanDateLongPressEnd}
+                          onPointerLeave={handlePlanDateLongPressEnd}
+                          onPointerCancel={handlePlanDateLongPressEnd}
+                          className="flex-1 cursor-default select-none text-center text-lg font-bold leading-tight text-slate-800 drop-shadow-sm sm:text-xl [font-size:clamp(0.75rem,5vw,1.75rem)]"
+                        >
                           {planDateHeader(dateStr)}
                         </span>
                         <button
@@ -3834,6 +3867,36 @@ function PlanningPage() {
         <div className="mt-4 flex gap-2">
           <PrimaryButton onClick={handleReflectConfirm}>확인</PrimaryButton>
           <SecondaryButton onClick={() => setReflectOrder(null)}>취소</SecondaryButton>
+        </div>
+      </Modal>
+
+      {/* 파종 현황 반영 확인 팝업 (날짜 헤더 2초 롱프레스 후) */}
+      <Modal
+        open={reflectPlanToOrdersDate !== null}
+        title="파종 현황 반영"
+        onClose={() => setReflectPlanToOrdersDate(null)}
+      >
+        <p className="text-slate-200">파종 현황에 반영하시겠습니까?</p>
+        <div className="mt-4 flex gap-2">
+          <PrimaryButton
+            onClick={async () => {
+              if (!reflectPlanToOrdersDate || !user) return;
+              setReflectPlanToOrdersBusy(true);
+              try {
+                const items = planItems.filter((i) => i.plan_date === reflectPlanToOrdersDate);
+                await addOrdersFromPlanItems(items, user.id);
+                setReflectPlanToOrdersDate(null);
+              } catch (e) {
+                alert(e instanceof Error ? e.message : "반영에 실패했습니다.");
+              } finally {
+                setReflectPlanToOrdersBusy(false);
+              }
+            }}
+            disabled={reflectPlanToOrdersBusy}
+          >
+            확인
+          </PrimaryButton>
+          <SecondaryButton onClick={() => setReflectPlanToOrdersDate(null)}>취소</SecondaryButton>
         </div>
       </Modal>
 

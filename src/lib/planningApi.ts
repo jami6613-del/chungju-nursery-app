@@ -1,5 +1,5 @@
 import { supabase } from "../supabaseClient";
-import type { SowingPlanItem, UnprocessedOrder } from "../types";
+import type { Order, SowingPlanItem, UnprocessedOrder } from "../types";
 import type { SeedOwner } from "../types";
 
 const DEFAULT_SEED_OWNER: SeedOwner = "육묘장";
@@ -339,6 +339,40 @@ export async function deleteOldSowingPlanItems(beforeDate: string): Promise<void
     .delete()
     .lt("plan_date", beforeDate);
   if (error) throw new Error(error.message);
+}
+
+/** 파종계획 항목들을 파종 및 출하현황(orders)에 일괄 등록 */
+export async function addOrdersFromPlanItems(
+  planItems: SowingPlanItem[],
+  createdBy: string,
+): Promise<Order[]> {
+  if (planItems.length === 0) return [];
+  const results: Order[] = [];
+  for (const item of planItems) {
+    const i = (item.quantity || "").indexOf("+");
+    const baseStr = i >= 0 ? (item.quantity || "").slice(0, i).trim() : (item.quantity || "").trim();
+    const extraStr = i >= 0 ? (item.quantity || "").slice(i + 1).trim() : "";
+    const quantity_base = parseInt(baseStr, 10) || 0;
+    const quantity_extra = parseInt(extraStr, 10) || 0;
+    const trayType = item.tray_type === "직접입력" ? (item.tray_custom || "").trim() : (item.tray_type || "").trim();
+    const payload = {
+      customer_name: (item.orderer || "").trim(),
+      crop_name: (item.crop || "").trim(),
+      seed_owner: item.seed_owner === "주문자" ? "주문자" : "육묘장",
+      sowing_date: (item.plan_date || "").slice(0, 10),
+      shipping_date: null,
+      tray_type: trayType || "200",
+      quantity_base,
+      quantity_extra,
+      shipping_quantity: null,
+      note: null,
+      created_by: createdBy,
+    };
+    const { data, error } = await supabase.from("orders").insert(payload).select().single();
+    if (error) throw new Error(error.message);
+    if (data) results.push(data as Order);
+  }
+  return results;
 }
 
 /** 전체 일자별 파종 건수 (캘린더용) */
