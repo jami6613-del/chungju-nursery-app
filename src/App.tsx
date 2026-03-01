@@ -29,6 +29,7 @@ import { ROLE_LABEL, ROLE_LEVELS, canRequestEdits, canWriteOrders, canReflectToP
 import { fetchPendingApprovalUsers, approveUser, fetchApprovedUsers } from "./lib/approvalApi";
 import { savePushSubscription } from "./lib/pushApi";
 import { updateMyName } from "./lib/userApi";
+import { useTouchScroll } from "./hooks/useTouchScroll";
 
 const TRAY_OPTIONS = ["200", "406", "72", "128", "포트", "105", "164", "직접입력"];
 
@@ -882,9 +883,12 @@ function DashboardPage() {
     shipped: "bg-slate-800 text-slate-100",           // 출하 완료: 어두운 네이비(범례와 동일)
   };
 
+  const listScrollRef = React.useRef<HTMLDivElement>(null);
+  useTouchScroll(listScrollRef);
+
   return (
-    <div className="order-list-page order-list-scroll-page flex h-[100dvh] flex-col overflow-auto bg-slate-950 text-slate-50">
-      <header className="sticky top-0 z-10 shrink-0 border-b border-slate-800 bg-slate-950/95 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
+    <div className="order-list-page flex h-[100dvh] flex-col overflow-hidden bg-slate-950 text-slate-50">
+      <header className="shrink-0 border-b border-slate-800 bg-slate-900/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
         <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-0">
           <div className="min-w-0">
             <div className="truncate text-lg font-extrabold tracking-tight sm:text-2xl md:text-3xl">충주 친환경 육묘장</div>
@@ -937,14 +941,14 @@ function DashboardPage() {
         </p>
       </Modal>
 
-      <main className="min-w-0 shrink-0 px-3 pb-24 pt-3">
+      <main className="flex min-h-0 flex-1 flex-col overflow-hidden px-3 pb-24 pt-3">
         {user.is_approved ? null : (
-          <div className="mb-3 rounded-xl border border-yellow-600 bg-yellow-950/40 px-4 py-3 text-base text-yellow-200">
+          <div className="mb-3 shrink-0 rounded-xl border border-yellow-600 bg-yellow-950/40 px-4 py-3 text-base text-yellow-200">
             관리자 승인 대기 중입니다. 읽기 전용으로만 이용 가능합니다.
           </div>
         )}
 
-        <div className="mb-2 flex items-center justify-end gap-2 sm:mb-3">
+        <div className="mb-2 flex shrink-0 items-center justify-end gap-2 sm:mb-3">
           <button
             type="button"
             onClick={() => setYearSelectOpen(true)}
@@ -1116,7 +1120,7 @@ function DashboardPage() {
         document.body,
         )}
 
-        <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400 sm:gap-3 sm:text-sm">
+        <div className="mb-2 flex shrink-0 flex-wrap items-center justify-between gap-2 text-xs text-slate-400 sm:gap-3 sm:text-sm">
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-3">
             <span className="flex items-center gap-1">
               <span className="h-3 w-4 rounded border border-slate-600 bg-yellow-200/90 sm:h-4 sm:w-6" />
@@ -1146,7 +1150,7 @@ function DashboardPage() {
           )}
         </div>
 
-        <div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-0.5 text-sm font-medium sm:gap-x-6 sm:text-base">
+        <div className="mb-2 flex shrink-0 flex-wrap items-center gap-x-4 gap-y-0.5 text-sm font-medium sm:gap-x-6 sm:text-base">
           <span>
             <span className="text-yellow-300">발아실</span>
             <span className="ml-1 text-slate-200">: {stageCounts.germination}판</span>
@@ -1161,7 +1165,10 @@ function DashboardPage() {
           </span>
         </div>
 
-        <div className="order-list-scroll-wrapper rounded-xl border border-slate-800 bg-slate-900 sm:rounded-2xl">
+        <div
+          ref={listScrollRef}
+          className="order-list-scroll-area min-h-0 flex-1 overflow-auto rounded-xl border border-slate-800 bg-slate-900 sm:rounded-2xl"
+        >
           <table className="order-list-table min-w-full text-[0.75rem] sm:text-base sm:table-auto">
             <colgroup>
               <col className="order-col-fit" />
