@@ -1354,6 +1354,7 @@ function DashboardPage() {
           ref={listScrollRef}
           className="order-list-scroll-area min-h-0 flex-1 overflow-auto rounded-xl border border-slate-800 bg-slate-900 sm:rounded-2xl"
         >
+          <div className="pb-[max(1.5rem,env(safe-area-inset-bottom))] min-h-full">
           <table className="order-list-table min-w-full text-[0.75rem] sm:text-base sm:table-auto">
             <colgroup>
               <col className="order-col-fit" />
@@ -1460,6 +1461,7 @@ function DashboardPage() {
               })}
             </tbody>
           </table>
+          </div>
         </div>
       </main>
 
