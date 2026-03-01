@@ -83,6 +83,11 @@ textarea {
   background: rgb(71 85 105);
 }
 
+/* 파종 및 출하현황: 세로 스와이프는 부모 스크롤로, 가로 스와이프만 테이블에서 처리 */
+.order-list-scroll-wrapper {
+  touch-action: pan-x;
+}
+
 /* 파종 및 출하현황: 모바일에서 출하수량까지 한 화면, 비고는 가로 스크롤 시에만 넓게 */
 @media (max-width: 640px) {
   .order-list-table {

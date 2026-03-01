@@ -606,6 +606,9 @@ function DashboardPage() {
   const [deleteOrderBusy, setDeleteOrderBusy] = React.useState(false);
   const [deleteOrderError, setDeleteOrderError] = React.useState<string | null>(null);
   const [roleInfoOpen, setRoleInfoOpen] = React.useState(false);
+  const [yearSelectOpen, setYearSelectOpen] = React.useState(false);
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = React.useState(currentYear);
 
   React.useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
@@ -659,13 +662,32 @@ function DashboardPage() {
     return true;
   });
 
-  // 파종일자 순: 빠른 것 아래(늦은 것 위) = 내림차순
+  // 연도별: 파종일자 YYYY 기준. 데이터 있는 연도만 목록에 포함, 없으면 현재 연도
+  const availableYears = React.useMemo(() => {
+    const years = new Set<number>();
+    filteredOrders.forEach((o) => {
+      const y = o.sowing_date ? parseInt(o.sowing_date.slice(0, 4), 10) : NaN;
+      if (!isNaN(y)) years.add(y);
+    });
+    if (years.size === 0) years.add(currentYear);
+    return Array.from(years).sort((a, b) => b - a);
+  }, [filteredOrders, currentYear]);
+
+  React.useEffect(() => {
+    if (!availableYears.includes(selectedYear)) {
+      setSelectedYear(availableYears.includes(currentYear) ? currentYear : availableYears[0] ?? currentYear);
+    }
+  }, [availableYears, selectedYear, currentYear]);
+
+  // 선택한 연도 기준으로 필터 + 파종일자 순 내림차순
   const displayOrders = React.useMemo(
     () =>
-      [...filteredOrders].sort((a, b) =>
-        (b.sowing_date || "").localeCompare(a.sowing_date || ""),
-      ),
-    [filteredOrders],
+      [...filteredOrders]
+        .filter((o) => (o.sowing_date || "").startsWith(String(selectedYear)))
+        .sort((a, b) =>
+          (b.sowing_date || "").localeCompare(a.sowing_date || ""),
+        ),
+    [filteredOrders, selectedYear],
   );
 
   const handleFormChange = (patch: Partial<OrderFormState>) => {
@@ -906,7 +928,14 @@ function DashboardPage() {
           </div>
         )}
 
-        <div className="mb-2 flex items-center justify-between gap-2 sm:mb-3">
+        <div className="mb-2 flex items-center justify-end gap-2 sm:mb-3">
+          <button
+            type="button"
+            onClick={() => setYearSelectOpen(true)}
+            className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm font-medium text-slate-200 hover:bg-slate-800 sm:rounded-xl sm:px-5 sm:py-3 sm:text-base"
+          >
+            연도선택
+          </button>
           <button
             type="button"
             onClick={() => setSearchOpen(true)}
@@ -1038,6 +1067,39 @@ function DashboardPage() {
         document.body,
         )}
 
+        {createPortal(
+        <Modal
+          open={yearSelectOpen}
+          onClose={() => setYearSelectOpen(false)}
+          title="연도선택"
+          titleSize="lg"
+        >
+          <div className="flex flex-wrap gap-2 sm:gap-3">
+            {availableYears.map((y) => (
+              <button
+                key={y}
+                type="button"
+                onClick={() => {
+                  setSelectedYear(y);
+                  setYearSelectOpen(false);
+                }}
+                className={`rounded-xl px-4 py-3 text-base font-semibold sm:px-5 sm:py-3 sm:text-lg ${
+                  selectedYear === y
+                    ? "border-2 border-brand bg-brand/20 text-brand"
+                    : "border border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800"
+                }`}
+              >
+                {y}년
+              </button>
+            ))}
+          </div>
+          <p className="mt-4 text-sm text-slate-400">
+            파종일자 기준 해당 연도 데이터만 표시됩니다.
+          </p>
+        </Modal>,
+        document.body,
+        )}
+
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400 sm:gap-3 sm:text-sm">
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-3">
             <span className="flex items-center gap-1">
@@ -1068,7 +1130,7 @@ function DashboardPage() {
           )}
         </div>
 
-        <div className="overflow-x-auto overflow-y-hidden rounded-xl border border-slate-800 bg-slate-900 sm:rounded-2xl">
+        <div className="order-list-scroll-wrapper overflow-x-auto overflow-y-hidden rounded-xl border border-slate-800 bg-slate-900 sm:rounded-2xl">
           <table className="order-list-table min-w-full text-[0.75rem] sm:text-base sm:table-auto">
             <colgroup>
               <col className="order-col-fit" />
