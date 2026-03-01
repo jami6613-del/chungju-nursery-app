@@ -883,8 +883,8 @@ function DashboardPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-950 text-slate-50">
-      <header className="shrink-0 border-b border-slate-800 bg-slate-900/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
+    <div className="order-list-page order-list-scroll-page flex h-[100dvh] flex-col overflow-auto bg-slate-950 text-slate-50">
+      <header className="sticky top-0 z-10 shrink-0 border-b border-slate-800 bg-slate-950/95 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
         <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-0">
           <div className="min-w-0">
             <div className="truncate text-lg font-extrabold tracking-tight sm:text-2xl md:text-3xl">충주 친환경 육묘장</div>
@@ -937,7 +937,7 @@ function DashboardPage() {
         </p>
       </Modal>
 
-      <main className="order-list-main-scroll min-h-0 flex-1 overflow-auto px-3 pb-24 pt-3">
+      <main className="min-w-0 shrink-0 px-3 pb-24 pt-3">
         {user.is_approved ? null : (
           <div className="mb-3 rounded-xl border border-yellow-600 bg-yellow-950/40 px-4 py-3 text-base text-yellow-200">
             관리자 승인 대기 중입니다. 읽기 전용으로만 이용 가능합니다.

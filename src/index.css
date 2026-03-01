@@ -83,8 +83,8 @@ textarea {
   background: rgb(71 85 105);
 }
 
-/* 파종 및 출하현황: main에서 가로·세로 모두 스크롤 (중첩 스크롤 제거) */
-.order-list-main-scroll {
+/* 파종 및 출하현황: 페이지 전체 스크롤 (header는 sticky) */
+.order-list-scroll-page {
   -webkit-overflow-scrolling: touch;
   overflow: auto;
 }
