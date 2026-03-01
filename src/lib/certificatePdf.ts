@@ -13,9 +13,15 @@ export interface CertificateInput {
 export interface CertificateRow {
   품목: string;
   "트레이(구)": string;
-  수량: string;
+  "수량(판)": string;
+  "수량(주)": string;
   파종일: string;
   출하일: string;
+}
+
+function parseTrayNumber(tray: string): number {
+  const m = /[\d.]+/.exec(tray);
+  return m ? parseFloat(m[0]) || 0 : 0;
 }
 
 /** 필터된 주문을 인증서 행으로 변환 */
@@ -23,10 +29,14 @@ export function ordersToRows(orders: Order[]): CertificateRow[] {
   return orders.map((o) => {
     const tray = o.tray_type ?? "";
     const trayFormatted = /^\d+$/.test(tray) ? `${tray}구` : tray;
+    const qtyPan = Number(o.quantity_base ?? 0) + Number(o.quantity_extra ?? 0);
+    const trayNum = parseTrayNumber(tray);
+    const qtyJu = Math.round(trayNum * qtyPan);
     return {
       품목: o.crop_name ?? "",
       "트레이(구)": trayFormatted,
-      수량: String(o.quantity_base ?? 0),
+      "수량(판)": String(qtyPan),
+      "수량(주)": trayNum > 0 ? String(qtyJu) : "-",
       파종일: o.sowing_date ?? "",
       출하일: o.shipping_date ?? "",
     };

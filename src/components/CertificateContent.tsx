@@ -78,10 +78,18 @@ export function CertificateContent({ input, rows, stampDataUrl, containerRef }: 
       <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 12 }}>
         <thead>
           <tr>
-            {["품 목", "트레이(구)", "수량", "파종일", "출하일"].map((h) => (
+            {[
+              { h: "품 목", w: "18%" },
+              { h: "트레이(구)", w: "11%" },
+              { h: "수량(판)", w: "10%" },
+              { h: "수량(주)", w: "10%" },
+              { h: "파종일", w: "13%" },
+              { h: "출하일", w: "13%" },
+            ].map(({ h, w }) => (
               <th
                 key={h}
                 style={{
+                  width: w,
                   padding: "8px 4px",
                   backgroundColor: HEADER_BG,
                   border: "1px solid #000",
@@ -99,7 +107,7 @@ export function CertificateContent({ input, rows, stampDataUrl, containerRef }: 
         <tbody>
           {rows.length === 0 ? (
             <tr>
-              <td colSpan={5} style={{ padding: 10, border: "1px solid #000", textAlign: "center", fontSize: "14pt", verticalAlign: "middle" }}>
+              <td colSpan={6} style={{ padding: 10, border: "1px solid #000", textAlign: "center", fontSize: "14pt", verticalAlign: "middle" }}>
                 (데이터 없음)
               </td>
             </tr>
@@ -108,7 +116,8 @@ export function CertificateContent({ input, rows, stampDataUrl, containerRef }: 
               <tr key={i}>
                 <td style={{ padding: "8px 4px", border: "1px solid #000", textAlign: "center", fontSize: "14pt", verticalAlign: "middle" }}>{row.품목}</td>
                 <td style={{ padding: "8px 4px", border: "1px solid #000", textAlign: "center", fontSize: "14pt", verticalAlign: "middle" }}>{row["트레이(구)"]}</td>
-                <td style={{ padding: "8px 4px", border: "1px solid #000", textAlign: "center", fontSize: "14pt", verticalAlign: "middle" }}>{row.수량}</td>
+                <td style={{ padding: "8px 4px", border: "1px solid #000", textAlign: "center", fontSize: "14pt", verticalAlign: "middle" }}>{row["수량(판)"]}</td>
+                <td style={{ padding: "8px 4px", border: "1px solid #000", textAlign: "center", fontSize: "14pt", verticalAlign: "middle" }}>{row["수량(주)"]}</td>
                 <td style={{ padding: "8px 4px", border: "1px solid #000", textAlign: "center", fontSize: "14pt", verticalAlign: "middle" }}>{row.파종일}</td>
                 <td style={{ padding: "8px 4px", border: "1px solid #000", textAlign: "center", fontSize: "14pt", verticalAlign: "middle" }}>{row.출하일}</td>
               </tr>
