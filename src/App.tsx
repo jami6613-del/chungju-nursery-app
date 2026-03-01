@@ -690,8 +690,8 @@ function DashboardPage() {
     [filteredOrders, selectedYear],
   );
 
-  const todayStr = getLocalDateString();
   const stageCounts = React.useMemo(() => {
+    const todayStr = getLocalDateString();
     let germination = 0;
     let indoor = 0;
     let outdoor = 0;
@@ -704,7 +704,7 @@ function DashboardPage() {
       // shipped 제외
     });
     return { germination, indoor, outdoor };
-  }, [displayOrders, todayStr]);
+  }, [displayOrders]);
 
   const handleFormChange = (patch: Partial<OrderFormState>) => {
     setFormState((prev) => ({ ...prev, ...patch }));
