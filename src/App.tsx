@@ -4161,7 +4161,8 @@ function CertificatePage() {
       birthId: "",
       businessNumber: "",
       contact: "",
-      cropName: "",
+      cropAll: false,
+      selectedCrops: [] as string[],
       issueDate: today,
     };
   }, []);
@@ -4208,11 +4209,12 @@ function CertificatePage() {
       if (!sd.startsWith(String(form.year))) return false;
       if (sd < form.dateFrom || sd > form.dateTo) return false;
       if (form.customerName.trim() && !o.customer_name.includes(ordererForFilter)) return false;
-      if (form.cropName.trim() && form.cropName !== "작물 전체" && !o.crop_name.includes(form.cropName.trim())) return false;
-      return true;
+      if (form.cropAll) return true;
+      if (form.selectedCrops.length === 0) return true;
+      return form.selectedCrops.some((c) => (o.crop_name ?? "").includes(c));
     });
     return list.sort((a, b) => (b.sowing_date ?? "").localeCompare(a.sowing_date ?? ""));
-  }, [orders, form.year, form.dateFrom, form.dateTo, form.customerName, form.cropName, ordererForFilter]);
+  }, [orders, form.year, form.dateFrom, form.dateTo, form.customerName, form.cropAll, form.selectedCrops, ordererForFilter]);
 
   const presetNames = React.useMemo(() => Object.keys(CUSTOMER_PRESETS), []);
 
@@ -4236,10 +4238,18 @@ function CertificatePage() {
 
   const autocompleteCrops = React.useMemo(() => {
     const cropOrders = ordererForFilter
-      ? orders.filter((o) => (o.customer_name ?? "").includes(ordererForFilter))
-      : orders;
+      ? orders.filter((o) => {
+          const sd = o.sowing_date ?? "";
+          if (!sd.startsWith(String(form.year))) return false;
+          if (sd < form.dateFrom || sd > form.dateTo) return false;
+          return (o.customer_name ?? "").includes(ordererForFilter);
+        })
+      : orders.filter((o) => {
+          const sd = o.sowing_date ?? "";
+          return sd.startsWith(String(form.year)) && sd >= form.dateFrom && sd <= form.dateTo;
+        });
     return Array.from(new Set(cropOrders.map((o) => o.crop_name).filter((c): c is string => !!c && typeof c === "string")));
-  }, [orders, ordererForFilter]);
+  }, [orders, ordererForFilter, form.year, form.dateFrom, form.dateTo]);
 
   const handleBirthIdChange = (v: string) => {
     const digits = v.replace(/\D/g, "").slice(0, 7);
@@ -4255,7 +4265,7 @@ function CertificatePage() {
       birthId: form.businessNumber ? "" : form.birthId,
       businessNumber: form.businessNumber || undefined,
       contact: form.contact.trim(),
-      cropName: form.cropName === "작물 전체" ? null : form.cropName.trim() || null,
+      cropName: form.cropAll ? null : (form.selectedCrops.join(", ") || null),
       issueDate: form.issueDate,
     };
     const rows = ordersToRows(filteredOrders);
@@ -4447,44 +4457,62 @@ function CertificatePage() {
             <div>
               <span className="mb-2 block text-sm font-semibold text-slate-300">3. 작물정보</span>
               <div ref={cropContainerRef} className="relative">
-                <span className="text-xs text-slate-400">품목 (작물 전체 = 해당 기간 전체)</span>
+                <span className="text-xs text-slate-400">품목 (작물 전체 또는 특정 작물 다중 선택)</span>
                 <button
                   type="button"
                   onClick={() => setCropDropdownOpen((o) => !o)}
                   className="mt-0.5 w-full cursor-pointer rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-left text-slate-100 hover:bg-slate-800"
                 >
-                  {form.cropName.trim() || (
+                  {form.cropAll ? (
+                    "작물 전체"
+                  ) : form.selectedCrops.length > 0 ? (
+                    form.selectedCrops.join(", ")
+                  ) : (
                     <span className="text-slate-500">작물 선택</span>
                   )}
                 </button>
                 {cropDropdownOpen && (
                   <div
-                    className="absolute left-0 right-0 top-full z-30 mt-0.5 overflow-hidden rounded-lg border border-slate-700 bg-slate-900 shadow-xl"
-                    style={{ maxHeight: "calc(var(--item-h, 40px) * 5 + 2px)" }}
+                    className="absolute left-0 right-0 top-full z-30 mt-0.5 max-h-[calc(40px*6+2px)] overflow-hidden rounded-lg border border-slate-700 bg-slate-900 shadow-xl"
                   >
-                    <div className="max-h-[calc(40px*5+2px)] overflow-y-auto overscroll-contain">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setForm((p) => ({ ...p, cropName: "작물 전체" }));
-                          setCropDropdownOpen(false);
-                        }}
-                        className="block w-full px-3 py-2.5 text-left text-slate-100 hover:bg-slate-800"
-                      >
-                        작물 전체
-                      </button>
-                      {autocompleteCrops.map((c) => (
-                        <button
-                          key={c}
-                          type="button"
-                          onClick={() => {
-                            setForm((p) => ({ ...p, cropName: c }));
-                            setCropDropdownOpen(false);
+                    <div className="max-h-[calc(40px*6+2px)] overflow-y-auto overscroll-contain">
+                      <label className="flex cursor-pointer items-center gap-2 px-3 py-2.5 text-left text-slate-100 hover:bg-slate-800">
+                        <input
+                          type="checkbox"
+                          checked={form.cropAll}
+                          onChange={(e) => {
+                            setForm((p) => ({
+                              ...p,
+                              cropAll: e.target.checked,
+                              selectedCrops: e.target.checked ? [] : p.selectedCrops,
+                            }));
                           }}
-                          className="block w-full px-3 py-2.5 text-left text-slate-100 hover:bg-slate-800"
+                          className="h-4 w-4 rounded border-slate-600 bg-slate-800 text-amber-500"
+                        />
+                        작물 전체
+                      </label>
+                      {autocompleteCrops.map((c) => (
+                        <label
+                          key={c}
+                          className="flex cursor-pointer items-center gap-2 px-3 py-2.5 text-left text-slate-100 hover:bg-slate-800"
                         >
+                          <input
+                            type="checkbox"
+                            checked={!form.cropAll && form.selectedCrops.includes(c)}
+                            disabled={form.cropAll}
+                            onChange={(e) => {
+                              if (form.cropAll) return;
+                              setForm((p) => ({
+                                ...p,
+                                selectedCrops: e.target.checked
+                                  ? [...p.selectedCrops, c]
+                                  : p.selectedCrops.filter((x) => x !== c),
+                              }));
+                            }}
+                            className="h-4 w-4 rounded border-slate-600 bg-slate-800 text-amber-500 disabled:opacity-50"
+                          />
                           {c}
-                        </button>
+                        </label>
                       ))}
                     </div>
                     {1 + autocompleteCrops.length > 5 && (
@@ -4503,7 +4531,7 @@ function CertificatePage() {
                 value={form.issueDate}
                 onChange={(v) => setForm((p) => ({ ...p, issueDate: v }))}
                 size="lg"
-                disabled={!form.cropName.trim()}
+                disabled={!form.cropAll && form.selectedCrops.length === 0}
               />
             </div>
             <div className="mt-4 flex gap-2">
@@ -4525,7 +4553,7 @@ function CertificatePage() {
                     form.address.trim() &&
                     idOk &&
                     form.contact.trim() &&
-                    form.cropName.trim();
+                    (form.cropAll || form.selectedCrops.length > 0);
                   if (!ok) return;
                   setIssueConfirmOpen(true);
                 }}
@@ -4534,7 +4562,7 @@ function CertificatePage() {
                   !form.address.trim() ||
                   (form.birthId.length < 8 && !(form.businessNumber && form.businessNumber.length >= 10)) ||
                   !form.contact.trim() ||
-                  !form.cropName.trim()
+                  (!form.cropAll && form.selectedCrops.length === 0)
                 }
                 size="lg"
               >
