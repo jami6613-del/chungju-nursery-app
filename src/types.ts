@@ -24,6 +24,8 @@ export interface Order {
   created_at: string;
   /** 야외 경화 상태로 사용자가 변경한 경우 true */
   outdoor_hardening?: boolean;
+  /** 야외 경화를 시작한 날짜 (YYYY-MM-DD). 야외경화 N일째 계산에 사용 */
+  outdoor_hardening_at?: string | null;
 }
 
 /** 배추와 동일 취급(파종 후 1일 뒤 실내 육묘 전환) */

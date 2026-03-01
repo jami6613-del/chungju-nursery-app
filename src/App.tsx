@@ -607,6 +607,8 @@ function DashboardPage() {
   } | null>(null);
   const [outdoorConfirmOrder, setOutdoorConfirmOrder] = React.useState<Order | null>(null);
   const [outdoorConfirmBusy, setOutdoorConfirmBusy] = React.useState(false);
+  const [outdoorCancelConfirmOrder, setOutdoorCancelConfirmOrder] = React.useState<Order | null>(null);
+  const [outdoorCancelConfirmBusy, setOutdoorCancelConfirmBusy] = React.useState(false);
   const [deleteConfirmOrder, setDeleteConfirmOrder] = React.useState<Order | null>(null);
   const [deleteOrderBusy, setDeleteOrderBusy] = React.useState(false);
   const [deleteOrderError, setDeleteOrderError] = React.useState<string | null>(null);
@@ -854,7 +856,7 @@ function DashboardPage() {
     if (!shippingOnlyOrder || !user) return;
     setShippingOnlyBusy(true);
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("orders")
         .update({
           shipping_date: shippingOnlyDate || null,
@@ -863,10 +865,13 @@ function DashboardPage() {
         .eq("id", shippingOnlyOrder.id)
         .select()
         .single();
+      if (error) throw error;
       if (data) {
         setOrders((prev) => prev.map((o) => (o.id === data.id ? (data as Order) : o)));
       }
       setShippingOnlyOrder(null);
+    } catch {
+      alert("출하 정보 저장에 실패했습니다. 네트워크 연결과 권한을 확인해 주세요.");
     } finally {
       setShippingOnlyBusy(false);
     }
@@ -876,20 +881,50 @@ function DashboardPage() {
     if (!outdoorConfirmOrder || !user) return;
     setOutdoorConfirmBusy(true);
     const orderId = outdoorConfirmOrder.id;
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
     try {
-      await supabase
+      const { error } = await supabase
         .from("orders")
-        .update({ outdoor_hardening: true })
+        .update({ outdoor_hardening: true, outdoor_hardening_at: todayStr })
         .eq("id", orderId);
+      if (error) throw error;
       setOrders((prev) =>
         prev.map((o) =>
-          o.id === orderId ? { ...o, outdoor_hardening: true } : o,
+          o.id === orderId ? { ...o, outdoor_hardening: true, outdoor_hardening_at: todayStr } : o,
         ),
       );
       setOutdoorConfirmOrder(null);
       setPopupOrder(null);
+    } catch {
+      setOutdoorConfirmOrder(null);
+      alert("야외 경화 저장에 실패했습니다. Supabase SQL 에디터에서 supabase-orders-outdoor-hardening.sql 을 실행했는지 확인해 주세요.");
     } finally {
       setOutdoorConfirmBusy(false);
+    }
+  };
+
+  const handleCancelOutdoorHardening = async () => {
+    if (!outdoorCancelConfirmOrder || !user) return;
+    setOutdoorCancelConfirmBusy(true);
+    const orderId = outdoorCancelConfirmOrder.id;
+    try {
+      const { error } = await supabase
+        .from("orders")
+        .update({ outdoor_hardening: false, outdoor_hardening_at: null })
+        .eq("id", orderId);
+      if (error) throw error;
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === orderId ? { ...o, outdoor_hardening: false, outdoor_hardening_at: null } : o,
+        ),
+      );
+      setOutdoorCancelConfirmOrder(null);
+      setPopupOrder(null);
+    } catch {
+      setOutdoorCancelConfirmOrder(null);
+      alert("야외경화 취소 저장에 실패했습니다.");
+    } finally {
+      setOutdoorCancelConfirmBusy(false);
     }
   };
 
@@ -1343,6 +1378,17 @@ function DashboardPage() {
                 const stage = getOrderStage(o, todayStr);
                 const sowingShort = o.sowing_date && o.sowing_date.length >= 10 ? o.sowing_date.slice(5, 10) : (o.sowing_date || "-");
                 const shippingShort = o.shipping_date && o.shipping_date.length >= 10 ? o.shipping_date.slice(5, 10) : (o.shipping_date ? o.shipping_date : "-");
+                const outdoorDays =
+                  stage === "outdoor"
+                    ? o.outdoor_hardening_at
+                      ? Math.max(
+                          1,
+                          Math.floor(
+                            (new Date(todayStr).getTime() - new Date(o.outdoor_hardening_at).getTime()) / 86400000,
+                          ) + 1,
+                        )
+                      : 1
+                    : null;
                 return (
                   <React.Fragment key={o.id}>
                     {isMonthBreak && (
@@ -1367,7 +1413,18 @@ function DashboardPage() {
                         {o.quantity_base}+{o.quantity_extra}
                       </td>
                       <td className="whitespace-nowrap px-1.5 py-1.5 sm:px-3 sm:py-2">{o.tray_type}</td>
-                      <td className="whitespace-nowrap px-1.5 py-1.5 sm:px-3 sm:py-2">{shippingShort}</td>
+                      <td className="whitespace-nowrap px-1.5 py-1.5 sm:px-3 sm:py-2">
+                        {outdoorDays != null ? (
+                          <span
+                            className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-orange-500 text-sm font-bold text-white sm:h-8 sm:w-8"
+                            title={`야외경화 ${outdoorDays}일째`}
+                          >
+                            {outdoorDays}
+                          </span>
+                        ) : (
+                          shippingShort
+                        )}
+                      </td>
                       <td className="whitespace-nowrap px-1.5 py-1.5 sm:px-3 sm:py-2">{o.shipping_quantity ?? "-"}</td>
                       <td className="min-w-0 whitespace-normal px-1.5 py-1.5 text-left sm:max-w-none sm:px-3 sm:py-2 sm:truncate sm:max-w-[4rem]">{o.note ?? ""}</td>
                     </tr>
@@ -1703,7 +1760,7 @@ function DashboardPage() {
               >
                 출하
               </PrimaryButton>
-              {!popupOrder.outdoor_hardening && (
+              {!popupOrder.outdoor_hardening ? (
                 <button
                   type="button"
                   onClick={() => setOutdoorConfirmOrder(popupOrder)}
@@ -1711,6 +1768,15 @@ function DashboardPage() {
                   className="rounded-xl border border-amber-500/70 bg-amber-100/80 px-5 py-3 text-base font-semibold text-slate-800 hover:bg-amber-200/80 disabled:opacity-50"
                 >
                   야외 경화
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setOutdoorCancelConfirmOrder(popupOrder)}
+                  disabled={!canWriteOrders(user)}
+                  className="rounded-xl border border-slate-500/70 bg-slate-200/80 px-5 py-3 text-base font-semibold text-slate-800 hover:bg-slate-300/80 disabled:opacity-50"
+                >
+                  야외경화 취소
                 </button>
               )}
               <button
@@ -1730,6 +1796,40 @@ function DashboardPage() {
                 현재 권한에서는 직접 수정/출하할 수 없습니다.
               </div>
             )}
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        open={outdoorCancelConfirmOrder !== null}
+        onClose={() => {
+          if (!outdoorCancelConfirmBusy) setOutdoorCancelConfirmOrder(null);
+        }}
+        title="야외경화 취소"
+        titleSize="lg"
+      >
+        {outdoorCancelConfirmOrder && (
+          <div className="flex flex-col gap-4 text-base">
+            <p className="text-slate-200">
+              야외 경화 상태를 취소하고 이전 상태로 되돌리시겠습니까?
+            </p>
+            <div className="flex justify-end gap-3">
+              <SecondaryButton
+                onClick={() => {
+                  if (!outdoorCancelConfirmBusy) setOutdoorCancelConfirmOrder(null);
+                }}
+                size="lg"
+              >
+                취소
+              </SecondaryButton>
+              <PrimaryButton
+                onClick={handleCancelOutdoorHardening}
+                disabled={outdoorCancelConfirmBusy}
+                size="lg"
+              >
+                확인
+              </PrimaryButton>
+            </div>
           </div>
         )}
       </Modal>
