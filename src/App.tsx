@@ -4175,6 +4175,7 @@ function CertificatePage() {
   const previewCertRef = React.useRef<HTMLDivElement | null>(null);
   const [issueDateOpen, setIssueDateOpen] = React.useState(false);
   const [cropDropdownOpen, setCropDropdownOpen] = React.useState(false);
+  const cropContainerRef = React.useRef<HTMLDivElement>(null);
   const [stampDataUrl, setStampDataUrl] = React.useState<string>("");
 
   React.useEffect(() => {
@@ -4221,6 +4222,22 @@ function CertificatePage() {
       .filter((c): c is string => !!c && typeof c === "string" && !EXCLUDED_ORDERERS_FROM_AUTOCOMPLETE.has(c));
     return Array.from(new Set([...presetNames, ...fromOrders]));
   }, [orders, presetNames]);
+  React.useEffect(() => {
+    if (!cropDropdownOpen) return;
+    const handler = (e: MouseEvent | TouchEvent) => {
+      const el = cropContainerRef.current;
+      if (!el) return;
+      const target = e.target as Node;
+      if (!el.contains(target)) setCropDropdownOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    document.addEventListener("touchstart", handler, { passive: true });
+    return () => {
+      document.removeEventListener("mousedown", handler);
+      document.removeEventListener("touchstart", handler);
+    };
+  }, [cropDropdownOpen]);
+
   const autocompleteCrops = React.useMemo(() => {
     const cropOrders = ordererForFilter
       ? orders.filter((o) => (o.customer_name ?? "").includes(ordererForFilter))
@@ -4433,7 +4450,7 @@ function CertificatePage() {
             </div>
             <div>
               <span className="mb-2 block text-sm font-semibold text-slate-300">3. 작물정보</span>
-              <div className="relative">
+              <div ref={cropContainerRef} className="relative">
                 <span className="text-xs text-slate-400">품목 (작물 전체 = 해당 기간 전체)</span>
                 <input
                   value={form.cropName}
@@ -4444,52 +4461,41 @@ function CertificatePage() {
                   placeholder="작물 선택"
                 />
                 {cropDropdownOpen && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-10"
-                      aria-hidden
-                      onPointerDown={() => setCropDropdownOpen(false)}
-                    />
-                    <div
-                      className="absolute left-0 right-0 top-full z-20 mt-0.5 overflow-hidden rounded-lg border border-slate-700 bg-slate-900 shadow-xl"
-                      style={{ maxHeight: "calc(var(--item-h, 40px) * 5 + 2px)" }}
-                    >
-                      <div className="max-h-[calc(40px*5+2px)] overflow-y-auto overscroll-contain">
+                  <div
+                    className="absolute left-0 right-0 top-full z-30 mt-0.5 overflow-hidden rounded-lg border border-slate-700 bg-slate-900 shadow-xl"
+                    style={{ maxHeight: "calc(var(--item-h, 40px) * 5 + 2px)" }}
+                  >
+                    <div className="max-h-[calc(40px*5+2px)] overflow-y-auto overscroll-contain">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setForm((p) => ({ ...p, cropName: "작물 전체" }));
+                          setCropDropdownOpen(false);
+                        }}
+                        className="block w-full px-3 py-2.5 text-left text-slate-100 hover:bg-slate-800"
+                      >
+                        작물 전체
+                      </button>
+                      {autocompleteCrops.map((c) => (
                         <button
+                          key={c}
                           type="button"
-                          onPointerDown={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setForm((p) => ({ ...p, cropName: "작물 전체" }));
+                          onClick={() => {
+                            setForm((p) => ({ ...p, cropName: c }));
                             setCropDropdownOpen(false);
                           }}
                           className="block w-full px-3 py-2.5 text-left text-slate-100 hover:bg-slate-800"
                         >
-                          작물 전체
+                          {c}
                         </button>
-                        {autocompleteCrops.map((c) => (
-                          <button
-                            key={c}
-                            type="button"
-                            onPointerDown={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              setForm((p) => ({ ...p, cropName: c }));
-                              setCropDropdownOpen(false);
-                            }}
-                            className="block w-full px-3 py-2.5 text-left text-slate-100 hover:bg-slate-800"
-                          >
-                            {c}
-                          </button>
-                        ))}
-                      </div>
-                      {1 + autocompleteCrops.length > 5 && (
-                        <div className="sticky bottom-0 flex h-6 items-center justify-center border-t border-slate-700 bg-slate-800/90 text-xs text-slate-400">
-                          ↓ 스크롤하여 더 보기
-                        </div>
-                      )}
+                      ))}
                     </div>
-                  </>
+                    {1 + autocompleteCrops.length > 5 && (
+                      <div className="sticky bottom-0 flex h-6 items-center justify-center border-t border-slate-700 bg-slate-800/90 text-xs text-slate-400">
+                        ↓ 스크롤하여 더 보기
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
