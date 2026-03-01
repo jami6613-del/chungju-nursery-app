@@ -4224,18 +4224,14 @@ function CertificatePage() {
   }, [orders, presetNames]);
   React.useEffect(() => {
     if (!cropDropdownOpen) return;
-    const handler = (e: MouseEvent | TouchEvent) => {
+    const handler = (e: MouseEvent) => {
       const el = cropContainerRef.current;
       if (!el) return;
       const target = e.target as Node;
       if (!el.contains(target)) setCropDropdownOpen(false);
     };
     document.addEventListener("mousedown", handler);
-    document.addEventListener("touchstart", handler, { passive: true });
-    return () => {
-      document.removeEventListener("mousedown", handler);
-      document.removeEventListener("touchstart", handler);
-    };
+    return () => document.removeEventListener("mousedown", handler);
   }, [cropDropdownOpen]);
 
   const autocompleteCrops = React.useMemo(() => {
@@ -4452,14 +4448,15 @@ function CertificatePage() {
               <span className="mb-2 block text-sm font-semibold text-slate-300">3. 작물정보</span>
               <div ref={cropContainerRef} className="relative">
                 <span className="text-xs text-slate-400">품목 (작물 전체 = 해당 기간 전체)</span>
-                <input
-                  value={form.cropName}
-                  onChange={(e) => setForm((p) => ({ ...p, cropName: e.target.value }))}
-                  onFocus={() => setCropDropdownOpen(true)}
-                  readOnly
-                  className="mt-0.5 w-full cursor-pointer rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100"
-                  placeholder="작물 선택"
-                />
+                <button
+                  type="button"
+                  onClick={() => setCropDropdownOpen((o) => !o)}
+                  className="mt-0.5 w-full cursor-pointer rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-left text-slate-100 hover:bg-slate-800"
+                >
+                  {form.cropName.trim() || (
+                    <span className="text-slate-500">작물 선택</span>
+                  )}
+                </button>
                 {cropDropdownOpen && (
                   <div
                     className="absolute left-0 right-0 top-full z-30 mt-0.5 overflow-hidden rounded-lg border border-slate-700 bg-slate-900 shadow-xl"
