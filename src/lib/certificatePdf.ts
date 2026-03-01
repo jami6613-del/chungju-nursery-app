@@ -1,5 +1,4 @@
 import type { Order } from "../types";
-import html2pdf from "html2pdf.js";
 
 export interface CertificateInput {
   customerName: string;
@@ -35,6 +34,7 @@ export function ordersToRows(orders: Order[]): CertificateRow[] {
 
 /** HTML 요소를 PDF Blob으로 변환 (한글 지원, 도장 투명 배경) */
 export async function createCertificatePdf(element: HTMLElement): Promise<Blob> {
+  const { default: html2pdf } = await import("html2pdf.js");
   const worker = html2pdf()
     .set({
       margin: 0,

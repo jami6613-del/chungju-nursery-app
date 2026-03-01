@@ -1,4 +1,4 @@
-const CACHE_NAME = "chungju-nursery-cache-v1";
+const CACHE_NAME = "chungju-nursery-cache-v2";
 const OFFLINE_URLS = ["/", "/index.html", "/manifest.json"];
 
 self.addEventListener("install", (event) => {
@@ -7,6 +7,7 @@ self.addEventListener("install", (event) => {
       return cache.addAll(OFFLINE_URLS);
     }),
   );
+  self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
@@ -17,11 +18,20 @@ self.addEventListener("activate", (event) => {
           .filter((name) => name !== CACHE_NAME)
           .map((name) => caches.delete(name)),
       ),
-    ),
+    ).then(() => self.clients.claim()),
   );
 });
 
 self.addEventListener("fetch", (event) => {
+  const isNav = event.request.mode === "navigate" || event.request.destination === "document";
+  if (isNav) {
+    event.respondWith(
+      fetch(event.request)
+        .then((res) => res)
+        .catch(() => caches.match(event.request).then((r) => r || caches.match("/index.html"))),
+    );
+    return;
+  }
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) return cachedResponse;
