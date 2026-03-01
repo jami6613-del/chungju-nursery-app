@@ -32,6 +32,7 @@ import { updateMyName } from "./lib/userApi";
 import { useTouchScroll } from "./hooks/useTouchScroll";
 import { createOrdersExcelBlob } from "./lib/excelExport";
 import { createCertificatePdf, ordersToRows, type CertificateInput } from "./lib/certificatePdf";
+import { CertificateContent } from "./components/CertificateContent";
 
 const TRAY_OPTIONS = ["200", "406", "72", "128", "포트", "105", "164", "직접입력"];
 
@@ -3973,10 +3974,14 @@ function CertificatePage() {
   });
   const [issueConfirmOpen, setIssueConfirmOpen] = React.useState(false);
   const [previewOpen, setPreviewOpen] = React.useState(false);
-  const [previewBlob, setPreviewBlob] = React.useState<Blob | null>(null);
+  const [previewCertData, setPreviewCertData] = React.useState<{
+    input: CertificateInput;
+    rows: ReturnType<typeof ordersToRows>;
+  } | null>(null);
+  const previewCertRef = React.useRef<HTMLDivElement | null>(null);
   const [issueDateOpen, setIssueDateOpen] = React.useState(false);
+  const [cropDropdownOpen, setCropDropdownOpen] = React.useState(false);
   const [stampDataUrl, setStampDataUrl] = React.useState<string>("");
-  const [genBusy, setGenBusy] = React.useState(false);
 
   React.useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
@@ -4006,14 +4011,20 @@ function CertificatePage() {
       if (!sd.startsWith(String(form.year))) return false;
       if (sd < form.dateFrom || sd > form.dateTo) return false;
       if (form.customerName.trim() && !o.customer_name.includes(form.customerName.trim())) return false;
-      if (form.cropName.trim() && form.cropName !== "선택하지 않음" && !o.crop_name.includes(form.cropName.trim())) return false;
+      if (form.cropName.trim() && form.cropName !== "작물 전체" && !o.crop_name.includes(form.cropName.trim())) return false;
       return true;
     });
     return list.sort((a, b) => (b.sowing_date ?? "").localeCompare(a.sowing_date ?? ""));
   }, [orders, form.year, form.dateFrom, form.dateTo, form.customerName, form.cropName]);
 
-  const autocompleteCustomers = React.useMemo(() => Array.from(new Set(orders.map((o) => o.customer_name))), [orders]);
-  const autocompleteCrops = React.useMemo(() => Array.from(new Set(orders.map((o) => o.crop_name))), [orders]);
+  const autocompleteCustomers = React.useMemo(
+    () => Array.from(new Set(orders.map((o) => o.customer_name).filter((c): c is string => !!c && typeof c === "string"))),
+    [orders]
+  );
+  const autocompleteCrops = React.useMemo(
+    () => Array.from(new Set(orders.map((o) => o.crop_name).filter((c): c is string => !!c && typeof c === "string"))),
+    [orders]
+  );
 
   const handleBirthIdChange = (v: string) => {
     const digits = v.replace(/\D/g, "").slice(0, 7);
@@ -4021,55 +4032,50 @@ function CertificatePage() {
     else setForm((p) => ({ ...p, birthId: `${digits.slice(0, 6)}-${digits[6]}` }));
   };
 
-  const handleGenerate = React.useCallback(async () => {
+  const handleGenerate = React.useCallback(() => {
     if (!stampDataUrl) return;
-    setGenBusy(true);
-    try {
-      const input: CertificateInput = {
-        customerName: form.customerName.trim(),
-        address: form.address.trim(),
-        birthId: form.birthId,
-        contact: form.contact.trim(),
-        cropName: form.cropName === "선택하지 않음" ? null : form.cropName.trim() || null,
-        issueDate: form.issueDate,
-      };
-      const rows = ordersToRows(filteredOrders);
-      const blob = await createCertificatePdf(input, rows, stampDataUrl);
-      setPreviewBlob(blob);
-      setIssueConfirmOpen(false);
-      setFormOpen(false);
-      setPreviewOpen(true);
-    } catch (e) {
-      console.error("Certificate PDF error:", e);
-    } finally {
-      setGenBusy(false);
-    }
+    const input: CertificateInput = {
+      customerName: form.customerName.trim(),
+      address: form.address.trim(),
+      birthId: form.birthId,
+      contact: form.contact.trim(),
+      cropName: form.cropName === "작물 전체" ? null : form.cropName.trim() || null,
+      issueDate: form.issueDate,
+    };
+    const rows = ordersToRows(filteredOrders);
+    setPreviewCertData({ input, rows });
+    setIssueConfirmOpen(false);
+    setFormOpen(false);
+    setPreviewOpen(true);
   }, [form, filteredOrders, stampDataUrl]);
 
   const handleIssueConfirm = () => {
     setIssueConfirmOpen(true);
   };
 
-  const handleIssue = React.useCallback(() => {
-    if (!previewBlob) return;
-    const filename = `${form.year}_${form.customerName.trim()}_육묘확인서.pdf`;
-    const file = new File([previewBlob], filename, { type: "application/pdf" });
-    if (typeof navigator !== "undefined" && navigator.share && navigator.canShare?.({ files: [file] })) {
-      navigator.share({ title: filename, files: [file] }).finally(() => {
-        setPreviewOpen(false);
-        setPreviewBlob(null);
-      });
-    } else {
-      const url = URL.createObjectURL(previewBlob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      a.click();
-      URL.revokeObjectURL(url);
+  const handleIssue = React.useCallback(async () => {
+    const el = previewCertRef.current;
+    if (!el || !previewCertData || !stampDataUrl) return;
+    try {
+      const blob = await createCertificatePdf(el);
+      const filename = `${form.year}_${form.customerName.trim()}_육묘확인서.pdf`;
+      const file = new File([blob], filename, { type: "application/pdf" });
+      if (typeof navigator !== "undefined" && navigator.share && navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ title: filename, files: [file] });
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
       setPreviewOpen(false);
-      setPreviewBlob(null);
+      setPreviewCertData(null);
+    } catch (e) {
+      console.error("Certificate PDF error:", e);
     }
-  }, [previewBlob, form.year, form.customerName]);
+  }, [previewCertData, stampDataUrl, form.year, form.customerName]);
 
   if (!user) return <Navigate to="/" replace />;
   return (
@@ -4120,23 +4126,23 @@ function CertificatePage() {
           <div className="flex max-h-[70vh] flex-col gap-3 overflow-y-auto sm:gap-4">
             <div>
               <span className="mb-2 block text-sm font-semibold text-slate-300">1. 기간 설정</span>
-              <div className="flex flex-wrap gap-2">
-                <div className="flex-1 min-w-[8rem]">
-                  <span className="text-xs text-slate-400">연도</span>
-                  <select
-                    value={form.year}
-                    onChange={(e) => setForm((p) => ({ ...p, year: Number(e.target.value) }))}
-                    className="mt-0.5 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100"
-                  >
-                    {availableYears.map((y) => (
-                      <option key={y} value={y}>{y}년</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="flex-1 min-w-[8rem]">
+              <div className="mb-3 flex w-full gap-2">
+                <span className="text-xs text-slate-400">연도</span>
+                <select
+                  value={form.year}
+                  onChange={(e) => setForm((p) => ({ ...p, year: Number(e.target.value) }))}
+                  className="flex-1 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100"
+                >
+                  {availableYears.map((y) => (
+                    <option key={y} value={y}>{y}년</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex gap-2">
+                <div className="flex-1 min-w-0">
                   <DateWheel label="시작일" value={form.dateFrom} onChange={(v) => setForm((p) => ({ ...p, dateFrom: v }))} size="lg" />
                 </div>
-                <div className="flex-1 min-w-[8rem]">
+                <div className="flex-1 min-w-0">
                   <DateWheel label="종료일" value={form.dateTo} onChange={(v) => setForm((p) => ({ ...p, dateTo: v }))} size="lg" />
                 </div>
               </div>
@@ -4144,20 +4150,34 @@ function CertificatePage() {
             <div>
               <span className="mb-2 block text-sm font-semibold text-slate-300">2. 고객정보</span>
               <div className="flex flex-col gap-2">
-                <div>
+                <div className="relative">
                   <span className="text-xs text-slate-400">성명 (주문자 자동완성)</span>
                   <input
                     value={form.customerName}
                     onChange={(e) => setForm((p) => ({ ...p, customerName: e.target.value }))}
-                    list="cert-customers"
+                    onFocus={(e) => e.target.select?.()}
                     className="mt-0.5 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100"
                     placeholder="주문자명"
+                    autoComplete="off"
                   />
-                  <datalist id="cert-customers">
-                    {autocompleteCustomers.map((c) => (
-                      <option key={c} value={c} />
-                    ))}
-                  </datalist>
+                  {form.customerName.trim().length >= 1 &&
+                    !autocompleteCustomers.includes(form.customerName.trim()) && (
+                    <div className="absolute left-0 right-0 top-full z-20 mt-0.5 max-h-40 overflow-auto rounded-lg border border-slate-700 bg-slate-900 shadow-xl">
+                      {autocompleteCustomers
+                        .filter((c) => c.includes(form.customerName.trim()))
+                        .slice(0, 10)
+                        .map((c) => (
+                          <button
+                            key={c}
+                            type="button"
+                            onClick={() => setForm((p) => ({ ...p, customerName: c }))}
+                            className="block w-full px-3 py-2 text-left text-slate-100 hover:bg-slate-800"
+                          >
+                            {c}
+                          </button>
+                        ))}
+                    </div>
+                  )}
                 </div>
                 <TextField label="주소" value={form.address} onChange={(v) => setForm((p) => ({ ...p, address: v }))} size="lg" />
                 <div>
@@ -4166,7 +4186,7 @@ function CertificatePage() {
                     value={form.birthId}
                     onChange={(e) => handleBirthIdChange(e.target.value)}
                     className="mt-0.5 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100"
-                    placeholder="520602-0******"
+                    placeholder="000000-0******"
                     maxLength={9}
                     inputMode="numeric"
                   />
@@ -4176,21 +4196,60 @@ function CertificatePage() {
             </div>
             <div>
               <span className="mb-2 block text-sm font-semibold text-slate-300">3. 작물정보</span>
-              <div>
-                <span className="text-xs text-slate-400">품목 (선택하지 않음 = 해당 기간 전체)</span>
+              <div className="relative">
+                <span className="text-xs text-slate-400">품목 (작물 전체 = 해당 기간 전체)</span>
                 <input
                   value={form.cropName}
                   onChange={(e) => setForm((p) => ({ ...p, cropName: e.target.value }))}
-                  list="cert-crops"
-                  className="mt-0.5 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100"
-                  placeholder="작물명 또는 '선택하지 않음'"
+                  onFocus={() => setCropDropdownOpen(true)}
+                  readOnly
+                  className="mt-0.5 w-full cursor-pointer rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100"
+                  placeholder="작물 선택"
                 />
-                <datalist id="cert-crops">
-                  <option value="선택하지 않음" />
-                  {autocompleteCrops.map((c) => (
-                    <option key={c} value={c} />
-                  ))}
-                </datalist>
+                {cropDropdownOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-10"
+                      aria-hidden
+                      onClick={() => setCropDropdownOpen(false)}
+                    />
+                    <div
+                      className="absolute left-0 right-0 top-full z-20 mt-0.5 overflow-hidden rounded-lg border border-slate-700 bg-slate-900 shadow-xl"
+                      style={{ maxHeight: "calc(var(--item-h, 40px) * 5 + 2px)" }}
+                    >
+                      <div className="max-h-[calc(40px*5+2px)] overflow-y-auto overscroll-contain">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setForm((p) => ({ ...p, cropName: "작물 전체" }));
+                            setCropDropdownOpen(false);
+                          }}
+                          className="block w-full px-3 py-2.5 text-left text-slate-100 hover:bg-slate-800"
+                        >
+                          작물 전체
+                        </button>
+                        {autocompleteCrops.map((c) => (
+                          <button
+                            key={c}
+                            type="button"
+                            onClick={() => {
+                              setForm((p) => ({ ...p, cropName: c }));
+                              setCropDropdownOpen(false);
+                            }}
+                            className="block w-full px-3 py-2.5 text-left text-slate-100 hover:bg-slate-800"
+                          >
+                            {c}
+                          </button>
+                        ))}
+                      </div>
+                      {1 + autocompleteCrops.length > 5 && (
+                        <div className="sticky bottom-0 flex h-6 items-center justify-center border-t border-slate-700 bg-slate-800/90 text-xs text-slate-400">
+                          ↓ 스크롤하여 더 보기
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
             <div>
@@ -4222,10 +4281,8 @@ function CertificatePage() {
           <div className="flex gap-2">
             <SecondaryButton onClick={() => setIssueConfirmOpen(false)} size="lg">취소</SecondaryButton>
             <PrimaryButton
-              onClick={async () => {
-                await handleGenerate();
-              }}
-              disabled={genBusy || !stampDataUrl}
+              onClick={handleGenerate}
+              disabled={!stampDataUrl}
               size="lg"
             >
               {genBusy ? "생성 중..." : "확인"}
@@ -4236,7 +4293,7 @@ function CertificatePage() {
       )}
 
       {createPortal(
-        <Modal open={previewOpen} onClose={() => { setPreviewOpen(false); setPreviewBlob(null); }} title="육묘확인서 미리보기" titleSize="lg">
+        <Modal open={previewOpen} onClose={() => { setPreviewOpen(false); setPreviewCertData(null); }} title="육묘확인서 미리보기" titleSize="lg">
           <div className="relative">
             <div className="absolute right-0 top-0 z-10">
               <button
@@ -4247,13 +4304,16 @@ function CertificatePage() {
                 발급
               </button>
             </div>
-            <div className="max-h-[70vh] overflow-y-auto pt-12">
-              {previewBlob && (
-                <iframe
-                  src={URL.createObjectURL(previewBlob)}
-                  title="육묘확인서 미리보기"
-                  className="h-[70vh] w-full min-h-[400px] border-0"
-                />
+            <div className="max-h-[70vh] overflow-y-auto overflow-x-auto pt-12">
+              {previewCertData && stampDataUrl && (
+                <div className="flex justify-center bg-slate-800 p-4">
+                  <CertificateContent
+                    input={previewCertData.input}
+                    rows={previewCertData.rows}
+                    stampDataUrl={stampDataUrl}
+                    containerRef={previewCertRef}
+                  />
+                </div>
               )}
             </div>
           </div>
