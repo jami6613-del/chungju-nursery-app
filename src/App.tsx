@@ -31,6 +31,7 @@ import { savePushSubscription } from "./lib/pushApi";
 import { updateMyName } from "./lib/userApi";
 import { useTouchScroll } from "./hooks/useTouchScroll";
 import { createOrdersExcelBlob } from "./lib/excelExport";
+import { createCertificatePdf, ordersToRows, type CertificateInput } from "./lib/certificatePdf";
 
 const TRAY_OPTIONS = ["200", "406", "72", "128", "포트", "105", "164", "직접입력"];
 
@@ -3938,12 +3939,138 @@ function PlanningPage() {
 function CertificatePage() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { orders } = useOrders();
   const [now, setNow] = React.useState(() => new Date());
   const [roleInfoOpen, setRoleInfoOpen] = React.useState(false);
+  const [formOpen, setFormOpen] = React.useState(false);
+  const [form, setForm] = React.useState<{
+    year: number;
+    dateFrom: string;
+    dateTo: string;
+    customerName: string;
+    address: string;
+    birthId: string;
+    contact: string;
+    cropName: string;
+    issueDate: string;
+  }>(() => {
+    const t = new Date();
+    const y = t.getFullYear();
+    const m = String(t.getMonth() + 1).padStart(2, "0");
+    const d = String(t.getDate()).padStart(2, "0");
+    const today = `${y}-${m}-${d}`;
+    return {
+      year: y,
+      dateFrom: today,
+      dateTo: today,
+      customerName: "",
+      address: "",
+      birthId: "",
+      contact: "",
+      cropName: "",
+      issueDate: today,
+    };
+  });
+  const [issueConfirmOpen, setIssueConfirmOpen] = React.useState(false);
+  const [previewOpen, setPreviewOpen] = React.useState(false);
+  const [previewBlob, setPreviewBlob] = React.useState<Blob | null>(null);
+  const [issueDateOpen, setIssueDateOpen] = React.useState(false);
+  const [stampDataUrl, setStampDataUrl] = React.useState<string>("");
+  const [genBusy, setGenBusy] = React.useState(false);
+
   React.useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
+
+  React.useEffect(() => {
+    fetch("/stamp.png")
+      .then((r) => r.blob())
+      .then((blob) => {
+        const reader = new FileReader();
+        reader.onloadend = () => setStampDataUrl(reader.result as string);
+        reader.readAsDataURL(blob);
+      })
+      .catch(() => {});
+  }, []);
+
+  const availableYears = React.useMemo(() => {
+    const yrs = new Set(orders.map((o) => (o.sowing_date ?? "").slice(0, 4)).filter(Boolean));
+    const arr = Array.from(yrs).map(Number).filter((n) => !isNaN(n)).sort((a, b) => b - a);
+    return arr.length ? arr : [new Date().getFullYear()];
+  }, [orders]);
+
+  const filteredOrders = React.useMemo(() => {
+    let list = orders.filter((o) => {
+      const sd = o.sowing_date ?? "";
+      if (!sd.startsWith(String(form.year))) return false;
+      if (sd < form.dateFrom || sd > form.dateTo) return false;
+      if (form.customerName.trim() && !o.customer_name.includes(form.customerName.trim())) return false;
+      if (form.cropName.trim() && form.cropName !== "선택하지 않음" && !o.crop_name.includes(form.cropName.trim())) return false;
+      return true;
+    });
+    return list.sort((a, b) => (b.sowing_date ?? "").localeCompare(a.sowing_date ?? ""));
+  }, [orders, form.year, form.dateFrom, form.dateTo, form.customerName, form.cropName]);
+
+  const autocompleteCustomers = React.useMemo(() => Array.from(new Set(orders.map((o) => o.customer_name))), [orders]);
+  const autocompleteCrops = React.useMemo(() => Array.from(new Set(orders.map((o) => o.crop_name))), [orders]);
+
+  const handleBirthIdChange = (v: string) => {
+    const digits = v.replace(/\D/g, "").slice(0, 7);
+    if (digits.length <= 6) setForm((p) => ({ ...p, birthId: digits }));
+    else setForm((p) => ({ ...p, birthId: `${digits.slice(0, 6)}-${digits[6]}` }));
+  };
+
+  const handleGenerate = React.useCallback(async () => {
+    if (!stampDataUrl) return;
+    setGenBusy(true);
+    try {
+      const input: CertificateInput = {
+        customerName: form.customerName.trim(),
+        address: form.address.trim(),
+        birthId: form.birthId,
+        contact: form.contact.trim(),
+        cropName: form.cropName === "선택하지 않음" ? null : form.cropName.trim() || null,
+        issueDate: form.issueDate,
+      };
+      const rows = ordersToRows(filteredOrders);
+      const blob = await createCertificatePdf(input, rows, stampDataUrl);
+      setPreviewBlob(blob);
+      setIssueConfirmOpen(false);
+      setFormOpen(false);
+      setPreviewOpen(true);
+    } catch (e) {
+      console.error("Certificate PDF error:", e);
+    } finally {
+      setGenBusy(false);
+    }
+  }, [form, filteredOrders, stampDataUrl]);
+
+  const handleIssueConfirm = () => {
+    setIssueConfirmOpen(true);
+  };
+
+  const handleIssue = React.useCallback(() => {
+    if (!previewBlob) return;
+    const filename = `${form.year}_${form.customerName.trim()}_육묘확인서.pdf`;
+    const file = new File([previewBlob], filename, { type: "application/pdf" });
+    if (typeof navigator !== "undefined" && navigator.share && navigator.canShare?.({ files: [file] })) {
+      navigator.share({ title: filename, files: [file] }).finally(() => {
+        setPreviewOpen(false);
+        setPreviewBlob(null);
+      });
+    } else {
+      const url = URL.createObjectURL(previewBlob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+      setPreviewOpen(false);
+      setPreviewBlob(null);
+    }
+  }, [previewBlob, form.year, form.customerName]);
+
   if (!user) return <Navigate to="/" replace />;
   return (
     <div className="flex min-h-screen flex-col bg-slate-950 text-slate-100">
@@ -3954,26 +4081,14 @@ function CertificatePage() {
             <div className="text-xs text-slate-400 sm:text-sm">육묘확인서 발급</div>
           </div>
           <div className="flex flex-shrink-0 items-center gap-2.5 text-right text-[0.825rem] sm:gap-3 sm:text-[1.1rem]">
-            <button
-              type="button"
-              onClick={() => setRoleInfoOpen(true)}
-              className="rounded-full bg-slate-800 px-2.5 py-2 text-slate-200 hover:bg-slate-700 sm:px-3.5 sm:py-2.5"
-            >
+            <button type="button" onClick={() => setRoleInfoOpen(true)} className="rounded-full bg-slate-800 px-2.5 py-2 text-slate-200 hover:bg-slate-700 sm:px-3.5 sm:py-2.5">
               {ROLE_LABEL[user.role_level]}
             </button>
-            <button
-              type="button"
-              onClick={() => void signOut()}
-              className="rounded-lg bg-slate-800 px-2.5 py-2 text-slate-200 hover:bg-slate-700 sm:px-3.5 sm:py-2.5"
-            >
+            <button type="button" onClick={() => void signOut()} className="rounded-lg bg-slate-800 px-2.5 py-2 text-slate-200 hover:bg-slate-700 sm:px-3.5 sm:py-2.5">
               로그아웃
             </button>
             <span className="hidden text-slate-400 sm:inline">{formatDateTimeKO(now)}</span>
-            <button
-              type="button"
-              onClick={() => navigate("/menu")}
-              className="rounded-lg bg-slate-800 px-2.5 py-2 text-slate-200 hover:bg-slate-700 sm:px-3.5 sm:py-2.5"
-            >
+            <button type="button" onClick={() => navigate("/menu")} className="rounded-lg bg-slate-800 px-2.5 py-2 text-slate-200 hover:bg-slate-700 sm:px-3.5 sm:py-2.5">
               메인메뉴
             </button>
           </div>
@@ -3982,29 +4097,169 @@ function CertificatePage() {
       <Modal open={roleInfoOpen} title="권한 등급 안내" onClose={() => setRoleInfoOpen(false)}>
         <div className="space-y-2 text-sm text-slate-200">
           {ROLE_LEVELS.map((level) => (
-            <div key={level}>
-              {ROLE_LABEL[level]}
-              {level === user.role_level && (
-                <span className="ml-1 text-amber-400">* 현재 나의 등급입니다.</span>
-              )}
-            </div>
+            <div key={level}>{ROLE_LABEL[level]}{level === user.role_level && <span className="ml-1 text-amber-400">* 현재 나의 등급입니다.</span>}</div>
           ))}
         </div>
-        <p className="mt-4 border-t border-slate-700 pt-3 text-xs text-slate-400">
-          권한에 관한 문의는 최고관리자에게 문의바랍니다 (정효조 / 010-2604-6588)
-        </p>
+        <p className="mt-4 border-t border-slate-700 pt-3 text-xs text-slate-400">권한에 관한 문의는 최고관리자에게 문의바랍니다 (정효조 / 010-2604-6588)</p>
       </Modal>
       <main className="flex flex-1 flex-col items-center justify-center px-6 py-8">
-        <div className="text-sm text-slate-400">
-          추후 파종·출하 데이터를 기반으로 육묘확인서 PDF/출력 기능을 연결할 예정입니다.
-        </div>
-        <Link
-          to="/menu"
-          className="mt-4 rounded-xl border border-slate-700 bg-slate-900 px-4 py-2 text-sm text-slate-100 hover:bg-slate-800"
+        <button
+          type="button"
+          onClick={() => setFormOpen(true)}
+          className="rounded-xl border-2 border-lime-400/80 bg-lime-400/30 px-6 py-4 text-lg font-bold text-lime-100 shadow-[0_0_20px_rgba(134,239,172,0.4)] hover:bg-lime-400/50 sm:rounded-2xl sm:px-8 sm:py-5 sm:text-xl"
         >
+          육묘확인서 발급
+        </button>
+        <Link to="/menu" className="mt-6 rounded-xl border border-slate-700 bg-slate-900 px-4 py-2 text-sm text-slate-100 hover:bg-slate-800">
           메인메뉴로 돌아가기
         </Link>
       </main>
+
+      {createPortal(
+        <Modal open={formOpen} onClose={() => setFormOpen(false)} title="육묘확인서 발급" titleSize="lg">
+          <div className="flex max-h-[70vh] flex-col gap-3 overflow-y-auto sm:gap-4">
+            <div>
+              <span className="mb-2 block text-sm font-semibold text-slate-300">1. 기간 설정</span>
+              <div className="flex flex-wrap gap-2">
+                <div className="flex-1 min-w-[8rem]">
+                  <span className="text-xs text-slate-400">연도</span>
+                  <select
+                    value={form.year}
+                    onChange={(e) => setForm((p) => ({ ...p, year: Number(e.target.value) }))}
+                    className="mt-0.5 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100"
+                  >
+                    {availableYears.map((y) => (
+                      <option key={y} value={y}>{y}년</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex-1 min-w-[8rem]">
+                  <DateWheel label="시작일" value={form.dateFrom} onChange={(v) => setForm((p) => ({ ...p, dateFrom: v }))} size="lg" />
+                </div>
+                <div className="flex-1 min-w-[8rem]">
+                  <DateWheel label="종료일" value={form.dateTo} onChange={(v) => setForm((p) => ({ ...p, dateTo: v }))} size="lg" />
+                </div>
+              </div>
+            </div>
+            <div>
+              <span className="mb-2 block text-sm font-semibold text-slate-300">2. 고객정보</span>
+              <div className="flex flex-col gap-2">
+                <div>
+                  <span className="text-xs text-slate-400">성명 (주문자 자동완성)</span>
+                  <input
+                    value={form.customerName}
+                    onChange={(e) => setForm((p) => ({ ...p, customerName: e.target.value }))}
+                    list="cert-customers"
+                    className="mt-0.5 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100"
+                    placeholder="주문자명"
+                  />
+                  <datalist id="cert-customers">
+                    {autocompleteCustomers.map((c) => (
+                      <option key={c} value={c} />
+                    ))}
+                  </datalist>
+                </div>
+                <TextField label="주소" value={form.address} onChange={(v) => setForm((p) => ({ ...p, address: v }))} size="lg" />
+                <div>
+                  <span className="text-xs text-slate-400">생년월일 (YYYYMMDD-0******)</span>
+                  <input
+                    value={form.birthId}
+                    onChange={(e) => handleBirthIdChange(e.target.value)}
+                    className="mt-0.5 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100"
+                    placeholder="520602-0******"
+                    maxLength={9}
+                    inputMode="numeric"
+                  />
+                </div>
+                <TextField label="연락처" value={form.contact} onChange={(v) => setForm((p) => ({ ...p, contact: v }))} size="lg" />
+              </div>
+            </div>
+            <div>
+              <span className="mb-2 block text-sm font-semibold text-slate-300">3. 작물정보</span>
+              <div>
+                <span className="text-xs text-slate-400">품목 (선택하지 않음 = 해당 기간 전체)</span>
+                <input
+                  value={form.cropName}
+                  onChange={(e) => setForm((p) => ({ ...p, cropName: e.target.value }))}
+                  list="cert-crops"
+                  className="mt-0.5 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100"
+                  placeholder="작물명 또는 '선택하지 않음'"
+                />
+                <datalist id="cert-crops">
+                  <option value="선택하지 않음" />
+                  {autocompleteCrops.map((c) => (
+                    <option key={c} value={c} />
+                  ))}
+                </datalist>
+              </div>
+            </div>
+            <div>
+              <span className="mb-2 block text-sm font-semibold text-slate-300">4. 발급일자</span>
+              <DateWheel label="발급일" value={form.issueDate} onChange={(v) => setForm((p) => ({ ...p, issueDate: v }))} size="lg" />
+            </div>
+            <div className="mt-4 flex gap-2">
+              <SecondaryButton onClick={() => setFormOpen(false)} size="lg">취소</SecondaryButton>
+              <PrimaryButton
+                onClick={() => {
+                  const ok = form.customerName.trim() && form.address.trim() && form.birthId.length >= 8 && form.contact.trim();
+                  if (!ok) return;
+                  setIssueConfirmOpen(true);
+                }}
+                disabled={!form.customerName.trim() || !form.address.trim() || form.birthId.length < 8 || !form.contact.trim()}
+                size="lg"
+              >
+                발급
+              </PrimaryButton>
+            </div>
+          </div>
+        </Modal>,
+        document.body,
+      )}
+
+      {createPortal(
+        <Modal open={issueConfirmOpen} onClose={() => setIssueConfirmOpen(false)} title="육묘확인서 발급">
+          <p className="mb-4 text-base text-slate-200">육묘확인서를 발급합니다</p>
+          <div className="flex gap-2">
+            <SecondaryButton onClick={() => setIssueConfirmOpen(false)} size="lg">취소</SecondaryButton>
+            <PrimaryButton
+              onClick={async () => {
+                await handleGenerate();
+              }}
+              disabled={genBusy || !stampDataUrl}
+              size="lg"
+            >
+              {genBusy ? "생성 중..." : "확인"}
+            </PrimaryButton>
+          </div>
+        </Modal>,
+        document.body,
+      )}
+
+      {createPortal(
+        <Modal open={previewOpen} onClose={() => { setPreviewOpen(false); setPreviewBlob(null); }} title="육묘확인서 미리보기" titleSize="lg">
+          <div className="relative">
+            <div className="absolute right-0 top-0 z-10">
+              <button
+                type="button"
+                onClick={handleIssue}
+                className="rounded-xl border-2 border-lime-400/80 bg-lime-400/40 px-5 py-2.5 font-bold text-lime-950 shadow-[0_0_12px_rgba(134,239,172,0.5)] hover:bg-lime-400/60"
+              >
+                발급
+              </button>
+            </div>
+            <div className="max-h-[70vh] overflow-y-auto pt-12">
+              {previewBlob && (
+                <iframe
+                  src={URL.createObjectURL(previewBlob)}
+                  title="육묘확인서 미리보기"
+                  className="h-[70vh] w-full min-h-[400px] border-0"
+                />
+              )}
+            </div>
+          </div>
+        </Modal>,
+        document.body,
+      )}
     </div>
   );
 }
