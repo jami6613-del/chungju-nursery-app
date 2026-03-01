@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 
 const FRICTION = 0.92;
 const MIN_VELOCITY = 0.5;
+const HORIZONTAL_SCROLL_MULTIPLIER = 2.2;
 
 /**
  * 모바일에서 overflow 스크롤이 동작하지 않을 때 터치로 수동 스크롤 + 관성(모멘텀) fallback
@@ -44,7 +45,7 @@ export function useTouchScroll<T extends HTMLElement>(ref: React.RefObject<T | n
 
     if (dt > 0) {
       velY.current = dy / dt;
-      velX.current = dx / dt;
+      velX.current = (dx / dt) * HORIZONTAL_SCROLL_MULTIPLIER;
     }
 
     const canScrollY = el.scrollHeight > el.clientHeight;
@@ -55,7 +56,7 @@ export function useTouchScroll<T extends HTMLElement>(ref: React.RefObject<T | n
         el.scrollTop += dy;
         e.preventDefault();
       } else if (Math.abs(dx) > Math.abs(dy) && canScrollX) {
-        el.scrollLeft += dx;
+        el.scrollLeft += dx * HORIZONTAL_SCROLL_MULTIPLIER;
         e.preventDefault();
       }
     }

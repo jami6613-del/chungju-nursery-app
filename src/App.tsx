@@ -941,7 +941,7 @@ function DashboardPage() {
         </p>
       </Modal>
 
-      <main className="flex min-h-0 flex-1 flex-col overflow-hidden px-3 pb-24 pt-3">
+      <main className="flex min-h-0 flex-1 flex-col overflow-hidden px-3 pt-3 pb-3">
         {user.is_approved ? null : (
           <div className="mb-3 shrink-0 rounded-xl border border-yellow-600 bg-yellow-950/40 px-4 py-3 text-base text-yellow-200">
             관리자 승인 대기 중입니다. 읽기 전용으로만 이용 가능합니다.
@@ -1167,13 +1167,13 @@ function DashboardPage() {
 
         <div
           ref={listScrollRef}
-          className="order-list-scroll-area min-h-0 flex-1 overflow-auto rounded-xl border border-slate-800 bg-slate-900 pb-20 sm:rounded-2xl sm:pb-24"
+          className="order-list-scroll-area min-h-0 flex-1 overflow-auto rounded-xl border border-slate-800 bg-slate-900 sm:rounded-2xl"
         >
           <table className="order-list-table min-w-full text-[0.75rem] sm:text-base sm:table-auto">
             <colgroup>
               <col className="order-col-fit" />
               <col className="order-col-fit" />
-              <col className="order-col-fit" />
+              <col className="order-col-fit order-col-crop" />
               <col className="order-col-fit" />
               <col className="order-col-fit" />
               <col className="order-col-fit" />
@@ -1181,7 +1181,7 @@ function DashboardPage() {
               <col className="order-col-fit" />
               <col className="order-col-note" />
             </colgroup>
-            <thead className="bg-slate-950/60 text-[0.7rem] uppercase tracking-tight text-slate-400 sm:text-sm sm:tracking-normal">
+            <thead className="order-list-thead sticky top-0 z-10 bg-slate-950/95 text-[0.7rem] uppercase tracking-tight text-slate-400 backdrop-blur sm:text-sm sm:tracking-normal">
               <tr>
                 <th className="whitespace-nowrap px-1.5 py-2 text-left sm:px-3 sm:py-3">파종일</th>
                 <th className="whitespace-nowrap px-1.5 py-2 text-left sm:px-3 sm:py-3">주문자</th>
@@ -1238,7 +1238,7 @@ function DashboardPage() {
                     >
                       <td className="whitespace-nowrap px-1.5 py-1.5 sm:px-3 sm:py-2">{sowingShort}</td>
                       <td className="min-w-0 max-w-[3.5rem] truncate px-1.5 py-1.5 sm:max-w-none sm:px-3 sm:py-2">{o.customer_name}</td>
-                      <td className="min-w-0 max-w-[3.5rem] truncate px-1.5 py-1.5 sm:max-w-none sm:px-3 sm:py-2">{o.crop_name}</td>
+                      <td className="order-td-crop min-w-0 truncate px-1.5 py-1.5 sm:max-w-none sm:px-3 sm:py-2">{o.crop_name}</td>
                       <td className="whitespace-nowrap px-1.5 py-1.5 sm:px-3 sm:py-2">{o.seed_owner}</td>
                       <td className="whitespace-nowrap px-1.5 py-1.5 sm:px-3 sm:py-2">
                         {o.quantity_base}+{o.quantity_extra}
