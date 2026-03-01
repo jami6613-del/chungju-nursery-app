@@ -1416,6 +1416,8 @@ function DashboardPage() {
         document.body,
       )}
 
+      {createPortal(
+        <>
       <Modal
         open={popupOrder !== null}
         onClose={() => setPopupOrder(null)}
@@ -1557,21 +1559,6 @@ function DashboardPage() {
         )}
       </Modal>
 
-      {noShippingToast && (
-        <div
-          className="pointer-events-none fixed z-[70] rounded-xl border border-slate-600 bg-slate-800 px-4 py-3 text-base text-slate-100 shadow-xl transition-opacity duration-300"
-          style={{
-            left: noShippingToast.x,
-            top: noShippingToast.y,
-            transform: "translate(-50%, -100%)",
-            opacity: noShippingToast.visible ? 1 : 0,
-          }}
-          aria-live="polite"
-        >
-          출하정보가 없어서 수정이 불가합니다
-        </div>
-      )}
-
       <Modal
         open={shippingOnlyOrder !== null}
         onClose={() => {
@@ -1630,6 +1617,24 @@ function DashboardPage() {
           </div>
         )}
       </Modal>
+        </>,
+        document.body,
+      )}
+
+      {noShippingToast && (
+        <div
+          className="pointer-events-none fixed z-[70] rounded-xl border border-slate-600 bg-slate-800 px-4 py-3 text-base text-slate-100 shadow-xl transition-opacity duration-300"
+          style={{
+            left: noShippingToast.x,
+            top: noShippingToast.y,
+            transform: "translate(-50%, -100%)",
+            opacity: noShippingToast.visible ? 1 : 0,
+          }}
+          aria-live="polite"
+        >
+          출하정보가 없어서 수정이 불가합니다
+        </div>
+      )}
     </div>
   );
 }
