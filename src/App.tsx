@@ -609,6 +609,8 @@ function DashboardPage() {
   const [outdoorConfirmBusy, setOutdoorConfirmBusy] = React.useState(false);
   const [outdoorCancelConfirmOrder, setOutdoorCancelConfirmOrder] = React.useState<Order | null>(null);
   const [outdoorCancelConfirmBusy, setOutdoorCancelConfirmBusy] = React.useState(false);
+  const [shippingCancelConfirmOrder, setShippingCancelConfirmOrder] = React.useState<Order | null>(null);
+  const [shippingCancelConfirmBusy, setShippingCancelConfirmBusy] = React.useState(false);
   const [deleteConfirmOrder, setDeleteConfirmOrder] = React.useState<Order | null>(null);
   const [deleteOrderBusy, setDeleteOrderBusy] = React.useState(false);
   const [deleteOrderError, setDeleteOrderError] = React.useState<string | null>(null);
@@ -900,6 +902,31 @@ function DashboardPage() {
       alert("야외 경화 저장에 실패했습니다. Supabase SQL 에디터에서 supabase-orders-outdoor-hardening.sql 을 실행했는지 확인해 주세요.");
     } finally {
       setOutdoorConfirmBusy(false);
+    }
+  };
+
+  const handleCancelShipping = async () => {
+    if (!shippingCancelConfirmOrder || !user) return;
+    setShippingCancelConfirmBusy(true);
+    const orderId = shippingCancelConfirmOrder.id;
+    try {
+      const { error } = await supabase
+        .from("orders")
+        .update({ shipping_date: null, shipping_quantity: null })
+        .eq("id", orderId);
+      if (error) throw error;
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === orderId ? { ...o, shipping_date: null, shipping_quantity: null } : o,
+        ),
+      );
+      setShippingCancelConfirmOrder(null);
+      setPopupOrder(null);
+    } catch {
+      setShippingCancelConfirmOrder(null);
+      alert("출하 취소에 실패했습니다.");
+    } finally {
+      setShippingCancelConfirmBusy(false);
     }
   };
 
@@ -1416,7 +1443,7 @@ function DashboardPage() {
                       <td className="whitespace-nowrap px-1.5 py-1.5 sm:px-3 sm:py-2">
                         {outdoorDays != null ? (
                           <span
-                            className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-orange-500 text-sm font-bold text-white sm:h-8 sm:w-8"
+                            className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1 text-xs font-bold leading-none text-white"
                             title={`야외경화 ${outdoorDays}일째`}
                           >
                             {outdoorDays}
@@ -1753,13 +1780,24 @@ function DashboardPage() {
               <SecondaryButton onClick={startEditFromPopup} disabled={!canWriteOrders(user)} size="lg">
                 수정
               </SecondaryButton>
-              <PrimaryButton
-                size="lg"
-                onClick={() => openShippingOnly(popupOrder)}
-                disabled={!canWriteOrders(user)}
-              >
-                출하
-              </PrimaryButton>
+              {popupOrder.shipping_date && popupOrder.shipping_quantity != null && String(popupOrder.shipping_quantity).trim() !== "" ? (
+                <button
+                  type="button"
+                  onClick={() => setShippingCancelConfirmOrder(popupOrder)}
+                  disabled={!canWriteOrders(user)}
+                  className="rounded-xl border border-slate-500/70 bg-slate-200/80 px-5 py-3 text-base font-semibold text-slate-800 hover:bg-slate-300/80 disabled:opacity-50"
+                >
+                  출하 취소
+                </button>
+              ) : (
+                <PrimaryButton
+                  size="lg"
+                  onClick={() => openShippingOnly(popupOrder)}
+                  disabled={!canWriteOrders(user)}
+                >
+                  출하
+                </PrimaryButton>
+              )}
               {!popupOrder.outdoor_hardening ? (
                 <button
                   type="button"
@@ -1796,6 +1834,40 @@ function DashboardPage() {
                 현재 권한에서는 직접 수정/출하할 수 없습니다.
               </div>
             )}
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        open={shippingCancelConfirmOrder !== null}
+        onClose={() => {
+          if (!shippingCancelConfirmBusy) setShippingCancelConfirmOrder(null);
+        }}
+        title="출하 취소"
+        titleSize="lg"
+      >
+        {shippingCancelConfirmOrder && (
+          <div className="flex flex-col gap-4 text-base">
+            <p className="text-slate-200">
+              출하 완료 상태를 취소하고 이전 상태로 되돌리시겠습니까? 출하일과 출하수량이 삭제됩니다.
+            </p>
+            <div className="flex justify-end gap-3">
+              <SecondaryButton
+                onClick={() => {
+                  if (!shippingCancelConfirmBusy) setShippingCancelConfirmOrder(null);
+                }}
+                size="lg"
+              >
+                취소
+              </SecondaryButton>
+              <PrimaryButton
+                onClick={handleCancelShipping}
+                disabled={shippingCancelConfirmBusy}
+                size="lg"
+              >
+                확인
+              </PrimaryButton>
+            </div>
           </div>
         )}
       </Modal>
