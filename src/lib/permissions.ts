@@ -42,3 +42,8 @@ export function canEditDailyTodos(user: AppUser | null) {
   return user?.role_level === 0 || user?.role_level === 1;
 }
 
+/** 육묘확인서 발급: Lv0, Lv1만 (Lv2, Lv3은 입력/미리보기 가능하나 최종 발급 불가) */
+export function canIssueCertificate(user: AppUser | null) {
+  return user?.role_level === 0 || user?.role_level === 1;
+}
+

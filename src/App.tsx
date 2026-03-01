@@ -25,7 +25,7 @@ import { DateWheel } from "./components/DateWheel";
 import { Modal } from "./components/Modal";
 import { TextField, SelectField, PrimaryButton, SecondaryButton } from "./components/ui";
 import { fetchDailyTodos, saveDailyTodos } from "./lib/dailyTodosApi";
-import { ROLE_LABEL, ROLE_LEVELS, canRequestEdits, canWriteOrders, canReflectToPlan, canAddPlanItem, canEditDailyTodos, canExportExcel } from "./lib/permissions";
+import { ROLE_LABEL, ROLE_LEVELS, canRequestEdits, canWriteOrders, canReflectToPlan, canAddPlanItem, canEditDailyTodos, canExportExcel, canIssueCertificate } from "./lib/permissions";
 import { fetchPendingApprovalUsers, approveUser, fetchApprovedUsers } from "./lib/approvalApi";
 import { savePushSubscription } from "./lib/pushApi";
 import { updateMyName } from "./lib/userApi";
@@ -4054,6 +4054,10 @@ function CertificatePage() {
   };
 
   const handleIssue = React.useCallback(async () => {
+    if (!canIssueCertificate(user)) {
+      alert("권한이 없습니다. 최고관리자에게 문의하세요");
+      return;
+    }
     const el = previewCertRef.current;
     if (!el || !previewCertData || !stampDataUrl) return;
     try {
@@ -4075,7 +4079,7 @@ function CertificatePage() {
     } catch (e) {
       console.error("Certificate PDF error:", e);
     }
-  }, [previewCertData, stampDataUrl, form.year, form.customerName]);
+  }, [user, previewCertData, stampDataUrl, form.year, form.customerName]);
 
   if (!user) return <Navigate to="/" replace />;
   return (

@@ -32,9 +32,10 @@ export function CertificateContent({ input, rows, stampDataUrl, containerRef }: 
       <h1
         style={{
           margin: "0 0 12px 0",
-          fontSize: "22pt",
+          fontSize: "29pt",
           fontWeight: "bold",
           textAlign: "center",
+          letterSpacing: "0.25em",
         }}
       >
         친환경육묘내역서
@@ -44,16 +45,16 @@ export function CertificateContent({ input, rows, stampDataUrl, containerRef }: 
       <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 12 }}>
         <tbody>
           <tr>
-            <td style={{ width: "12%", padding: "4px 6px", backgroundColor: HEADER_BG, border: "1px solid #000", textAlign: "center", verticalAlign: "middle", fontSize: "11pt" }}>성명</td>
-            <td style={{ width: "38%", padding: "4px 6px", border: "1px solid #000", textAlign: "center", verticalAlign: "middle", fontSize: "11pt" }}>{input.customerName}</td>
-            <td style={{ width: "12%", padding: "4px 6px", backgroundColor: HEADER_BG, border: "1px solid #000", textAlign: "center", verticalAlign: "middle", fontSize: "11pt" }}>주소</td>
-            <td style={{ width: "38%", padding: "4px 6px", border: "1px solid #000", textAlign: "center", verticalAlign: "middle", fontSize: "11pt" }}>{input.address}</td>
+            <td style={{ width: "12%", padding: "8px 6px", backgroundColor: HEADER_BG, border: "1px solid #000", textAlign: "center", verticalAlign: "middle", fontSize: "15pt" }}>성명</td>
+            <td style={{ width: "38%", padding: "8px 6px", border: "1px solid #000", textAlign: "left", verticalAlign: "middle", fontSize: "15pt" }}>{input.customerName}</td>
+            <td style={{ width: "12%", padding: "8px 6px", backgroundColor: HEADER_BG, border: "1px solid #000", textAlign: "center", verticalAlign: "middle", fontSize: "15pt" }}>주소</td>
+            <td style={{ width: "38%", padding: "8px 6px", border: "1px solid #000", textAlign: "left", verticalAlign: "middle", fontSize: "15pt" }}>{input.address}</td>
           </tr>
           <tr>
-            <td style={{ padding: "4px 6px", backgroundColor: HEADER_BG, border: "1px solid #000", textAlign: "center", verticalAlign: "middle", fontSize: "11pt" }}>주민번호</td>
-            <td style={{ padding: "4px 6px", border: "1px solid #000", textAlign: "center", verticalAlign: "middle", fontSize: "11pt" }}>{input.birthId}</td>
-            <td style={{ padding: "4px 6px", backgroundColor: HEADER_BG, border: "1px solid #000", textAlign: "center", verticalAlign: "middle", fontSize: "11pt" }}>연락처</td>
-            <td style={{ padding: "4px 6px", border: "1px solid #000", textAlign: "center", verticalAlign: "middle", fontSize: "11pt" }}>{input.contact}</td>
+            <td style={{ padding: "8px 6px", backgroundColor: HEADER_BG, border: "1px solid #000", textAlign: "center", verticalAlign: "middle", fontSize: "15pt" }}>생년월일</td>
+            <td style={{ padding: "8px 6px", border: "1px solid #000", textAlign: "left", verticalAlign: "middle", fontSize: "15pt" }}>{input.birthId}</td>
+            <td style={{ padding: "8px 6px", backgroundColor: HEADER_BG, border: "1px solid #000", textAlign: "center", verticalAlign: "middle", fontSize: "15pt" }}>연락처</td>
+            <td style={{ padding: "8px 6px", border: "1px solid #000", textAlign: "left", verticalAlign: "middle", fontSize: "15pt" }}>{input.contact}</td>
           </tr>
         </tbody>
       </table>
@@ -66,12 +67,13 @@ export function CertificateContent({ input, rows, stampDataUrl, containerRef }: 
               <th
                 key={h}
                 style={{
-                  padding: "6px 4px",
+                  padding: "8px 4px",
                   backgroundColor: HEADER_BG,
                   border: "1px solid #000",
-                  fontSize: "11pt",
+                  fontSize: "15pt",
                   fontWeight: "bold",
                   textAlign: "center",
+                  verticalAlign: "middle",
                 }}
               >
                 {h}
@@ -82,18 +84,18 @@ export function CertificateContent({ input, rows, stampDataUrl, containerRef }: 
         <tbody>
           {rows.length === 0 ? (
             <tr>
-              <td colSpan={5} style={{ padding: 8, border: "1px solid #000", textAlign: "center", fontSize: "10pt" }}>
+              <td colSpan={5} style={{ padding: 10, border: "1px solid #000", textAlign: "center", fontSize: "14pt", verticalAlign: "middle" }}>
                 (데이터 없음)
               </td>
             </tr>
           ) : (
             rows.map((row, i) => (
               <tr key={i}>
-                <td style={{ padding: "5px 4px", border: "1px solid #000", textAlign: "center", fontSize: "10pt" }}>{row.품목}</td>
-                <td style={{ padding: "5px 4px", border: "1px solid #000", textAlign: "center", fontSize: "10pt" }}>{row["트레이(구)"]}</td>
-                <td style={{ padding: "5px 4px", border: "1px solid #000", textAlign: "center", fontSize: "10pt" }}>{row.수량}</td>
-                <td style={{ padding: "5px 4px", border: "1px solid #000", textAlign: "center", fontSize: "10pt" }}>{row.파종일}</td>
-                <td style={{ padding: "5px 4px", border: "1px solid #000", textAlign: "center", fontSize: "10pt" }}>{row.출하일}</td>
+                <td style={{ padding: "8px 4px", border: "1px solid #000", textAlign: "center", fontSize: "14pt", verticalAlign: "middle" }}>{row.품목}</td>
+                <td style={{ padding: "8px 4px", border: "1px solid #000", textAlign: "center", fontSize: "14pt", verticalAlign: "middle" }}>{row["트레이(구)"]}</td>
+                <td style={{ padding: "8px 4px", border: "1px solid #000", textAlign: "center", fontSize: "14pt", verticalAlign: "middle" }}>{row.수량}</td>
+                <td style={{ padding: "8px 4px", border: "1px solid #000", textAlign: "center", fontSize: "14pt", verticalAlign: "middle" }}>{row.파종일}</td>
+                <td style={{ padding: "8px 4px", border: "1px solid #000", textAlign: "center", fontSize: "14pt", verticalAlign: "middle" }}>{row.출하일}</td>
               </tr>
             ))
           )}
@@ -113,12 +115,13 @@ export function CertificateContent({ input, rows, stampDataUrl, containerRef }: 
                 <td
                   key={ci}
                   style={{
-                    padding: "5px 6px",
+                    padding: "8px 6px",
                     border: "1px solid #000",
                     backgroundColor: ri === 0 ? HEADER_BG : "#fff",
                     fontWeight: ri === 0 ? "bold" : "normal",
-                    fontSize: ri === 0 ? "11pt" : "10pt",
+                    fontSize: ri === 0 ? "15pt" : "14pt",
                     textAlign: "center",
+                    verticalAlign: "middle",
                   }}
                 >
                   {cell}
