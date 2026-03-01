@@ -4448,7 +4448,7 @@ function CertificatePage() {
                     <div
                       className="fixed inset-0 z-10"
                       aria-hidden
-                      onClick={() => setCropDropdownOpen(false)}
+                      onPointerDown={() => setCropDropdownOpen(false)}
                     />
                     <div
                       className="absolute left-0 right-0 top-full z-20 mt-0.5 overflow-hidden rounded-lg border border-slate-700 bg-slate-900 shadow-xl"
@@ -4457,7 +4457,9 @@ function CertificatePage() {
                       <div className="max-h-[calc(40px*5+2px)] overflow-y-auto overscroll-contain">
                         <button
                           type="button"
-                          onClick={() => {
+                          onPointerDown={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
                             setForm((p) => ({ ...p, cropName: "작물 전체" }));
                             setCropDropdownOpen(false);
                           }}
@@ -4469,7 +4471,9 @@ function CertificatePage() {
                           <button
                             key={c}
                             type="button"
-                            onClick={() => {
+                            onPointerDown={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
                               setForm((p) => ({ ...p, cropName: c }));
                               setCropDropdownOpen(false);
                             }}
