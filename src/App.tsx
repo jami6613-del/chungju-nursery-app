@@ -4472,10 +4472,8 @@ function CertificatePage() {
                   )}
                 </button>
                 {cropDropdownOpen && (
-                  <div
-                    className="absolute left-0 right-0 top-full z-30 mt-0.5 max-h-[calc(40px*6+2px)] overflow-hidden rounded-lg border border-slate-700 bg-slate-900 shadow-xl"
-                  >
-                    <div className="max-h-[calc(40px*6+2px)] overflow-y-auto overscroll-contain">
+                  <div className="absolute left-0 right-0 top-full z-30 mt-0.5 w-full min-w-[12rem] rounded-lg border border-slate-700 bg-slate-900 shadow-xl">
+                    <div className="max-h-[calc(40px*5+2px)] overflow-y-auto overscroll-contain">
                       <label className="flex cursor-pointer items-center gap-2 px-3 py-2.5 text-left text-slate-100 hover:bg-slate-800">
                         <input
                           type="checkbox"
@@ -4515,12 +4513,7 @@ function CertificatePage() {
                         </label>
                       ))}
                     </div>
-                    {1 + autocompleteCrops.length > 5 && (
-                      <div className="sticky bottom-0 flex h-6 items-center justify-center border-t border-slate-700 bg-slate-800/90 text-xs text-slate-400">
-                        ↓ 스크롤하여 더 보기
-                      </div>
-                    )}
-                    <div className="border-t border-slate-700 p-2">
+                    <div className="shrink-0 border-t border-slate-700 p-2">
                       <button
                         type="button"
                         onClick={() => setCropDropdownOpen(false)}
