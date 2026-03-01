@@ -5,6 +5,7 @@ interface DateWheelProps {
   value: string;
   onChange: (value: string) => void;
   size?: "md" | "lg";
+  disabled?: boolean;
 }
 
 const WEEKDAY_KO = ["일", "월", "화", "수", "목", "금", "토"];
@@ -33,6 +34,7 @@ export const DateWheel: React.FC<DateWheelProps> = ({
   value,
   onChange,
   size = "md",
+  disabled = false,
 }) => {
   const isLg = size === "lg";
   const [open, setOpen] = React.useState(false);
@@ -97,8 +99,9 @@ export const DateWheel: React.FC<DateWheelProps> = ({
         <span className="text-slate-200">{label}</span>
         <button
           type="button"
-          onClick={() => setOpen(true)}
-          className={`w-full rounded-xl border border-slate-700 bg-slate-900 text-left text-slate-50 shadow-inner shadow-black/40 focus:border-brand focus:outline-none ${isLg ? "px-4 py-3 text-base" : "px-3 py-2"}`}
+          onClick={() => !disabled && setOpen(true)}
+          disabled={disabled}
+          className={`w-full rounded-xl border border-slate-700 bg-slate-900 text-left text-slate-50 shadow-inner shadow-black/40 focus:border-brand focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:opacity-50 ${isLg ? "px-4 py-3 text-base" : "px-3 py-2"}`}
         >
           {display}
         </button>

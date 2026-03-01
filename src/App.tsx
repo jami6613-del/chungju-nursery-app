@@ -850,7 +850,7 @@ function DashboardPage() {
   const openShippingOnly = (order: Order) => {
     setShippingOnlyOrder(order);
     setShippingOnlyDate(getLocalDateString());
-    setShippingOnlyQty(String(order.quantity_base + order.quantity_extra));
+    setShippingOnlyQty("");
     setPopupOrder(null);
   };
 
@@ -2010,14 +2010,16 @@ function DashboardPage() {
               onChange={setShippingOnlyDate}
               size="lg"
             />
-            <div className="flex flex-col gap-2">
-              <TextField
-                label="출하수량"
-                value={shippingOnlyQty}
-                onChange={setShippingOnlyQty}
-                type="number"
-                size="lg"
-              />
+            <div className="flex items-end gap-2">
+              <div className="w-1/2 min-w-0 shrink-0">
+                <TextField
+                  label="출하수량"
+                  value={shippingOnlyQty}
+                  onChange={setShippingOnlyQty}
+                  type="number"
+                  size="lg"
+                />
+              </div>
               <button
                 type="button"
                 onClick={() =>
@@ -2027,7 +2029,7 @@ function DashboardPage() {
                     ),
                   )
                 }
-                className="rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-base text-slate-100 hover:bg-slate-800"
+                className="shrink-0 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-slate-100 hover:bg-slate-800"
               >
                 파종수량과 동일
               </button>
@@ -4144,18 +4146,7 @@ function CertificatePage() {
   const [now, setNow] = React.useState(() => new Date());
   const [roleInfoOpen, setRoleInfoOpen] = React.useState(false);
   const [formOpen, setFormOpen] = React.useState(false);
-  const [form, setForm] = React.useState<{
-    year: number;
-    dateFrom: string;
-    dateTo: string;
-    customerName: string;
-    address: string;
-    birthId: string;
-    businessNumber: string;
-    contact: string;
-    cropName: string;
-    issueDate: string;
-  }>(() => {
+  const getInitialFormState = React.useCallback(() => {
     const t = new Date();
     const y = t.getFullYear();
     const m = String(t.getMonth() + 1).padStart(2, "0");
@@ -4173,7 +4164,8 @@ function CertificatePage() {
       cropName: "",
       issueDate: today,
     };
-  });
+  }, []);
+  const [form, setForm] = React.useState(getInitialFormState);
   const [issueConfirmOpen, setIssueConfirmOpen] = React.useState(false);
   const [previewOpen, setPreviewOpen] = React.useState(false);
   const [previewCertData, setPreviewCertData] = React.useState<{
@@ -4337,7 +4329,16 @@ function CertificatePage() {
       </main>
 
       {createPortal(
-        <Modal open={formOpen} onClose={() => setFormOpen(false)} title="육묘확인서 발급" titleSize="lg">
+        <Modal
+          open={formOpen}
+          onClose={() => {
+            setFormOpen(false);
+            setForm(getInitialFormState());
+            setCropDropdownOpen(false);
+          }}
+          title="육묘확인서 발급"
+          titleSize="lg"
+        >
           <div className="flex max-h-[70vh] flex-col gap-3 overflow-y-auto sm:gap-4">
             <div>
               <span className="mb-2 block text-sm font-semibold text-slate-300">1. 기간 설정</span>
@@ -4490,14 +4491,34 @@ function CertificatePage() {
             </div>
             <div>
               <span className="mb-2 block text-sm font-semibold text-slate-300">4. 발급일자</span>
-              <DateWheel label="발급일" value={form.issueDate} onChange={(v) => setForm((p) => ({ ...p, issueDate: v }))} size="lg" />
+              <DateWheel
+                label="발급일"
+                value={form.issueDate}
+                onChange={(v) => setForm((p) => ({ ...p, issueDate: v }))}
+                size="lg"
+                disabled={!form.cropName.trim()}
+              />
             </div>
             <div className="mt-4 flex gap-2">
-              <SecondaryButton onClick={() => setFormOpen(false)} size="lg">취소</SecondaryButton>
+              <SecondaryButton
+                onClick={() => {
+                  setFormOpen(false);
+                  setForm(getInitialFormState());
+                  setCropDropdownOpen(false);
+                }}
+                size="lg"
+              >
+                취소
+              </SecondaryButton>
               <PrimaryButton
                 onClick={() => {
                   const idOk = form.birthId.length >= 8 || (form.businessNumber && form.businessNumber.length >= 10);
-                  const ok = form.customerName.trim() && form.address.trim() && idOk && form.contact.trim();
+                  const ok =
+                    form.customerName.trim() &&
+                    form.address.trim() &&
+                    idOk &&
+                    form.contact.trim() &&
+                    form.cropName.trim();
                   if (!ok) return;
                   setIssueConfirmOpen(true);
                 }}
@@ -4505,7 +4526,8 @@ function CertificatePage() {
                   !form.customerName.trim() ||
                   !form.address.trim() ||
                   (form.birthId.length < 8 && !(form.businessNumber && form.businessNumber.length >= 10)) ||
-                  !form.contact.trim()
+                  !form.contact.trim() ||
+                  !form.cropName.trim()
                 }
                 size="lg"
               >
