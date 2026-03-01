@@ -83,9 +83,9 @@ textarea {
   background: rgb(71 85 105);
 }
 
-/* 파종 및 출하현황: 세로 스와이프는 부모 스크롤로, 가로 스와이프만 테이블에서 처리 */
+/* 파종 및 출하현황: 세로·가로 스크롤 모두 테이블 wrapper에서 처리 */
 .order-list-scroll-wrapper {
-  touch-action: pan-x;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* 파종 및 출하현황: 모바일에서 출하수량까지 한 화면, 비고는 가로 스크롤 시에만 넓게 */

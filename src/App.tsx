@@ -690,6 +690,22 @@ function DashboardPage() {
     [filteredOrders, selectedYear],
   );
 
+  const todayStr = getLocalDateString();
+  const stageCounts = React.useMemo(() => {
+    let germination = 0;
+    let indoor = 0;
+    let outdoor = 0;
+    displayOrders.forEach((o) => {
+      const stage = getOrderStage(o, todayStr);
+      const qty = Number(o.quantity_base) + Number(o.quantity_extra);
+      if (stage === "germination") germination += qty;
+      else if (stage === "indoor") indoor += qty;
+      else if (stage === "outdoor") outdoor += qty;
+      // shipped 제외
+    });
+    return { germination, indoor, outdoor };
+  }, [displayOrders, todayStr]);
+
   const handleFormChange = (patch: Partial<OrderFormState>) => {
     setFormState((prev) => ({ ...prev, ...patch }));
   };
@@ -1130,7 +1146,22 @@ function DashboardPage() {
           )}
         </div>
 
-        <div className="order-list-scroll-wrapper overflow-x-auto overflow-y-hidden rounded-xl border border-slate-800 bg-slate-900 sm:rounded-2xl">
+        <div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-0.5 text-sm font-medium sm:gap-x-6 sm:text-base">
+          <span>
+            <span className="text-yellow-300">발아실</span>
+            <span className="ml-1 text-slate-200">: {stageCounts.germination}판</span>
+          </span>
+          <span>
+            <span className="text-green-400">실내</span>
+            <span className="ml-1 text-slate-200">: {stageCounts.indoor}판</span>
+          </span>
+          <span>
+            <span className="text-orange-400">야외</span>
+            <span className="ml-1 text-slate-200">: {stageCounts.outdoor}판</span>
+          </span>
+        </div>
+
+        <div className="order-list-scroll-wrapper overflow-auto rounded-xl border border-slate-800 bg-slate-900 sm:rounded-2xl">
           <table className="order-list-table min-w-full text-[0.75rem] sm:text-base sm:table-auto">
             <colgroup>
               <col className="order-col-fit" />
