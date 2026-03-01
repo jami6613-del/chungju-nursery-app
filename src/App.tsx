@@ -4520,6 +4520,16 @@ function CertificatePage() {
                         ↓ 스크롤하여 더 보기
                       </div>
                     )}
+                    <div className="border-t border-slate-700 p-2">
+                      <button
+                        type="button"
+                        onClick={() => setCropDropdownOpen(false)}
+                        disabled={!form.cropAll && form.selectedCrops.length === 0}
+                        className="w-full rounded-lg bg-amber-600 py-2.5 text-sm font-semibold text-white hover:bg-amber-500 disabled:opacity-50"
+                      >
+                        선택완료
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
