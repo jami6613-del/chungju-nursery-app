@@ -25,7 +25,7 @@ export const CUSTOMER_PRESETS: Record<
   김향숙: { address: "충주시 칠지3길, 19", birthId: "581123-2", contact: "010-5482-3259" },
   권혁조: { address: "충주시 칠지 4길 22", birthId: "520602-1", contact: "010-2101-9199" },
   오영미: { address: "충주시 대소원면 모단길 20-9", birthId: "711215-2", contact: "010-5486-4225" },
-  김수천: { address: "충주시 하용두3길 60", birthId: "950901-1", contact: "010-9193-4225" },
+  김수천: { address: "대소원면 하검단1길 19-5", birthId: "950901-1", contact: "010-9193-4225" },
   김낙문: { address: "충주시 대소원면 하검단 1길 19-5", birthId: "601010-1", contact: "010-5486-4225" },
   안옥분: { address: "충주시 번영대로 120 세원@ 105-505", birthId: "650110-2", contact: "010-5586-2944" },
   이경선: { address: "충주시 금봉대로 397", birthId: "710507-1", contact: "010-8845-0794" },
