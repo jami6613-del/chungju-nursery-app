@@ -14,6 +14,11 @@ export function canManageMembers(user: AppUser | null) {
   return user?.role_level === 0;
 }
 
+/** 엑셀 추출: 최고관리자(Lv0)만 */
+export function canExportExcel(user: AppUser | null) {
+  return user?.role_level === 0;
+}
+
 export function canWriteOrders(user: AppUser | null) {
   return user?.role_level === 0 || user?.role_level === 1;
 }

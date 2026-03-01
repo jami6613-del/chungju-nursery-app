@@ -25,11 +25,12 @@ import { DateWheel } from "./components/DateWheel";
 import { Modal } from "./components/Modal";
 import { TextField, SelectField, PrimaryButton, SecondaryButton } from "./components/ui";
 import { fetchDailyTodos, saveDailyTodos } from "./lib/dailyTodosApi";
-import { ROLE_LABEL, ROLE_LEVELS, canRequestEdits, canWriteOrders, canReflectToPlan, canAddPlanItem, canEditDailyTodos } from "./lib/permissions";
+import { ROLE_LABEL, ROLE_LEVELS, canRequestEdits, canWriteOrders, canReflectToPlan, canAddPlanItem, canEditDailyTodos, canExportExcel } from "./lib/permissions";
 import { fetchPendingApprovalUsers, approveUser, fetchApprovedUsers } from "./lib/approvalApi";
 import { savePushSubscription } from "./lib/pushApi";
 import { updateMyName } from "./lib/userApi";
 import { useTouchScroll } from "./hooks/useTouchScroll";
+import { createOrdersExcelBlob } from "./lib/excelExport";
 
 const TRAY_OPTIONS = ["200", "406", "72", "128", "포트", "105", "164", "직접입력"];
 
@@ -610,6 +611,10 @@ function DashboardPage() {
   const [yearSelectOpen, setYearSelectOpen] = React.useState(false);
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = React.useState(currentYear);
+  const [exportYearModalOpen, setExportYearModalOpen] = React.useState(false);
+  const [exportConfirmModalOpen, setExportConfirmModalOpen] = React.useState(false);
+  const [exportYearToUse, setExportYearToUse] = React.useState(currentYear);
+  const [exportBlob, setExportBlob] = React.useState<Blob | null>(null);
 
   React.useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
@@ -629,6 +634,49 @@ function DashboardPage() {
     });
     setFormOpen(true);
   };
+
+  const handleExportYearSubmit = React.useCallback(async () => {
+    try {
+      const blob = await createOrdersExcelBlob(orders, exportYearToUse);
+      setExportBlob(blob);
+      setExportYearModalOpen(false);
+      setExportConfirmModalOpen(true);
+    } catch (e) {
+      console.error("Excel export error:", e);
+    }
+  }, [orders, exportYearToUse]);
+
+  const handleExportConfirm = React.useCallback(() => {
+    if (!exportBlob) return;
+    const filename = `파종출하현황_${exportYearToUse}년.xlsx`;
+    const file = new File([exportBlob], filename, {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    if (typeof navigator !== "undefined" && navigator.share && navigator.canShare?.({ files: [file] })) {
+      navigator.share({
+        title: filename,
+        files: [file],
+      }).finally(() => {
+        setExportConfirmModalOpen(false);
+        setExportBlob(null);
+      });
+    } else {
+      const url = URL.createObjectURL(exportBlob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+      setExportConfirmModalOpen(false);
+      setExportBlob(null);
+    }
+  }, [exportBlob, exportYearToUse]);
+
+  const handleExportCancel = React.useCallback(() => {
+    setExportYearModalOpen(false);
+    setExportConfirmModalOpen(false);
+    setExportBlob(null);
+  }, []);
 
   const autocompleteCustomers = Array.from(new Set(orders.map((o) => o.customer_name)));
   const autocompleteCrops = Array.from(new Set(orders.map((o) => o.crop_name)));
@@ -948,7 +996,22 @@ function DashboardPage() {
           </div>
         )}
 
-        <div className="mb-2 flex shrink-0 items-center justify-end gap-2 sm:mb-3">
+        <div className="mb-2 flex shrink-0 flex-wrap items-center justify-between gap-2 sm:mb-3">
+          <div className="flex items-center gap-2">
+            {canExportExcel(user) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setExportYearToUse(selectedYear);
+                  setExportYearModalOpen(true);
+                }}
+                className="rounded-lg border border-pink-400/60 bg-pink-400/30 px-3 py-2 text-sm font-medium text-pink-100 shadow-[0_0_12px_rgba(244,114,182,0.4)] hover:bg-pink-400/50 sm:rounded-xl sm:px-5 sm:py-3 sm:text-base"
+              >
+                엑셀로 추출
+              </button>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => setYearSelectOpen(true)}
@@ -970,6 +1033,7 @@ function DashboardPage() {
           >
             새로고침
           </button>
+          </div>
         </div>
 
         {createPortal(
@@ -1116,6 +1180,62 @@ function DashboardPage() {
           <p className="mt-4 text-sm text-slate-400">
             파종일자 기준 해당 연도 데이터만 표시됩니다.
           </p>
+        </Modal>,
+        document.body,
+        )}
+
+        {createPortal(
+        <Modal
+          open={exportYearModalOpen}
+          onClose={() => setExportYearModalOpen(false)}
+          title="엑셀 추출"
+          titleSize="lg"
+        >
+          <p className="mb-4 text-base text-slate-200">몇년도 데이터를 추출하시겠습니까?</p>
+          <div className="mb-4 flex flex-wrap gap-2 sm:gap-3">
+            {availableYears.map((y) => (
+              <button
+                key={y}
+                type="button"
+                onClick={() => setExportYearToUse(y)}
+                className={`rounded-xl px-4 py-3 text-base font-semibold sm:px-5 sm:py-3 sm:text-lg ${
+                  exportYearToUse === y
+                    ? "border-2 border-pink-400 bg-pink-400/30 text-pink-200"
+                    : "border border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800"
+                }`}
+              >
+                {y}년
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <SecondaryButton onClick={() => setExportYearModalOpen(false)} size="lg">
+              취소
+            </SecondaryButton>
+            <PrimaryButton onClick={handleExportYearSubmit} size="lg">
+              추출
+            </PrimaryButton>
+          </div>
+        </Modal>,
+        document.body,
+        )}
+
+        {createPortal(
+        <Modal
+          open={exportConfirmModalOpen}
+          onClose={handleExportCancel}
+          title="엑셀 추출 완료"
+          titleSize="lg"
+        >
+          <p className="mb-4 text-base text-slate-200">추출이 완료되었습니다 파일로 저장하시겠습니까?</p>
+          <div className="flex gap-2">
+            <SecondaryButton onClick={handleExportCancel} size="lg">
+              취소
+            </SecondaryButton>
+            <PrimaryButton onClick={handleExportConfirm} size="lg">
+              확인
+            </PrimaryButton>
+          </div>
         </Modal>,
         document.body,
         )}
