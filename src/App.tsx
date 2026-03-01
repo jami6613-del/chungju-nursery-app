@@ -4174,6 +4174,10 @@ function CertificatePage() {
     rows: ReturnType<typeof ordersToRows>;
   } | null>(null);
   const previewCertRef = React.useRef<HTMLDivElement | null>(null);
+  const previewWrapRef = React.useRef<HTMLDivElement | null>(null);
+  const [previewScale, setPreviewScale] = React.useState(1);
+  const A4_MM = { w: 210, h: 297 };
+  const MM_TO_PX = 3.7795275591;
   const [issueDateOpen, setIssueDateOpen] = React.useState(false);
   const [cropDropdownOpen, setCropDropdownOpen] = React.useState(false);
   const cropContainerRef = React.useRef<HTMLDivElement>(null);
@@ -4183,6 +4187,21 @@ function CertificatePage() {
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
+
+  React.useEffect(() => {
+    if (!previewOpen || !previewWrapRef.current) return;
+    const el = previewWrapRef.current;
+    const updateScale = () => {
+      if (!el) return;
+      const w = el.getBoundingClientRect().width;
+      const basePx = A4_MM.w * MM_TO_PX;
+      setPreviewScale(w / basePx);
+    };
+    updateScale();
+    const ro = new ResizeObserver(updateScale);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [previewOpen, previewCertData]);
 
   React.useEffect(() => {
     fetch("/stamp.png")
@@ -4606,15 +4625,34 @@ function CertificatePage() {
                 발급
               </button>
             </div>
-            <div className="max-h-[70vh] overflow-y-auto overflow-x-auto pt-12">
+            <div className="flex max-h-[70vh] justify-center overflow-auto pt-12 pb-4">
               {previewCertData && stampDataUrl && (
-                <div className="flex justify-center bg-slate-800 p-4">
-                  <CertificateContent
-                    input={previewCertData.input}
-                    rows={previewCertData.rows}
-                    stampDataUrl={stampDataUrl}
-                    containerRef={previewCertRef}
-                  />
+                <div
+                  ref={previewWrapRef}
+                  className="relative shrink-0 overflow-hidden bg-slate-800 p-2"
+                  style={{
+                    aspectRatio: `${A4_MM.w} / ${A4_MM.h}`,
+                    maxHeight: "70vh",
+                    width: "100%",
+                    maxWidth: `calc(70vh * ${A4_MM.w} / ${A4_MM.h})`,
+                  }}
+                >
+                  <div
+                    className="absolute left-0 top-0"
+                    style={{
+                      transform: `scale(${previewScale})`,
+                      transformOrigin: "top left",
+                      width: `${A4_MM.w}mm`,
+                      minHeight: `${A4_MM.h}mm`,
+                    }}
+                  >
+                    <CertificateContent
+                      input={previewCertData.input}
+                      rows={previewCertData.rows}
+                      stampDataUrl={stampDataUrl}
+                      containerRef={previewCertRef}
+                    />
+                  </div>
                 </div>
               )}
             </div>
