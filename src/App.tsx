@@ -937,7 +937,7 @@ function DashboardPage() {
         </p>
       </Modal>
 
-      <main className="order-list-main-scroll min-h-0 flex-1 overflow-y-scroll overflow-x-hidden px-3 pb-24 pt-3">
+      <main className="order-list-main-scroll min-h-0 flex-1 overflow-auto px-3 pb-24 pt-3">
         {user.is_approved ? null : (
           <div className="mb-3 rounded-xl border border-yellow-600 bg-yellow-950/40 px-4 py-3 text-base text-yellow-200">
             관리자 승인 대기 중입니다. 읽기 전용으로만 이용 가능합니다.
@@ -1161,7 +1161,7 @@ function DashboardPage() {
           </span>
         </div>
 
-        <div className="order-list-scroll-wrapper overflow-x-auto overflow-y-visible rounded-xl border border-slate-800 bg-slate-900 sm:rounded-2xl">
+        <div className="order-list-scroll-wrapper rounded-xl border border-slate-800 bg-slate-900 sm:rounded-2xl">
           <table className="order-list-table min-w-full text-[0.75rem] sm:text-base sm:table-auto">
             <colgroup>
               <col className="order-col-fit" />

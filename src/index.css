@@ -83,16 +83,10 @@ textarea {
   background: rgb(71 85 105);
 }
 
-/* 파종 및 출하현황: main 세로, wrapper 가로. spacer는 pointer-events-none */
+/* 파종 및 출하현황: main에서 가로·세로 모두 스크롤 (중첩 스크롤 제거) */
 .order-list-main-scroll {
   -webkit-overflow-scrolling: touch;
-  overflow-y: scroll;
-  overflow-x: hidden;
-  touch-action: pan-y pinch-zoom;
-}
-.order-list-scroll-wrapper {
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-x pinch-zoom;
+  overflow: auto;
 }
 
 /* 파종 및 출하현황: 모바일에서 출하수량까지 한 화면, 비고는 가로 스크롤 시에만 넓게 */
