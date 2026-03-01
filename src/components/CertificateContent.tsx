@@ -10,8 +10,23 @@ interface CertificateContentProps {
 
 const HEADER_BG = "#fffde6";
 
+function formatContact(contact: string): string {
+  const digits = contact.replace(/\D/g, "");
+  if (digits.startsWith("010") && digits.length >= 11) {
+    return `010-${digits.slice(3, 7)}-${digits.slice(7, 11)}`;
+  }
+  if (digits.length >= 10) {
+    return `010-${digits.slice(3, 7)}-${digits.slice(7)}`;
+  }
+  return contact;
+}
+
 export function CertificateContent({ input, rows, stampDataUrl, containerRef }: CertificateContentProps) {
   const [iy, im, id] = input.issueDate.split("-");
+  const contactFormatted = formatContact(input.contact);
+  const useBusinessNumber = !!input.businessNumber?.trim();
+  const idLabel = useBusinessNumber ? "사업자번호" : "생년월일";
+  const idValue = useBusinessNumber ? input.businessNumber! : input.birthId;
 
   return (
     <div
@@ -51,10 +66,10 @@ export function CertificateContent({ input, rows, stampDataUrl, containerRef }: 
             <td style={{ width: "38%", padding: "8px 6px", border: "1px solid #000", textAlign: "left", verticalAlign: "middle", fontSize: "15pt" }}>{input.address}</td>
           </tr>
           <tr>
-            <td style={{ padding: "8px 6px", backgroundColor: HEADER_BG, border: "1px solid #000", textAlign: "center", verticalAlign: "middle", fontSize: "15pt" }}>생년월일</td>
-            <td style={{ padding: "8px 6px", border: "1px solid #000", textAlign: "left", verticalAlign: "middle", fontSize: "15pt" }}>{input.birthId}</td>
+            <td style={{ padding: "8px 6px", backgroundColor: HEADER_BG, border: "1px solid #000", textAlign: "center", verticalAlign: "middle", fontSize: "15pt" }}>{idLabel}</td>
+            <td style={{ padding: "8px 6px", border: "1px solid #000", textAlign: "left", verticalAlign: "middle", fontSize: "15pt" }}>{idValue}</td>
             <td style={{ padding: "8px 6px", backgroundColor: HEADER_BG, border: "1px solid #000", textAlign: "center", verticalAlign: "middle", fontSize: "15pt" }}>연락처</td>
-            <td style={{ padding: "8px 6px", border: "1px solid #000", textAlign: "left", verticalAlign: "middle", fontSize: "15pt" }}>{input.contact}</td>
+            <td style={{ padding: "8px 6px", border: "1px solid #000", textAlign: "left", verticalAlign: "middle", fontSize: "15pt" }}>{contactFormatted}</td>
           </tr>
         </tbody>
       </table>
@@ -132,38 +147,40 @@ export function CertificateContent({ input, rows, stampDataUrl, containerRef }: 
         </tbody>
       </table>
 
-      <p style={{ margin: "12px 0", textAlign: "center", fontSize: "12pt" }}>위 내용이 틀림없음을 확인합니다.</p>
-      <p style={{ margin: "12px 0", textAlign: "center", fontSize: "11pt" }}>
-        {iy}년 {im}월 {id}일
-      </p>
+      <div style={{ pageBreakInside: "avoid", breakInside: "avoid" }}>
+        <p style={{ margin: "12px 0", textAlign: "center", fontSize: "12pt" }}>위 내용이 틀림없음을 확인합니다.</p>
+        <p style={{ margin: "12px 0", textAlign: "center", fontSize: "11pt" }}>
+          {iy}년 {im}월 {id}일
+        </p>
 
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 8,
-          marginTop: 12,
-          flexWrap: "nowrap",
-        }}
-      >
-        <span style={{ fontSize: "12pt", fontWeight: "bold", whiteSpace: "nowrap" }}>
-          충주친환경유기영농조합법인(육묘부)
-        </span>
-        <img
-          src={stampDataUrl}
-          alt="도장"
+        <div
           style={{
-            width: 52,
-            height: 52,
-            objectFit: "contain",
-            flexShrink: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+            marginTop: 12,
+            flexWrap: "nowrap",
           }}
-        />
-      </div>
+        >
+          <span style={{ fontSize: "12pt", fontWeight: "bold", whiteSpace: "nowrap" }}>
+            충주친환경유기영농조합법인(육묘부)
+          </span>
+          <img
+            src={stampDataUrl}
+            alt="도장"
+            style={{
+              width: 52,
+              height: 52,
+              objectFit: "contain",
+              flexShrink: 0,
+            }}
+          />
+        </div>
 
-      <p style={{ margin: "12px 0 4px 0", textAlign: "center", fontSize: "11pt" }}>대표 전제락  Tel) 010-5482-0632</p>
-      <p style={{ margin: 0, textAlign: "center", fontSize: "11pt" }}>충북 충주시 주덕읍 중원산업1로 40 (당우리 343)</p>
+        <p style={{ margin: "12px 0 4px 0", textAlign: "center", fontSize: "11pt" }}>대표 전제락  Tel) 010-5482-0632</p>
+        <p style={{ margin: 0, textAlign: "center", fontSize: "11pt" }}>충북 충주시 주덕읍 중원산업1로 40 (당우리 343)</p>
+      </div>
     </div>
   );
 }

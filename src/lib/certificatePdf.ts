@@ -3,10 +3,11 @@ import type { Order } from "../types";
 export interface CertificateInput {
   customerName: string;
   address: string;
-  birthId: string; // YYYYMMDD-0******
+  birthId: string; // YYYYMMDD-0****** (생년월일)
+  businessNumber?: string; // 사업자번호 (있으면 생년월일 대신 표기)
   contact: string;
-  cropName: string | null; // null = 선택하지 않음
-  issueDate: string; // YYYY-MM-DD
+  cropName: string | null;
+  issueDate: string;
 }
 
 export interface CertificateRow {

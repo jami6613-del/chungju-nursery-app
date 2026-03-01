@@ -32,6 +32,7 @@ import { updateMyName } from "./lib/userApi";
 import { useTouchScroll } from "./hooks/useTouchScroll";
 import { createOrdersExcelBlob } from "./lib/excelExport";
 import { createCertificatePdf, ordersToRows, type CertificateInput } from "./lib/certificatePdf";
+import { CUSTOMER_PRESETS, EXCLUDED_ORDERERS_FROM_AUTOCOMPLETE, getCustomerPreset, getOrdererForCertificate } from "./lib/certificatePresets";
 import { CertificateContent } from "./components/CertificateContent";
 
 const TRAY_OPTIONS = ["200", "406", "72", "128", "포트", "105", "164", "직접입력"];
@@ -3951,6 +3952,7 @@ function CertificatePage() {
     customerName: string;
     address: string;
     birthId: string;
+    businessNumber: string;
     contact: string;
     cropName: string;
     issueDate: string;
@@ -3967,6 +3969,7 @@ function CertificatePage() {
       customerName: "",
       address: "",
       birthId: "",
+      businessNumber: "",
       contact: "",
       cropName: "",
       issueDate: today,
@@ -4005,26 +4008,34 @@ function CertificatePage() {
     return arr.length ? arr : [new Date().getFullYear()];
   }, [orders]);
 
+  const ordererForFilter = getOrdererForCertificate(form.customerName);
+
   const filteredOrders = React.useMemo(() => {
     let list = orders.filter((o) => {
       const sd = o.sowing_date ?? "";
       if (!sd.startsWith(String(form.year))) return false;
       if (sd < form.dateFrom || sd > form.dateTo) return false;
-      if (form.customerName.trim() && !o.customer_name.includes(form.customerName.trim())) return false;
+      if (form.customerName.trim() && !o.customer_name.includes(ordererForFilter)) return false;
       if (form.cropName.trim() && form.cropName !== "작물 전체" && !o.crop_name.includes(form.cropName.trim())) return false;
       return true;
     });
     return list.sort((a, b) => (b.sowing_date ?? "").localeCompare(a.sowing_date ?? ""));
-  }, [orders, form.year, form.dateFrom, form.dateTo, form.customerName, form.cropName]);
+  }, [orders, form.year, form.dateFrom, form.dateTo, form.customerName, form.cropName, ordererForFilter]);
 
-  const autocompleteCustomers = React.useMemo(
-    () => Array.from(new Set(orders.map((o) => o.customer_name).filter((c): c is string => !!c && typeof c === "string"))),
-    [orders]
-  );
-  const autocompleteCrops = React.useMemo(
-    () => Array.from(new Set(orders.map((o) => o.crop_name).filter((c): c is string => !!c && typeof c === "string"))),
-    [orders]
-  );
+  const presetNames = React.useMemo(() => Object.keys(CUSTOMER_PRESETS), []);
+
+  const autocompleteCustomers = React.useMemo(() => {
+    const fromOrders = orders
+      .map((o) => o.customer_name)
+      .filter((c): c is string => !!c && typeof c === "string" && !EXCLUDED_ORDERERS_FROM_AUTOCOMPLETE.has(c));
+    return Array.from(new Set([...presetNames, ...fromOrders]));
+  }, [orders, presetNames]);
+  const autocompleteCrops = React.useMemo(() => {
+    const cropOrders = ordererForFilter
+      ? orders.filter((o) => (o.customer_name ?? "").includes(ordererForFilter))
+      : orders;
+    return Array.from(new Set(cropOrders.map((o) => o.crop_name).filter((c): c is string => !!c && typeof c === "string")));
+  }, [orders, ordererForFilter]);
 
   const handleBirthIdChange = (v: string) => {
     const digits = v.replace(/\D/g, "").slice(0, 7);
@@ -4037,7 +4048,8 @@ function CertificatePage() {
     const input: CertificateInput = {
       customerName: form.customerName.trim(),
       address: form.address.trim(),
-      birthId: form.birthId,
+      birthId: form.businessNumber ? "" : form.birthId,
+      businessNumber: form.businessNumber || undefined,
       contact: form.contact.trim(),
       cropName: form.cropName === "작물 전체" ? null : form.cropName.trim() || null,
       issueDate: form.issueDate,
@@ -4174,7 +4186,21 @@ function CertificatePage() {
                           <button
                             key={c}
                             type="button"
-                            onClick={() => setForm((p) => ({ ...p, customerName: c }))}
+                            onClick={() => {
+                              const preset = getCustomerPreset(c);
+                              if (preset) {
+                                setForm((p) => ({
+                                  ...p,
+                                  customerName: c,
+                                  address: preset.address,
+                                  birthId: preset.birthId ?? "",
+                                  businessNumber: preset.businessNumber ?? "",
+                                  contact: preset.contact,
+                                }));
+                              } else {
+                                setForm((p) => ({ ...p, customerName: c }));
+                              }
+                            }}
                             className="block w-full px-3 py-2 text-left text-slate-100 hover:bg-slate-800"
                           >
                             {c}
@@ -4185,13 +4211,20 @@ function CertificatePage() {
                 </div>
                 <TextField label="주소" value={form.address} onChange={(v) => setForm((p) => ({ ...p, address: v }))} size="lg" />
                 <div>
-                  <span className="text-xs text-slate-400">생년월일 (YYYYMMDD-0******)</span>
+                  <span className="text-xs text-slate-400">생년월일 (YYYYMMDD-0******) / 사업자번호 (000-00-00000)</span>
                   <input
-                    value={form.birthId}
-                    onChange={(e) => handleBirthIdChange(e.target.value)}
+                    value={form.businessNumber || form.birthId}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      if ((v.match(/-/g)?.length ?? 0) >= 2 || (v.includes("-") && v.replace(/\D/g, "").length >= 10)) {
+                        setForm((p) => ({ ...p, businessNumber: v, birthId: "" }));
+                      } else {
+                        handleBirthIdChange(v);
+                        setForm((p) => ({ ...p, businessNumber: "" }));
+                      }
+                    }}
                     className="mt-0.5 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100"
-                    placeholder="000000-0******"
-                    maxLength={9}
+                    placeholder="000000-0****** 또는 000-00-00000"
                     inputMode="numeric"
                   />
                 </div>
@@ -4264,11 +4297,17 @@ function CertificatePage() {
               <SecondaryButton onClick={() => setFormOpen(false)} size="lg">취소</SecondaryButton>
               <PrimaryButton
                 onClick={() => {
-                  const ok = form.customerName.trim() && form.address.trim() && form.birthId.length >= 8 && form.contact.trim();
+                  const idOk = form.birthId.length >= 8 || (form.businessNumber && form.businessNumber.length >= 10);
+                  const ok = form.customerName.trim() && form.address.trim() && idOk && form.contact.trim();
                   if (!ok) return;
                   setIssueConfirmOpen(true);
                 }}
-                disabled={!form.customerName.trim() || !form.address.trim() || form.birthId.length < 8 || !form.contact.trim()}
+                disabled={
+                  !form.customerName.trim() ||
+                  !form.address.trim() ||
+                  (form.birthId.length < 8 && !(form.businessNumber && form.businessNumber.length >= 10)) ||
+                  !form.contact.trim()
+                }
                 size="lg"
               >
                 발급
