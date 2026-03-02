@@ -3216,7 +3216,7 @@ function PlanningPage() {
   if (!user) return <Navigate to="/" replace />;
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-950 text-slate-100">
+    <div className="flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-slate-950 text-slate-100">
       <header className="shrink-0 border-b border-slate-800 bg-slate-900/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
         <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-0">
           <div className="min-w-0">
@@ -3293,9 +3293,9 @@ function PlanningPage() {
         </div>
       )}
 
-      <main className="flex flex-1 flex-col overflow-hidden">
+      <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
         {/* 상단: 일자별 파종계획 3일 (화면 절반) */}
-        <section className="flex min-h-0 flex-1 flex-col border-b border-slate-700 bg-slate-900/50">
+        <section className="flex min-h-0 flex-1 flex-col overflow-hidden border-b border-slate-700 bg-slate-900/50">
           <div className="flex items-center justify-end gap-1.5 px-2 py-1 sm:gap-2 sm:px-3 sm:pr-4">
             {focusDate !== getLocalDateString() && (
               <button
