@@ -2823,8 +2823,43 @@ function PlanningPage() {
   const [reflectPlanToOrdersDate, setReflectPlanToOrdersDate] = React.useState<string | null>(null);
   const [reflectPlanToOrdersBusy, setReflectPlanToOrdersBusy] = React.useState(false);
   const planDateLongPressTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const unprocessedListScrollRef = React.useRef<HTMLDivElement>(null);
+  useTouchScroll(unprocessedListScrollRef);
+  const unprocessedTouchStartRef = React.useRef<{ x: number; y: number } | null>(null);
+  const unprocessedTouchMovedRef = React.useRef(false);
 
   const threeDays = React.useMemo(() => getThreeDaysFrom(focusDate), [focusDate]);
+
+  React.useEffect(() => {
+    const el = unprocessedListScrollRef.current;
+    if (!el) return;
+    const THRESHOLD = 10;
+    const onStart = (e: TouchEvent) => {
+      if (e.touches.length === 1) {
+        unprocessedTouchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        unprocessedTouchMovedRef.current = false;
+      }
+    };
+    const onMove = (e: TouchEvent) => {
+      if (e.touches.length !== 1 || !unprocessedTouchStartRef.current) return;
+      const dx = e.touches[0].clientX - unprocessedTouchStartRef.current.x;
+      const dy = e.touches[0].clientY - unprocessedTouchStartRef.current.y;
+      if (Math.abs(dx) > THRESHOLD || Math.abs(dy) > THRESHOLD) unprocessedTouchMovedRef.current = true;
+    };
+    const onEnd = () => {
+      unprocessedTouchStartRef.current = null;
+    };
+    el.addEventListener("touchstart", onStart, { passive: true });
+    el.addEventListener("touchmove", onMove, { passive: true });
+    el.addEventListener("touchend", onEnd, { passive: true });
+    el.addEventListener("touchcancel", onEnd, { passive: true });
+    return () => {
+      el.removeEventListener("touchstart", onStart);
+      el.removeEventListener("touchmove", onMove);
+      el.removeEventListener("touchend", onEnd);
+      el.removeEventListener("touchcancel", onEnd);
+    };
+  }, []);
 
   const clearPlanDateLongPressTimer = React.useCallback(() => {
     if (planDateLongPressTimerRef.current) {
@@ -3462,7 +3497,11 @@ function PlanningPage() {
             </button>
           </div>
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-            <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-3" style={{ WebkitOverflowScrolling: "touch" }}>
+            <div
+              ref={unprocessedListScrollRef}
+              className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-3"
+              style={{ WebkitOverflowScrolling: "touch" }}
+            >
             {unprocessedLoading ? (
               <div className="py-3 text-center text-xs text-slate-400 sm:py-4 sm:text-sm">로딩 중...</div>
             ) : (
@@ -3483,6 +3522,10 @@ function PlanningPage() {
                       <button
                         type="button"
                         onClick={(e) => {
+                          if (unprocessedTouchMovedRef.current) {
+                            unprocessedTouchMovedRef.current = false;
+                            return;
+                          }
                           if (isDeleted) {
                             if (user?.role_level === 0) {
                               setDeletedPostViewOrder(order);
@@ -3494,6 +3537,7 @@ function PlanningPage() {
                           }
                         }}
                         onTouchEnd={(e) => {
+                          if (unprocessedTouchMovedRef.current) return;
                           if (isDeleted) {
                             if (user?.role_level === 0) {
                               e.preventDefault();
@@ -3504,6 +3548,7 @@ function PlanningPage() {
                             }
                           }
                         }}
+                        style={{ touchAction: "pan-y" }}
                         className={`min-w-0 flex-1 rounded-lg border px-3 py-2 text-left transition-colors sm:px-4 sm:py-3 ${
                           isDeleted
                             ? "border-slate-700/40 bg-slate-800/30 opacity-70 hover:bg-slate-800/40"
