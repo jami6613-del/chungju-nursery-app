@@ -3329,8 +3329,8 @@ function PlanningPage() {
       )}
 
       <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        {/* 상단: 일자별 파종계획 (파종내용 6줄 정도 보이도록) */}
-        <section className="flex min-h-0 shrink-0 flex-col overflow-hidden border-b border-slate-700 bg-slate-900/50" style={{ maxHeight: "58vh" }}>
+        {/* 상단: 일자별 파종계획 (파종내용 6줄 한번에 보일 만큼, 나머지는 주문 추가·게시글) */}
+        <section className="flex min-h-0 shrink-0 flex-col overflow-hidden border-b border-slate-700 bg-slate-900/50" style={{ maxHeight: "68vh" }}>
           <div className="flex items-center justify-end gap-1.5 px-2 py-1 sm:gap-2 sm:px-3 sm:pr-4">
             {focusDate !== getLocalDateString() && (
               <button
