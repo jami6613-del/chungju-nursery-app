@@ -3484,9 +3484,9 @@ function PlanningPage() {
           </div>
         </section>
 
-        {/* 하단: 미처리 주문 (고정 높이로 스크롤 영역 확보) */}
-        <section className="flex shrink-0 flex-col border-t border-slate-700 bg-slate-950" style={{ height: "45vh", minHeight: "180px" }}>
-          <div className="shrink-0 border-b border-slate-800 px-2 py-2 sm:px-3 sm:py-3">
+        {/* 하단: 미처리 주문 — 주문 추가 버튼 아래 게시글 목록(스크롤) */}
+        <section className="shrink-0 border-t border-slate-700 bg-slate-950">
+          <div className="border-b border-slate-800 px-2 py-2 sm:px-3 sm:py-3">
             <button
               type="button"
               onClick={() => setAddUnprocessedOpen(true)}
@@ -3496,12 +3496,19 @@ function PlanningPage() {
               주문 추가
             </button>
           </div>
-          <div className="unprocessed-list-scroll-wrap flex min-h-0 flex-1 flex-col overflow-hidden">
-            <div
-              ref={unprocessedListScrollRef}
-              className="unprocessed-list-scroll min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-3"
-              style={{ WebkitOverflowScrolling: "touch" }}
-            >
+          {/* 게시글 목록: 고정 높이 + overflow로 상하 스크롤 보장 */}
+          <div
+            ref={unprocessedListScrollRef}
+            style={{
+              height: 280,
+              maxHeight: "40vh",
+              overflowY: "auto",
+              overflowX: "hidden",
+              WebkitOverflowScrolling: "touch",
+              padding: "0.5rem 0.75rem",
+            }}
+            className="sm:p-3"
+          >
             {unprocessedLoading ? (
               <div className="py-3 text-center text-xs text-slate-400 sm:py-4 sm:text-sm">로딩 중...</div>
             ) : (
@@ -3600,9 +3607,9 @@ function PlanningPage() {
                 </ul>
               </>
             )}
-            </div>
-                {unprocessed.length > UNPROCESSED_PAGE_SIZE && (
-                  <div className="shrink-0 flex flex-wrap items-center justify-center gap-1.5 border-t border-slate-800 p-2 sm:gap-2 sm:p-3">
+          </div>
+          {unprocessed.length > UNPROCESSED_PAGE_SIZE && (
+            <div className="flex flex-wrap items-center justify-center gap-1.5 border-t border-slate-800 p-2 sm:gap-2 sm:p-3">
                     <button
                       type="button"
                       disabled={unprocessedPage <= 1}
@@ -3648,7 +3655,6 @@ function PlanningPage() {
                     </button>
                   </div>
                 )}
-          </div>
         </section>
       </main>
 
