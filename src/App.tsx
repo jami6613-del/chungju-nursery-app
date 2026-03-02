@@ -3329,8 +3329,8 @@ function PlanningPage() {
       )}
 
       <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        {/* 상단: 일자별 파종계획 3일 (화면 절반) */}
-        <section className="flex min-h-0 flex-1 flex-col overflow-hidden border-b border-slate-700 bg-slate-900/50">
+        {/* 상단: 일자별 파종계획 (높이 제한으로 하단 주문 영역 확보) */}
+        <section className="flex min-h-0 shrink-0 flex-col overflow-hidden border-b border-slate-700 bg-slate-900/50" style={{ maxHeight: "40vh" }}>
           <div className="flex items-center justify-end gap-1.5 px-2 py-1 sm:gap-2 sm:px-3 sm:pr-4">
             {focusDate !== getLocalDateString() && (
               <button
@@ -3484,13 +3484,13 @@ function PlanningPage() {
           </div>
         </section>
 
-        {/* 하단: 미처리 주문 — 주문 추가 버튼 아래 게시글 목록(스크롤) */}
-        <section className="shrink-0 border-t border-slate-700 bg-slate-950">
-          <div className="border-b border-slate-800 px-2 py-2 sm:px-3 sm:py-3">
+        {/* 하단: 미처리 주문 — 주문 추가 버튼 + 게시글 목록(스크롤) */}
+        <section className="flex min-h-0 flex-1 flex-col border-t border-slate-700 bg-slate-950">
+          <div className="shrink-0 border-b border-slate-800 px-3 py-3 sm:px-4 sm:py-4">
             <button
               type="button"
               onClick={() => setAddUnprocessedOpen(true)}
-              className="w-full rounded-lg bg-slate-700 py-3 text-lg font-bold leading-none text-slate-100 hover:bg-slate-600 sm:rounded-xl sm:py-4 sm:text-[2.25rem]"
+              className="w-full rounded-xl bg-slate-700 py-4 text-xl font-bold leading-none text-slate-100 hover:bg-slate-600 sm:rounded-2xl sm:py-5 sm:text-[2.5rem]"
               style={{ letterSpacing: "0.15em" }}
             >
               주문 추가
@@ -3506,6 +3506,7 @@ function PlanningPage() {
               overflowX: "hidden",
               WebkitOverflowScrolling: "touch",
               padding: "0.5rem 0.75rem",
+              paddingBottom: "max(1.5rem, env(safe-area-inset-bottom, 0px) + 1rem)",
             }}
             className="sm:p-3"
           >
