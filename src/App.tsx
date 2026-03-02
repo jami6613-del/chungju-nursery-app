@@ -3329,8 +3329,8 @@ function PlanningPage() {
       )}
 
       <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        {/* 상단: 일자별 파종계획 (파종내용 6줄 한번에 보일 만큼, 나머지는 주문 추가·게시글) */}
-        <section className="flex min-h-0 shrink-0 flex-col overflow-hidden border-b border-slate-700 bg-slate-900/50" style={{ maxHeight: "68vh" }}>
+        {/* 상단 절반: 일자별 파종계획 화이트보드 (메뉴 영역 상하 50%) */}
+        <section className="flex min-h-0 shrink-0 flex-col overflow-hidden border-b border-slate-700 bg-slate-900/50" style={{ height: "50%" }}>
           <div className="flex items-center justify-end gap-1.5 px-2 py-1 sm:gap-2 sm:px-3 sm:pr-4">
             {focusDate !== getLocalDateString() && (
               <button
@@ -3484,7 +3484,7 @@ function PlanningPage() {
           </div>
         </section>
 
-        {/* 하단: 미처리 주문 — 주문 추가 버튼 + 게시글 목록(스크롤) */}
+        {/* 하단 절반: 주문 추가 버튼 + 게시글 영역(나머지 전부 스크롤) */}
         <section className="flex min-h-0 flex-1 flex-col border-t border-slate-700 bg-slate-950">
           <div className="shrink-0 border-b border-slate-800 px-3 py-3 sm:px-4 sm:py-4">
             <button
@@ -3496,19 +3496,14 @@ function PlanningPage() {
               주문 추가
             </button>
           </div>
-          {/* 게시글 목록: 고정 높이 + overflow로 상하 스크롤 보장 */}
+          {/* 게시글 목록: 하단 절반에서 버튼 제외한 나머지 전부 사용, 상하 스크롤 */}
           <div
             ref={unprocessedListScrollRef}
+            className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-3"
             style={{
-              height: 280,
-              maxHeight: "40vh",
-              overflowY: "auto",
-              overflowX: "hidden",
               WebkitOverflowScrolling: "touch",
-              padding: "0.5rem 0.75rem",
               paddingBottom: "max(1.5rem, env(safe-area-inset-bottom, 0px) + 1rem)",
             }}
-            className="sm:p-3"
           >
             {unprocessedLoading ? (
               <div className="py-3 text-center text-xs text-slate-400 sm:py-4 sm:text-sm">로딩 중...</div>
