@@ -3484,9 +3484,9 @@ function PlanningPage() {
           </div>
         </section>
 
-        {/* 하단: 미처리 주문 (화면 절반) */}
-        <section className="flex min-h-0 flex-1 flex-col border-t border-slate-700 bg-slate-950">
-          <div className="border-b border-slate-800 px-2 py-2 sm:px-3 sm:py-3">
+        {/* 하단: 미처리 주문 (고정 높이로 스크롤 영역 확보) */}
+        <section className="flex shrink-0 flex-col border-t border-slate-700 bg-slate-950" style={{ height: "45vh", minHeight: "180px" }}>
+          <div className="shrink-0 border-b border-slate-800 px-2 py-2 sm:px-3 sm:py-3">
             <button
               type="button"
               onClick={() => setAddUnprocessedOpen(true)}
@@ -3496,10 +3496,10 @@ function PlanningPage() {
               주문 추가
             </button>
           </div>
-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <div className="min-h-0 flex-1 overflow-hidden">
             <div
               ref={unprocessedListScrollRef}
-              className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-3"
+              className="h-full overflow-y-auto overflow-x-hidden p-2 sm:p-3"
               style={{ WebkitOverflowScrolling: "touch" }}
             >
             {unprocessedLoading ? (
