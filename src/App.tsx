@@ -2792,15 +2792,8 @@ function PlanningPage() {
   const [editOrderContent, setEditOrderContent] = React.useState("");
   const [editOrderBusy, setEditOrderBusy] = React.useState(false);
   const [deleteOrder, setDeleteOrder] = React.useState<UnprocessedOrder | null>(null);
-  const [deletedPostViewOrder, setDeletedPostViewOrder] = React.useState<UnprocessedOrder | null>(null);
   const [deleteOrderBusy, setDeleteOrderBusy] = React.useState(false);
   const [noReflectToast, setNoReflectToast] = React.useState<{
-    show: boolean;
-    x: number;
-    y: number;
-    fading?: boolean;
-  } | null>(null);
-  const [deletedPostToast, setDeletedPostToast] = React.useState<{
     show: boolean;
     x: number;
     y: number;
@@ -2959,26 +2952,6 @@ function PlanningPage() {
     return () => clearTimeout(t);
   }, [noReflectToast?.fading]);
 
-  React.useEffect(() => {
-    if (!deletedPostToast?.show || deletedPostToast.fading) return;
-    const t = setTimeout(() => {
-      setDeletedPostToast((prev) => (prev ? { ...prev, fading: true } : null));
-    }, 1000);
-    return () => clearTimeout(t);
-  }, [deletedPostToast?.show, deletedPostToast?.fading]);
-  React.useEffect(() => {
-    if (!deletedPostToast?.fading) return;
-    const t = setTimeout(() => setDeletedPostToast(null), 300);
-    return () => clearTimeout(t);
-  }, [deletedPostToast?.fading]);
-
-  const showDeletedPostToast = (e: React.MouseEvent | React.TouchEvent) => {
-    const touch = "changedTouches" in e && e.changedTouches?.length ? e.changedTouches[0] : "touches" in e && e.touches?.length ? e.touches[0] : null;
-    const x = touch ? touch.clientX : (e as React.MouseEvent).clientX;
-    const y = touch ? touch.clientY : (e as React.MouseEvent).clientY;
-    setDeletedPostToast({ show: true, x, y });
-  };
-
   const handleAddPlanSubmit = async () => {
     if (!user || !addPlanOpen) return;
     setAddPlanBusy(true);
@@ -3037,8 +3010,8 @@ function PlanningPage() {
           (a.created_at || "").localeCompare(b.created_at || ""),
         );
         const toDelete = sorted.slice(0, next.length - MAX_UNPROCESSED);
-        for (const o of toDelete) await deleteUnprocessedOrder(o.id);
         const deleteIds = new Set(toDelete.map((d) => d.id));
+        for (const o of toDelete) await deleteUnprocessedOrder(o.id);
         next = next.filter((x) => !deleteIds.has(x.id));
       }
       setUnprocessed(next);
@@ -3131,8 +3104,8 @@ function PlanningPage() {
     if (!deleteOrder) return;
     setDeleteOrderBusy(true);
     try {
-      const updated = await deleteUnprocessedOrder(deleteOrder.id);
-      setUnprocessed((prev) => prev.map((o) => (o.id === deleteOrder.id ? updated : o)));
+      await deleteUnprocessedOrder(deleteOrder.id);
+      setUnprocessed((prev) => prev.filter((o) => o.id !== deleteOrder.id));
       setDeleteOrder(null);
       setPostActionOrder(null);
     } finally {
@@ -3310,21 +3283,6 @@ function PlanningPage() {
           }}
         >
           권한이 없습니다. 최고관리자에게 문의하세요.
-        </div>
-      )}
-
-      {/* 삭제된 게시글 클릭 시 토스트 */}
-      {deletedPostToast && (
-        <div
-          className="pointer-events-none fixed z-[100] rounded-lg bg-slate-800 px-5 py-3 text-sm font-medium text-slate-100 shadow-lg ring-1 ring-slate-700 transition-opacity duration-300"
-          style={{
-            left: deletedPostToast.x,
-            top: deletedPostToast.y,
-            transform: "translate(-50%, -100%)",
-            opacity: deletedPostToast.fading ? 0 : 1,
-          }}
-        >
-          삭제된 게시물입니다
         </div>
       )}
 
@@ -3511,100 +3469,66 @@ function PlanningPage() {
               <>
                 <ul className="space-y-1.5 sm:space-y-2">
                   {(() => {
+                    const visible = unprocessed.filter((o) => !o.deleted_at);
                     const totalPages = Math.min(
                       UNPROCESSED_MAX_PAGES,
-                      Math.max(1, Math.ceil(unprocessed.length / UNPROCESSED_PAGE_SIZE)),
+                      Math.max(1, Math.ceil(visible.length / UNPROCESSED_PAGE_SIZE)),
                     );
                     const page = Math.max(1, Math.min(unprocessedPage, totalPages));
                     const start = (page - 1) * UNPROCESSED_PAGE_SIZE;
-                    const pageList = unprocessed.slice(start, start + UNPROCESSED_PAGE_SIZE);
-                    return pageList.map((order) => {
-                  const isDeleted = !!order.deleted_at;
-                  return (
-                    <li key={order.id} className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          if (unprocessedTouchMovedRef.current) {
-                            unprocessedTouchMovedRef.current = false;
-                            return;
-                          }
-                          if (isDeleted) {
-                            if (user?.role_level === 0) {
-                              setDeletedPostViewOrder(order);
-                            } else {
-                              showDeletedPostToast(e);
-                            }
-                          } else {
-                            setPostActionOrder(order);
-                          }
-                        }}
-                        onTouchEnd={(e) => {
-                          if (unprocessedTouchMovedRef.current) return;
-                          if (isDeleted) {
-                            if (user?.role_level === 0) {
-                              e.preventDefault();
-                              setDeletedPostViewOrder(order);
-                            } else {
-                              e.preventDefault();
-                              showDeletedPostToast(e);
-                            }
-                          }
-                        }}
-                        style={{ touchAction: "pan-y" }}
-                        className={`min-w-0 flex-1 rounded-lg border px-3 py-2 text-left transition-colors sm:px-4 sm:py-3 ${
-                          isDeleted
-                            ? "border-slate-700/40 bg-slate-800/30 opacity-70 hover:bg-slate-800/40"
-                            : order.reflected_at
-                              ? "border-slate-700/40 bg-slate-800/30 opacity-75 hover:bg-slate-800/40"
-                              : "border-violet-400/35 bg-violet-400/15 hover:bg-violet-400/20"
-                        }`}
-                      >
-                        <div className="flex flex-wrap items-baseline gap-1.5 text-xs sm:gap-2 sm:text-sm">
-                          <span
-                            className={`min-w-0 flex-1 ${order.reflected_at ? "text-slate-500" : ""} ${isDeleted ? "text-slate-500" : ""}`}
-                            style={
-                              order.reflected_at && !isDeleted
-                                ? { textDecoration: "line-through", textDecorationStyle: "double" }
-                                : undefined
-                            }
-                          >
-                            <span className={order.reflected_at || isDeleted ? "text-slate-500" : "text-slate-400"}>
-                              {order.created_by_email || "등록자"}
-                            </span>
-                            <span className={`ml-2 whitespace-pre-wrap break-words ${order.reflected_at || isDeleted ? "text-slate-500" : "text-slate-100"}`}>
-                              {isDeleted ? "삭제된 게시글 입니다" : order.content}
-                            </span>
-                          </span>
-                          {order.reflected_at && !isDeleted && (
-                            <span className="shrink-0 rounded bg-slate-700/50 px-2 py-0.5 text-xs font-medium text-slate-500">
-                              반영완료
-                            </span>
-                          )}
-                        </div>
-                      </button>
-                      {isDeleted && user?.role_level === 0 && (
+                    const pageList = visible.slice(start, start + UNPROCESSED_PAGE_SIZE);
+                    return pageList.map((order) => (
+                      <li key={order.id} className="flex gap-2">
                         <button
                           type="button"
-                          onClick={() => setDeletedPostViewOrder(order)}
-                          onTouchEnd={(e) => {
-                            e.preventDefault();
-                            setDeletedPostViewOrder(order);
+                          onClick={(e) => {
+                            if (unprocessedTouchMovedRef.current) {
+                              unprocessedTouchMovedRef.current = false;
+                              return;
+                            }
+                            setPostActionOrder(order);
                           }}
-                          className="shrink-0 self-center rounded bg-slate-600 px-2 py-1 text-xs font-medium text-slate-200 hover:bg-slate-500 sm:px-3 sm:py-1.5 sm:text-sm"
+                          onTouchEnd={() => {
+                            if (unprocessedTouchMovedRef.current) return;
+                          }}
+                          style={{ touchAction: "pan-y" }}
+                          className={`min-w-0 flex-1 rounded-lg border px-3 py-2 text-left transition-colors sm:px-4 sm:py-3 ${
+                            order.reflected_at
+                              ? "border-slate-700/40 bg-slate-800/30 opacity-75 hover:bg-slate-800/40"
+                              : "border-violet-400/35 bg-violet-400/15 hover:bg-violet-400/20"
+                          }`}
                         >
-                          삭제된 게시글 보기
+                          <div className="flex flex-wrap items-baseline gap-1.5 text-xs sm:gap-2 sm:text-sm">
+                            <span
+                              className={`min-w-0 flex-1 ${order.reflected_at ? "text-slate-500" : ""}`}
+                              style={
+                                order.reflected_at
+                                  ? { textDecoration: "line-through", textDecorationStyle: "double" }
+                                  : undefined
+                              }
+                            >
+                              <span className={order.reflected_at ? "text-slate-500" : "text-slate-400"}>
+                                {order.created_by_email || "등록자"}
+                              </span>
+                              <span className={`ml-2 whitespace-pre-wrap break-words ${order.reflected_at ? "text-slate-500" : "text-slate-100"}`}>
+                                {order.content}
+                              </span>
+                            </span>
+                            {order.reflected_at && (
+                              <span className="shrink-0 rounded bg-slate-700/50 px-2 py-0.5 text-xs font-medium text-slate-500">
+                                반영완료
+                              </span>
+                            )}
+                          </div>
                         </button>
-                      )}
-                    </li>
-                    );
-                  });
+                      </li>
+                    ));
                   })()}
                 </ul>
               </>
             )}
           </div>
-          {unprocessed.length > UNPROCESSED_PAGE_SIZE && (
+          {unprocessed.filter((o) => !o.deleted_at).length > UNPROCESSED_PAGE_SIZE && (
             <div className="flex flex-wrap items-center justify-center gap-1.5 border-t border-slate-800 p-2 sm:gap-2 sm:p-3">
                     <button
                       type="button"
@@ -3614,7 +3538,7 @@ function PlanningPage() {
                     >
                       이전
                     </button>
-                    {Array.from({ length: Math.min(UNPROCESSED_MAX_PAGES, Math.ceil(unprocessed.length / UNPROCESSED_PAGE_SIZE)) }, (_, i) => i + 1).map(
+                    {Array.from({ length: Math.min(UNPROCESSED_MAX_PAGES, Math.ceil(unprocessed.filter((o) => !o.deleted_at).length / UNPROCESSED_PAGE_SIZE)) }, (_, i) => i + 1).map(
                       (p) => (
                         <button
                           key={p}
@@ -3634,13 +3558,13 @@ function PlanningPage() {
                       type="button"
                       disabled={
                         unprocessedPage >=
-                        Math.min(UNPROCESSED_MAX_PAGES, Math.ceil(unprocessed.length / UNPROCESSED_PAGE_SIZE))
+                        Math.min(UNPROCESSED_MAX_PAGES, Math.ceil(unprocessed.filter((o) => !o.deleted_at).length / UNPROCESSED_PAGE_SIZE))
                       }
                       onClick={() =>
                         setUnprocessedPage((p) =>
                           Math.min(
                             UNPROCESSED_MAX_PAGES,
-                            Math.ceil(unprocessed.length / UNPROCESSED_PAGE_SIZE),
+                            Math.ceil(unprocessed.filter((o) => !o.deleted_at).length / UNPROCESSED_PAGE_SIZE),
                             p + 1,
                           ),
                         )
@@ -3806,7 +3730,7 @@ function PlanningPage() {
                 </SecondaryButton>
               </>
             )}
-            {canReflectToPlan(user) && !postActionOrder.deleted_at && (
+            {canReflectToPlan(user) && (
               <>
                 {!postActionOrder.reflected_at && (
                   <PrimaryButton
@@ -3864,7 +3788,7 @@ function PlanningPage() {
         )}
       </Modal>
 
-      {/* 미처리 주문 삭제 확인 */}
+      {/* 미처리 주문 삭제 확인 (영구 삭제) */}
       <Modal
         open={deleteOrder !== null}
         title="게시글 삭제"
@@ -3872,33 +3796,12 @@ function PlanningPage() {
       >
         {deleteOrder && (
           <div className="space-y-3">
-            <p className="text-slate-200">이 게시글을 삭제하시겠습니까?</p>
+            <p className="text-slate-200">정말로 삭제하시겠습니까?</p>
             <div className="flex gap-2">
               <PrimaryButton onClick={() => void handleDeleteOrderConfirm()} disabled={deleteOrderBusy}>
                 삭제
               </PrimaryButton>
               <SecondaryButton onClick={() => setDeleteOrder(null)}>취소</SecondaryButton>
-            </div>
-          </div>
-        )}
-      </Modal>
-
-      {/* 삭제된 게시글 보기 (Lv0 전용, 복구 불가) */}
-      <Modal
-        open={deletedPostViewOrder !== null}
-        title="삭제된 게시글 보기"
-        onClose={() => setDeletedPostViewOrder(null)}
-      >
-        {deletedPostViewOrder && (
-          <div className="space-y-3">
-            <p className="whitespace-pre-wrap break-words rounded bg-slate-800/80 p-3 text-sm text-slate-200">
-              {deletedPostViewOrder.content || "(내용 없음)"}
-            </p>
-            <p className="border-t border-slate-700 pt-2 text-xs text-slate-400">
-              삭제를 복구할 수 없으며, 삭제 시점부터 24시간이 지나면 자동으로 완전 삭제됩니다.
-            </p>
-            <div className="flex justify-end">
-              <SecondaryButton onClick={() => setDeletedPostViewOrder(null)}>닫기</SecondaryButton>
             </div>
           </div>
         )}

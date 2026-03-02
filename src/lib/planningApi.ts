@@ -159,17 +159,10 @@ export async function updateUnprocessedOrder(id: string, content: string): Promi
   return mapUnprocessedRow(data as Record<string, unknown>);
 }
 
-/** 소프트 삭제: deleted_at만 설정하고 목록에는 삭제된 글로 표시 */
-export async function deleteUnprocessedOrder(id: string): Promise<UnprocessedOrder> {
-  const { data, error } = await supabase
-    .from("unprocessed_orders")
-    .update({ deleted_at: new Date().toISOString() })
-    .eq("id", id)
-    .select()
-    .single();
+/** 영구 삭제: DB에서 즉시 삭제, 목록에 표시되지 않음 */
+export async function deleteUnprocessedOrder(id: string): Promise<void> {
+  const { error } = await supabase.from("unprocessed_orders").delete().eq("id", id);
   if (error) throw new Error(error.message);
-  if (!data) throw new Error("삭제 결과를 받지 못했습니다.");
-  return mapUnprocessedRow(data as Record<string, unknown>);
 }
 
 /** 삭제된 지 24시간 지난 게시글을 DB에서 완전 삭제 */
