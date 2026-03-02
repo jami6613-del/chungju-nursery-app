@@ -3462,7 +3462,7 @@ function PlanningPage() {
             </button>
           </div>
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-            <div className="flex-1 overflow-y-auto p-2 sm:p-3">
+            <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-3" style={{ WebkitOverflowScrolling: "touch" }}>
             {unprocessedLoading ? (
               <div className="py-3 text-center text-xs text-slate-400 sm:py-4 sm:text-sm">로딩 중...</div>
             ) : (
