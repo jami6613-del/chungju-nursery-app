@@ -3496,10 +3496,10 @@ function PlanningPage() {
               주문 추가
             </button>
           </div>
-          <div className="min-h-0 flex-1 overflow-hidden">
+          <div className="unprocessed-list-scroll-wrap flex min-h-0 flex-1 flex-col overflow-hidden">
             <div
               ref={unprocessedListScrollRef}
-              className="h-full overflow-y-auto overflow-x-hidden p-2 sm:p-3"
+              className="unprocessed-list-scroll min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-3"
               style={{ WebkitOverflowScrolling: "touch" }}
             >
             {unprocessedLoading ? (
