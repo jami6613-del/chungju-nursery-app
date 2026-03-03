@@ -2911,19 +2911,50 @@ function SeasonOrdersPage() {
     setEditItem(null);
   };
 
+  const [visibleBoardIndex, setVisibleBoardIndex] = React.useState(0);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+
+  const varietyByBoard = React.useMemo(() => {
+    const out: Array<Array<[string, number]>> = [];
+    for (let boardIndex = 0; boardIndex < SEASON_ORDER_BOARD_COUNT; boardIndex++) {
+      const items = data.items.filter((i) => i.boardIndex === boardIndex);
+      const varietyTotals: Record<string, number> = {};
+      for (const it of items) {
+        const v = it.variety || "미지정";
+        varietyTotals[v] = (varietyTotals[v] || 0) + parseQuantityToNumber(it.quantity);
+      }
+      const entries = Object.entries(varietyTotals)
+        .filter(([, n]) => n > 0)
+        .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }));
+      out.push(entries);
+    }
+    return out;
+  }, [data.items]);
+
+  React.useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const w = el.clientWidth;
+      const index = Math.round(el.scrollLeft / w);
+      setVisibleBoardIndex(Math.max(0, Math.min(SEASON_ORDER_BOARD_COUNT - 1, index)));
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, []);
+
   if (!user) return <Navigate to="/" replace />;
 
   return (
     <div
-      className="grid overflow-hidden bg-slate-950 text-slate-100"
+      className="flex flex-col overflow-hidden bg-slate-950 text-slate-100"
       style={{
         height: "100dvh",
         maxHeight: "100vh",
         minHeight: "-webkit-fill-available",
-        gridTemplateRows: "auto 1fr",
       }}
     >
-      <header className="min-h-0 border-b border-slate-800 bg-slate-900/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
+      <header className="shrink-0 border-b border-slate-800 bg-slate-900/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
         <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-0">
           <div className="min-w-0">
             <div className="truncate text-lg font-extrabold tracking-tight sm:text-2xl">충주 친환경 육묘장</div>
@@ -2951,94 +2982,79 @@ function SeasonOrdersPage() {
         <p className="mt-4 border-t border-slate-700 pt-3 text-xs text-slate-400">권한에 관한 문의는 최고관리자에게 문의바랍니다 (정효조 / 010-2604-6588)</p>
       </Modal>
 
-      <main className="relative min-h-0 overflow-hidden">
-        <div
-          className="absolute inset-0 flex flex-row overflow-x-auto overflow-y-hidden px-2 pt-2 pb-3 snap-x snap-mandatory sm:px-3"
-          style={{ WebkitOverflowScrolling: "touch" }}
-        >
-          {Array.from({ length: SEASON_ORDER_BOARD_COUNT }, (_, boardIndex) => {
-            const items = data.items
-              .filter((i) => i.boardIndex === boardIndex)
-              .sort((a, b) => (a.variety || "").localeCompare(b.variety || "", undefined, { numeric: true }));
-            const varietyTotals: Record<string, number> = {};
-            for (const it of items) {
-              const v = it.variety || "미지정";
-              varietyTotals[v] = (varietyTotals[v] || 0) + parseQuantityToNumber(it.quantity);
-            }
-            const varietySummaryEntries = Object.entries(varietyTotals)
-              .filter(([, n]) => n > 0)
-              .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }));
+      <main ref={scrollRef} className="flex min-h-0 flex-1 flex-row overflow-x-auto overflow-y-hidden px-2 pt-2 pb-2 snap-x snap-mandatory sm:px-3" style={{ WebkitOverflowScrolling: "touch" }}>
+        {Array.from({ length: SEASON_ORDER_BOARD_COUNT }, (_, boardIndex) => {
+          const items = data.items
+            .filter((i) => i.boardIndex === boardIndex)
+            .sort((a, b) => (a.variety || "").localeCompare(b.variety || "", undefined, { numeric: true }));
 
-            return (
+          return (
+            <div
+              key={boardIndex}
+              className="grid h-full w-[calc(100vw-1rem)] min-w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-shrink-0 snap-start overflow-hidden rounded-xl border-4 border-slate-400 bg-slate-200/40 sm:w-[calc((100vw-2rem)/2)] sm:min-w-[calc((100vw-2rem)/2)] sm:max-w-[calc((100vw-2rem)/2)] lg:w-[calc((100vw-4rem)/3)] lg:min-w-[calc((100vw-4rem)/3)] lg:max-w-[calc((100vw-4rem)/3)]"
+              style={{
+                boxShadow: "0 4px 6px -1px rgba(0,0,0,0.12), 0 8px 20px -4px rgba(0,0,0,0.14), 0 0 0 1px rgba(0,0,0,0.06) inset",
+                gridTemplateRows: "auto 1fr",
+                minHeight: 0,
+              }}
+            >
+              <div className="flex min-h-0 shrink-0 items-center justify-between border-b-2 border-slate-400 bg-gradient-to-b from-slate-300 to-slate-400 px-3 py-2.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3)] sm:px-3 sm:py-3">
+                <button
+                  type="button"
+                  onClick={() => handleCropNameOpen(boardIndex)}
+                  className="flex-1 cursor-pointer select-none text-center text-lg font-bold leading-tight text-slate-800 drop-shadow-sm sm:text-xl [font-size:clamp(0.75rem,5vw,1.75rem)]"
+                >
+                  {data.boards[boardIndex] || "작물명을 터치하여 입력"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAddOpen(boardIndex)}
+                  className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-slate-500/80 text-white shadow-md hover:bg-slate-600 sm:h-8 sm:w-8"
+                >
+                  +
+                </button>
+              </div>
               <div
-                key={boardIndex}
-                className="grid h-full w-[calc(100vw-1rem)] min-w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-shrink-0 snap-start overflow-hidden rounded-xl border-4 border-slate-400 bg-slate-200/40 sm:w-[calc((100vw-2rem)/2)] sm:min-w-[calc((100vw-2rem)/2)] sm:max-w-[calc((100vw-2rem)/2)] lg:w-[calc((100vw-4rem)/3)] lg:min-w-[calc((100vw-4rem)/3)] lg:max-w-[calc((100vw-4rem)/3)]"
+                className="min-h-0 overflow-y-auto overflow-x-hidden bg-gradient-to-b from-slate-50/95 to-white p-2 sm:p-2"
                 style={{
-                  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.12), 0 8px 20px -4px rgba(0,0,0,0.14), 0 0 0 1px rgba(0,0,0,0.06) inset",
-                  gridTemplateRows: "auto 1fr auto",
-                  minHeight: 0,
+                  boxShadow: "inset 0 2px 8px rgba(0,0,0,0.04)",
+                  WebkitOverflowScrolling: "touch",
                 }}
               >
-                <div className="flex min-h-0 shrink-0 items-center justify-between border-b-2 border-slate-400 bg-gradient-to-b from-slate-300 to-slate-400 px-3 py-2.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3)] sm:px-3 sm:py-3">
-                  <button
-                    type="button"
-                    onClick={() => handleCropNameOpen(boardIndex)}
-                    className="flex-1 cursor-pointer select-none text-center text-lg font-bold leading-tight text-slate-800 drop-shadow-sm sm:text-xl [font-size:clamp(0.75rem,5vw,1.75rem)]"
-                  >
-                    {data.boards[boardIndex] || "작물명을 터치하여 입력"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleAddOpen(boardIndex)}
-                    className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-slate-500/80 text-white shadow-md hover:bg-slate-600 sm:h-8 sm:w-8"
-                  >
-                    +
-                  </button>
-                </div>
-                <div
-                  className="min-h-0 overflow-y-auto overflow-x-hidden bg-gradient-to-b from-slate-50/95 to-white p-2 sm:p-2"
-                  style={{
-                    boxShadow: "inset 0 2px 8px rgba(0,0,0,0.04)",
-                    WebkitOverflowScrolling: "touch",
-                  }}
-                >
-                  <div className="space-y-1">
-                      {items.map((item) => (
-                        <button
-                          key={item.id}
-                          type="button"
-                          onClick={() => handleEditOpen(item)}
-                          className="flex w-full flex-nowrap items-center gap-x-1 overflow-hidden rounded-lg bg-slate-200/40 px-2 py-1.5 text-left hover:bg-slate-200/60 sm:rounded-lg"
-                          style={{
-                            fontFamily: "'Malgun Gothic', '맑은 고딕', sans-serif",
-                            fontSize: "clamp(1.2rem, 4.2vw, 1.62rem)",
-                            letterSpacing: "-0.03em",
-                          }}
-                        >
-                          <span className="min-w-0 shrink font-medium text-slate-900">{item.orderer || "-"}</span>
-                          <span className="shrink-0 text-slate-500">│</span>
-                          <span className="min-w-0 shrink font-medium text-slate-900">{item.variety || "-"}</span>
-                          <span className="shrink-0 text-slate-500">│</span>
-                          <span className="min-w-0 shrink font-medium text-slate-900">{item.quantity || "-"}</span>
-                          <span className="shrink-0 text-slate-500">│</span>
-                          <span className="min-w-0 shrink font-medium text-slate-900">{formatContactDisplay(item.contact)}</span>
-                        </button>
-                      ))}
-                  </div>
-                </div>
-                <div
-                  className="flex shrink-0 items-center justify-center border-t-2 border-slate-400 bg-gradient-to-b from-slate-200 to-slate-300 px-2 py-2 text-center font-bold text-slate-800 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.25)]"
-                  style={{ fontSize: "clamp(0.9rem, 3.5vw, 1.1rem)", minHeight: "2.5rem" }}
-                >
-                  {varietySummaryEntries.length > 0
-                    ? varietySummaryEntries.map(([v, n]) => `${v}: ${n}개`).join(" │ ")
-                    : "—"}
+                <div className="space-y-1">
+                  {items.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => handleEditOpen(item)}
+                      className="flex w-full flex-nowrap items-center gap-x-1 overflow-hidden rounded-lg bg-slate-200/40 px-2 py-1.5 text-left hover:bg-slate-200/60 sm:rounded-lg"
+                      style={{
+                        fontFamily: "'Malgun Gothic', '맑은 고딕', sans-serif",
+                        fontSize: "clamp(1.2rem, 4.2vw, 1.62rem)",
+                        letterSpacing: "-0.03em",
+                      }}
+                    >
+                      <span className="min-w-0 shrink font-medium text-slate-900">{item.orderer || "-"}</span>
+                      <span className="shrink-0 text-slate-500">│</span>
+                      <span className="min-w-0 shrink font-medium text-slate-900">{item.variety || "-"}</span>
+                      <span className="shrink-0 text-slate-500">│</span>
+                      <span className="min-w-0 shrink font-medium text-slate-900">{item.quantity || "-"}</span>
+                      <span className="shrink-0 text-slate-500">│</span>
+                      <span className="min-w-0 shrink font-medium text-slate-900">{formatContactDisplay(item.contact)}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
-            );
-          })}
-        </div>
+            </div>
+          );
+        })}
       </main>
+
+      <footer className="shrink-0 border-t-2 border-slate-500 bg-gradient-to-b from-slate-300 to-slate-400 px-3 py-2.5 text-center font-bold text-slate-800 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3)]" style={{ fontSize: "clamp(0.9rem, 3.5vw, 1.1rem)", minHeight: "2.75rem" }}>
+        {varietyByBoard[visibleBoardIndex]?.length
+          ? varietyByBoard[visibleBoardIndex].map(([v, n]) => `${v}: ${n}개`).join(" │ ")
+          : "품종별 수량 합계"}
+      </footer>
 
       <Modal
         open={cropNameBoardIndex !== null}
