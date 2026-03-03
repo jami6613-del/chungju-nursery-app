@@ -2943,9 +2943,9 @@ function SeasonOrdersPage() {
         <p className="mt-4 border-t border-slate-700 pt-3 text-xs text-slate-400">권한에 관한 문의는 최고관리자에게 문의바랍니다 (정효조 / 010-2604-6588)</p>
       </Modal>
 
-      <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <main className="relative min-h-0 flex-1 overflow-hidden">
         <div
-          className="flex h-full min-h-0 flex-1 flex-row overflow-x-auto overflow-y-hidden px-2 pt-2 pb-3 snap-x snap-mandatory sm:px-3"
+          className="absolute inset-0 flex flex-row overflow-x-auto overflow-y-hidden px-2 pt-2 pb-3 snap-x snap-mandatory sm:px-3"
           style={{ WebkitOverflowScrolling: "touch" }}
         >
           {Array.from({ length: SEASON_ORDER_BOARD_COUNT }, (_, boardIndex) => {
@@ -2964,7 +2964,7 @@ function SeasonOrdersPage() {
             return (
               <div
                 key={boardIndex}
-                className="flex h-full max-h-full w-[calc(100vw-1rem)] min-h-0 min-w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-shrink-0 snap-start flex-col overflow-hidden rounded-xl border-4 border-slate-400 bg-slate-200/40 sm:w-[calc((100vw-2rem)/2)] sm:min-w-[calc((100vw-2rem)/2)] sm:max-w-[calc((100vw-2rem)/2)] lg:w-[calc((100vw-4rem)/3)] lg:min-w-[calc((100vw-4rem)/3)] lg:max-w-[calc((100vw-4rem)/3)]"
+                className="flex h-full w-[calc(100vw-1rem)] min-w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-shrink-0 snap-start flex-col overflow-hidden rounded-xl border-4 border-slate-400 bg-slate-200/40 sm:w-[calc((100vw-2rem)/2)] sm:min-w-[calc((100vw-2rem)/2)] sm:max-w-[calc((100vw-2rem)/2)] lg:w-[calc((100vw-4rem)/3)] lg:min-w-[calc((100vw-4rem)/3)] lg:max-w-[calc((100vw-4rem)/3)]"
                 style={{
                   boxShadow: "0 4px 6px -1px rgba(0,0,0,0.12), 0 8px 20px -4px rgba(0,0,0,0.14), 0 0 0 1px rgba(0,0,0,0.06) inset",
                 }}
@@ -2987,36 +2987,38 @@ function SeasonOrdersPage() {
                 </div>
                 <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-gradient-to-b from-slate-50/95 to-white">
                   <div
-                    className="min-h-0 flex-1 space-y-1 overflow-y-auto overflow-x-hidden p-2 sm:p-2"
-                    style={{ boxShadow: "inset 0 2px 8px rgba(0,0,0,0.04)", WebkitOverflowScrolling: "touch" }}
+                    className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-2"
+                    style={{ boxShadow: "inset 0 2px 8px rgba(0,0,0,0.04)", WebkitOverflowScrolling: "touch", minHeight: 0 }}
                   >
-                    {items.map((item) => (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => handleEditOpen(item)}
-                        className="flex w-full flex-nowrap items-center gap-x-1 overflow-hidden rounded-lg bg-slate-200/40 px-2 py-1.5 text-left hover:bg-slate-200/60 sm:rounded-lg"
-                        style={{
-                          fontFamily: "'Malgun Gothic', '맑은 고딕', sans-serif",
-                          fontSize: "clamp(1.2rem, 4.2vw, 1.62rem)",
-                          letterSpacing: "-0.03em",
-                        }}
-                      >
-                        <span className="min-w-0 shrink font-medium text-slate-900">{item.orderer || "-"}</span>
-                        <span className="shrink-0 text-slate-500">│</span>
-                        <span className="min-w-0 shrink font-medium text-slate-900">{item.variety || "-"}</span>
-                        <span className="shrink-0 text-slate-500">│</span>
-                        <span className="min-w-0 shrink font-medium text-slate-900">{item.quantity || "-"}</span>
-                        <span className="shrink-0 text-slate-500">│</span>
-                        <span className="min-w-0 shrink font-medium text-slate-900">{formatContactDisplay(item.contact)}</span>
-                      </button>
-                    ))}
-                  </div>
-                  {varietySummaryEntries.length > 0 && (
-                    <div className="shrink-0 border-t-2 border-slate-400 bg-gradient-to-b from-slate-200 to-slate-300 px-2 py-2 text-center font-bold text-slate-800 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.25)]" style={{ fontSize: "clamp(0.9rem, 3.5vw, 1.1rem)" }}>
-                      {varietySummaryEntries.map(([v, n]) => `${v}: ${n}개`).join(" │ ")}
+                    <div className="space-y-1">
+                      {items.map((item) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => handleEditOpen(item)}
+                          className="flex w-full flex-nowrap items-center gap-x-1 overflow-hidden rounded-lg bg-slate-200/40 px-2 py-1.5 text-left hover:bg-slate-200/60 sm:rounded-lg"
+                          style={{
+                            fontFamily: "'Malgun Gothic', '맑은 고딕', sans-serif",
+                            fontSize: "clamp(1.2rem, 4.2vw, 1.62rem)",
+                            letterSpacing: "-0.03em",
+                          }}
+                        >
+                          <span className="min-w-0 shrink font-medium text-slate-900">{item.orderer || "-"}</span>
+                          <span className="shrink-0 text-slate-500">│</span>
+                          <span className="min-w-0 shrink font-medium text-slate-900">{item.variety || "-"}</span>
+                          <span className="shrink-0 text-slate-500">│</span>
+                          <span className="min-w-0 shrink font-medium text-slate-900">{item.quantity || "-"}</span>
+                          <span className="shrink-0 text-slate-500">│</span>
+                          <span className="min-w-0 shrink font-medium text-slate-900">{formatContactDisplay(item.contact)}</span>
+                        </button>
+                      ))}
                     </div>
-                  )}
+                  </div>
+                  <div className="flex shrink-0 items-center justify-center border-t-2 border-slate-400 bg-gradient-to-b from-slate-200 to-slate-300 px-2 py-2 text-center font-bold text-slate-800 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.25)]" style={{ fontSize: "clamp(0.9rem, 3.5vw, 1.1rem)", minHeight: "2.5rem" }}>
+                    {varietySummaryEntries.length > 0
+                      ? varietySummaryEntries.map(([v, n]) => `${v}: ${n}개`).join(" │ ")
+                      : "—"}
+                  </div>
                 </div>
               </div>
             );
