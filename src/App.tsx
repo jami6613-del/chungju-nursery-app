@@ -2828,6 +2828,16 @@ function parseQuantityToNumber(q: string): number {
   return Number.isNaN(n) ? 0 : n;
 }
 
+/** 연락처: 숫자만 or 하이픈 포함 입력 → 000-0000-0000 형식 표시 */
+function formatContactDisplay(contact: string): string {
+  const digits = String(contact || "").replace(/\D/g, "");
+  if (digits.length === 0) return "-";
+  if (digits.length >= 11) return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7, 11)}`;
+  if (digits.length >= 7) return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+  if (digits.length >= 4) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+  return digits;
+}
+
 function SeasonOrdersPage() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
@@ -2841,10 +2851,9 @@ function SeasonOrdersPage() {
     variety: "",
     quantity: "",
     contact: "",
-    note: "",
   });
   const [editItem, setEditItem] = React.useState<SeasonOrderItem | null>(null);
-  const [editForm, setEditForm] = React.useState({ orderer: "", variety: "", quantity: "", contact: "", note: "" });
+  const [editForm, setEditForm] = React.useState({ orderer: "", variety: "", quantity: "", contact: "" });
 
   const loadData = React.useCallback(() => setData(fetchSeasonOrderData()), []);
 
@@ -2862,7 +2871,7 @@ function SeasonOrdersPage() {
 
   const handleAddOpen = (boardIndex: number) => {
     setAddBoardIndex(boardIndex);
-    setAddForm({ orderer: "", variety: "", quantity: "", contact: "", note: "" });
+    setAddForm({ orderer: "", variety: "", quantity: "", contact: "" });
   };
 
   const handleAddSave = () => {
@@ -2873,7 +2882,6 @@ function SeasonOrdersPage() {
       addForm.variety,
       addForm.quantity,
       addForm.contact,
-      addForm.note,
     );
     loadData();
     setAddBoardIndex(null);
@@ -2886,7 +2894,6 @@ function SeasonOrdersPage() {
       variety: item.variety,
       quantity: item.quantity,
       contact: item.contact,
-      note: item.note,
     });
   };
 
@@ -2938,7 +2945,7 @@ function SeasonOrdersPage() {
 
       <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <div
-          className="flex min-h-full flex-1 flex-row overflow-x-auto overflow-y-hidden px-2 pt-2 pb-3 snap-x snap-mandatory sm:px-3"
+          className="flex h-full min-h-0 flex-1 flex-row overflow-x-auto overflow-y-hidden px-2 pt-2 pb-3 snap-x snap-mandatory sm:px-3"
           style={{ WebkitOverflowScrolling: "touch" }}
         >
           {Array.from({ length: SEASON_ORDER_BOARD_COUNT }, (_, boardIndex) => {
@@ -2957,7 +2964,7 @@ function SeasonOrdersPage() {
             return (
               <div
                 key={boardIndex}
-                className="flex w-[calc(100vw-1rem)] min-w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-shrink-0 snap-start flex-col overflow-hidden rounded-xl border-4 border-slate-400 bg-slate-200/40 sm:w-[calc((100vw-2rem)/2)] sm:min-w-[calc((100vw-2rem)/2)] sm:max-w-[calc((100vw-2rem)/2)] lg:w-[calc((100vw-4rem)/3)] lg:min-w-[calc((100vw-4rem)/3)] lg:max-w-[calc((100vw-4rem)/3)]"
+                className="flex h-full max-h-full w-[calc(100vw-1rem)] min-h-0 min-w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-shrink-0 snap-start flex-col overflow-hidden rounded-xl border-4 border-slate-400 bg-slate-200/40 sm:w-[calc((100vw-2rem)/2)] sm:min-w-[calc((100vw-2rem)/2)] sm:max-w-[calc((100vw-2rem)/2)] lg:w-[calc((100vw-4rem)/3)] lg:min-w-[calc((100vw-4rem)/3)] lg:max-w-[calc((100vw-4rem)/3)]"
                 style={{
                   boxShadow: "0 4px 6px -1px rgba(0,0,0,0.12), 0 8px 20px -4px rgba(0,0,0,0.14), 0 0 0 1px rgba(0,0,0,0.06) inset",
                 }}
@@ -2978,9 +2985,9 @@ function SeasonOrdersPage() {
                     +
                   </button>
                 </div>
-                <div className="flex min-h-0 flex-1 flex-col bg-gradient-to-b from-slate-50/95 to-white">
+                <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-gradient-to-b from-slate-50/95 to-white">
                   <div
-                    className="min-h-0 flex-1 space-y-1 overflow-y-auto p-2 sm:p-2"
+                    className="min-h-0 flex-1 space-y-1 overflow-y-auto overflow-x-hidden p-2 sm:p-2"
                     style={{ boxShadow: "inset 0 2px 8px rgba(0,0,0,0.04)", WebkitOverflowScrolling: "touch" }}
                   >
                     {items.map((item) => (
@@ -2991,7 +2998,7 @@ function SeasonOrdersPage() {
                         className="flex w-full flex-nowrap items-center gap-x-1 overflow-hidden rounded-lg bg-slate-200/40 px-2 py-1.5 text-left hover:bg-slate-200/60 sm:rounded-lg"
                         style={{
                           fontFamily: "'Malgun Gothic', '맑은 고딕', sans-serif",
-                          fontSize: "clamp(1rem, 3.5vw, 1.35rem)",
+                          fontSize: "clamp(1.2rem, 4.2vw, 1.62rem)",
                           letterSpacing: "-0.03em",
                         }}
                       >
@@ -3001,18 +3008,12 @@ function SeasonOrdersPage() {
                         <span className="shrink-0 text-slate-500">│</span>
                         <span className="min-w-0 shrink font-medium text-slate-900">{item.quantity || "-"}</span>
                         <span className="shrink-0 text-slate-500">│</span>
-                        <span className="min-w-0 shrink font-medium text-slate-900">{item.contact || "-"}</span>
-                        {item.note ? (
-                          <>
-                            <span className="shrink-0 text-slate-500">│</span>
-                            <span className="min-w-0 shrink truncate text-slate-700">{item.note}</span>
-                          </>
-                        ) : null}
+                        <span className="min-w-0 shrink font-medium text-slate-900">{formatContactDisplay(item.contact)}</span>
                       </button>
                     ))}
                   </div>
                   {varietySummaryEntries.length > 0 && (
-                    <div className="shrink-0 border-t-2 border-slate-400 bg-gradient-to-b from-slate-200 to-slate-300 px-2 py-2 text-center font-bold text-slate-800 text-[0.9rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.25)]">
+                    <div className="shrink-0 border-t-2 border-slate-400 bg-gradient-to-b from-slate-200 to-slate-300 px-2 py-2 text-center font-bold text-slate-800 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.25)]" style={{ fontSize: "clamp(0.9rem, 3.5vw, 1.1rem)" }}>
                       {varietySummaryEntries.map(([v, n]) => `${v}: ${n}개`).join(" │ ")}
                     </div>
                   )}
@@ -3085,15 +3086,6 @@ function SeasonOrdersPage() {
               placeholder="연락처"
             />
           </div>
-          <div>
-            <label className="mb-1 block text-xs text-slate-400">비고</label>
-            <input
-              value={addForm.note}
-              onChange={(e) => setAddForm((p) => ({ ...p, note: e.target.value }))}
-              className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
-              placeholder="비고"
-            />
-          </div>
           <div className="flex justify-end gap-2 pt-2">
             <SecondaryButton onClick={() => setAddBoardIndex(null)}>취소</SecondaryButton>
             <PrimaryButton onClick={handleAddSave}>등록</PrimaryButton>
@@ -3142,15 +3134,6 @@ function SeasonOrdersPage() {
                 onChange={(e) => setEditForm((p) => ({ ...p, contact: e.target.value }))}
                 className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
                 placeholder="연락처"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-slate-400">비고</label>
-              <input
-                value={editForm.note}
-                onChange={(e) => setEditForm((p) => ({ ...p, note: e.target.value }))}
-                className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
-                placeholder="비고"
               />
             </div>
             <div className="flex justify-between pt-2">
