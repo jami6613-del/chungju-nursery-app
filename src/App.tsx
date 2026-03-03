@@ -4195,6 +4195,7 @@ function CertificatePage() {
   const [amountPopupOpen, setAmountPopupOpen] = React.useState(false);
   const [amountInputs, setAmountInputs] = React.useState<Record<string, string>>({});
   const [previewOpen, setPreviewOpen] = React.useState(false);
+  const [issueInProgress, setIssueInProgress] = React.useState(false);
   const [previewCertData, setPreviewCertData] = React.useState<{
     input: CertificateInput;
     rows: ReturnType<typeof ordersToRows>;
@@ -4348,10 +4349,12 @@ function CertificatePage() {
     }
     const el = previewCertRef.current;
     if (!el || !previewCertData || !stampDataUrl) return;
+    setIssueInProgress(true);
     try {
       const blob = await createCertificatePdf(el);
       const filename = `${form.year}_${form.customerName.trim()}_육묘확인서.pdf`;
       const file = new File([blob], filename, { type: "application/pdf" });
+      setIssueInProgress(false);
       if (typeof navigator !== "undefined" && navigator.share && navigator.canShare?.({ files: [file] })) {
         await navigator.share({ title: filename, files: [file] });
       } else {
@@ -4365,6 +4368,7 @@ function CertificatePage() {
       setPreviewOpen(false);
       setPreviewCertData(null);
     } catch (e) {
+      setIssueInProgress(false);
       console.error("Certificate PDF error:", e);
     }
   }, [user, previewCertData, stampDataUrl, form.year, form.customerName]);
@@ -4754,13 +4758,29 @@ function CertificatePage() {
       )}
 
       {createPortal(
-        <Modal open={previewOpen} onClose={() => { setPreviewOpen(false); setPreviewCertData(null); }} title="육묘확인서 미리보기" titleSize="lg">
+        <Modal open={previewOpen} onClose={() => { setPreviewOpen(false); setPreviewCertData(null); setIssueInProgress(false); }} title="육묘확인서 미리보기" titleSize="lg">
           <div className="relative">
+            {issueInProgress && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                <div
+                  className="rounded-xl px-6 py-4 text-center font-bold shadow-[0_0_20px_rgba(250,204,21,0.6)]"
+                  style={{
+                    backgroundColor: "#1e1b4b",
+                    border: "3px solid #facc15",
+                    color: "#fef08a",
+                    fontSize: "1.125rem",
+                  }}
+                >
+                  발급중입니다, 잠시 기다려주세요
+                </div>
+              </div>
+            )}
             <div className="absolute right-0 top-0 z-10">
               <button
                 type="button"
                 onClick={handleIssue}
-                className="rounded-xl border-2 border-lime-400/80 bg-lime-400/40 px-5 py-2.5 font-bold text-lime-950 shadow-[0_0_12px_rgba(134,239,172,0.5)] hover:bg-lime-400/60"
+                disabled={issueInProgress}
+                className="rounded-xl border-2 border-lime-400/80 bg-lime-400/40 px-5 py-2.5 font-bold text-lime-950 shadow-[0_0_12px_rgba(134,239,172,0.5)] hover:bg-lime-400/60 disabled:opacity-50"
               >
                 발급
               </button>
