@@ -2982,11 +2982,16 @@ function SeasonOrdersPage() {
         <p className="mt-4 border-t border-slate-700 pt-3 text-xs text-slate-400">권한에 관한 문의는 최고관리자에게 문의바랍니다 (정효조 / 010-2604-6588)</p>
       </Modal>
 
-      <main
-        ref={scrollRef}
-        className="flex min-h-0 flex-1 flex-row overflow-x-auto overflow-y-hidden px-2 pt-2 pb-2 snap-x snap-mandatory sm:px-3"
-        style={{ WebkitOverflowScrolling: "touch", paddingBottom: "3.5rem" }}
-      >
+      <main className="flex min-h-0 flex-1 flex-col px-2 pt-2 pb-2" style={{ paddingBottom: "3.5rem" }}>
+        <div
+          ref={scrollRef}
+          className="flex min-h-0 flex-row overflow-x-auto overflow-y-hidden snap-x snap-mandatory sm:px-1"
+          style={{
+            WebkitOverflowScrolling: "touch",
+            height: "85%",
+            minHeight: 0,
+          }}
+        >
         {Array.from({ length: SEASON_ORDER_BOARD_COUNT }, (_, boardIndex) => {
           const items = data.items
             .filter((i) => i.boardIndex === boardIndex)
@@ -3052,6 +3057,7 @@ function SeasonOrdersPage() {
             </div>
           );
         })}
+        </div>
       </main>
 
       <footer
