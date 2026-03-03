@@ -25,7 +25,7 @@ import {
 import { DateWheel } from "./components/DateWheel";
 import { Modal } from "./components/Modal";
 import { TextField, SelectField, PrimaryButton, SecondaryButton } from "./components/ui";
-import { fetchDailyTodos, saveDailyTodos } from "./lib/dailyTodosApi";
+import { fetchDailyTodos, saveDailyTodos, type DailyTodoItem } from "./lib/dailyTodosApi";
 import { ROLE_LABEL, ROLE_LEVELS, canRequestEdits, canWriteOrders, canReflectToPlan, canAddPlanItem, canEditDailyTodos, canExportExcel, canIssueCertificate } from "./lib/permissions";
 import { fetchPendingApprovalUsers, approveUser, fetchApprovedUsers } from "./lib/approvalApi";
 import { savePushSubscription } from "./lib/pushApi";
@@ -2094,18 +2094,20 @@ function MainMenuPage() {
 
   const [todayPlanItems, setTodayPlanItems] = React.useState<SowingPlanItem[]>([]);
   const [ordersAll, setOrdersAll] = React.useState<Order[]>([]);
-  const [dailyTodoLines, setDailyTodoLines] = React.useState<string[]>([]);
-  const [dailyTodoLinesTomorrow, setDailyTodoLinesTomorrow] = React.useState<string[]>([]);
+  const [dailyTodoLines, setDailyTodoLines] = React.useState<DailyTodoItem[]>([]);
+  const [dailyTodoLinesTomorrow, setDailyTodoLinesTomorrow] = React.useState<DailyTodoItem[]>([]);
   const [billboardsLoading, setBillboardsLoading] = React.useState(true);
   const [dailyTodoEditOpen, setDailyTodoEditOpen] = React.useState(false);
   const [dailyTodoEditDate, setDailyTodoEditDate] = React.useState<string>(todayStr);
-  const [dailyTodoEditLines, setDailyTodoEditLines] = React.useState<string[]>([]);
+  const [dailyTodoEditItems, setDailyTodoEditItems] = React.useState<DailyTodoItem[]>([]);
+  const [dailyTodoCompleteIndex, setDailyTodoCompleteIndex] = React.useState<{ panel: "today" | "tomorrow"; index: number } | null>(null);
   const [dailyTodoSaving, setDailyTodoSaving] = React.useState(false);
   const [dailyTodoSaveError, setDailyTodoSaveError] = React.useState<string | null>(null);
   const [billboardExpanded, setBillboardExpanded] = React.useState<[boolean, boolean, boolean, boolean]>([true, true, false, false]);
   const [unprocessedPendingCount, setUnprocessedPendingCount] = React.useState(0);
   const hasAutoExpandedTodayTodo = React.useRef(false);
   const hasAutoExpandedTomorrowTodo = React.useRef(false);
+  const lastTodoDateRef = React.useRef<string | undefined>(undefined);
 
   React.useEffect(() => {
     if (dailyTodoLines.length > 0 && !hasAutoExpandedTodayTodo.current) {
@@ -2147,8 +2149,22 @@ function MainMenuPage() {
         if (cancelled) return;
         setTodayPlanItems(planRes ?? []);
         setOrdersAll((ordersRes.data as Order[]) ?? []);
-        setDailyTodoLines(Array.isArray(todosTodayRes) ? todosTodayRes : []);
-        setDailyTodoLinesTomorrow(Array.isArray(todosTomorrowRes) ? todosTomorrowRes : []);
+        const todayItems = Array.isArray(todosTodayRes) ? todosTodayRes : [];
+        const tomorrowItems = Array.isArray(todosTomorrowRes) ? todosTomorrowRes : [];
+        const dateRolledOver = lastTodoDateRef.current !== undefined && lastTodoDateRef.current !== todayStr;
+        if (dateRolledOver && todayItems.some((item) => item.completed) && user?.id) {
+          const todayFiltered = todayItems.filter((item) => !item.completed);
+          try {
+            await saveDailyTodos(todayStr, todayFiltered, user.id);
+          } catch {
+            // ignore rollover save error
+          }
+          setDailyTodoLines(todayFiltered);
+        } else {
+          setDailyTodoLines(todayItems);
+        }
+        setDailyTodoLinesTomorrow(tomorrowItems);
+        lastTodoDateRef.current = todayStr;
         const count = typeof pendingCount === "number" ? pendingCount : 0;
         setUnprocessedPendingCount(count);
         setAppIconBadge(count);
@@ -2159,7 +2175,7 @@ function MainMenuPage() {
     return () => {
       cancelled = true;
     };
-  }, [todayStr, tomorrowStr]);
+  }, [todayStr, tomorrowStr, user?.id]);
 
   const ordersMovedToIndoorToday = React.useMemo(() => {
     return ordersAll.filter((o) => getOrderIndoorStartDate(o) === todayStr);
@@ -2167,9 +2183,9 @@ function MainMenuPage() {
 
   const canEditTodos = canEditDailyTodos(user);
 
-  const openDailyTodoEdit = (date: string, lines: string[]) => {
+  const openDailyTodoEdit = (date: string, items: DailyTodoItem[]) => {
     setDailyTodoEditDate(date);
-    setDailyTodoEditLines(lines.length > 0 ? [...lines] : [""]);
+    setDailyTodoEditItems(items.length > 0 ? items.map((i) => ({ ...i })) : [{ text: "", completed: false }]);
     setDailyTodoSaveError(null);
     setDailyTodoEditOpen(true);
   };
@@ -2179,7 +2195,7 @@ function MainMenuPage() {
       setDailyTodoSaveError("Supabase가 연결되지 않아 저장할 수 없습니다.");
       return;
     }
-    const saved = dailyTodoEditLines.filter((l) => l.trim() !== "");
+    const saved = dailyTodoEditItems.filter((i) => i.text.trim() !== "").map((i) => ({ text: i.text.trim(), completed: i.completed }));
     setDailyTodoSaving(true);
     setDailyTodoSaveError(null);
     try {
@@ -2195,6 +2211,22 @@ function MainMenuPage() {
       setDailyTodoSaveError(msg);
     } finally {
       setDailyTodoSaving(false);
+    }
+  };
+
+  const setTodoItemCompleted = async (panel: "today" | "tomorrow", index: number) => {
+    if (!user || !isSupabaseConfigured) return;
+    const items = panel === "today" ? dailyTodoLines : dailyTodoLinesTomorrow;
+    const date = panel === "today" ? todayStr : tomorrowStr;
+    if (index < 0 || index >= items.length) return;
+    const next = items.map((item, i) => (i === index ? { ...item, completed: true } : item));
+    try {
+      await saveDailyTodos(date, next, user.id);
+      if (panel === "today") setDailyTodoLines(next);
+      else setDailyTodoLinesTomorrow(next);
+      setDailyTodoCompleteIndex(null);
+    } catch {
+      // ignore
     }
   };
 
@@ -2464,12 +2496,26 @@ function MainMenuPage() {
                 </p>
               ) : (
                 <ul className="space-y-1 sm:space-y-1.5">
-                  {dailyTodoLines.map((line, i) => (
-                    <li
-                      key={i}
-                      className="rounded-lg bg-slate-800/60 px-2.5 py-1.5 text-sm text-slate-200 sm:px-3 sm:py-2 sm:text-base"
-                    >
-                      {line}
+                  {dailyTodoLines.map((item, i) => (
+                    <li key={i} className="rounded-lg bg-slate-800/60 px-2.5 py-1.5 sm:px-3 sm:py-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setDailyTodoCompleteIndex((prev) => (prev?.panel === "today" && prev?.index === i ? null : { panel: "today", index: i }))}
+                          className={`min-w-0 flex-1 text-left text-sm text-slate-200 sm:text-base ${item.completed ? "line-through opacity-75" : ""}`}
+                        >
+                          {item.text}
+                        </button>
+                        {dailyTodoCompleteIndex?.panel === "today" && dailyTodoCompleteIndex?.index === i && !item.completed && (
+                          <button
+                            type="button"
+                            onClick={() => void setTodoItemCompleted("today", i)}
+                            className="shrink-0 rounded bg-emerald-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-emerald-500 sm:py-1.5 sm:text-sm"
+                          >
+                            완료
+                          </button>
+                        )}
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -2513,12 +2559,26 @@ function MainMenuPage() {
                 </p>
               ) : (
                 <ul className="space-y-1 sm:space-y-1.5">
-                  {dailyTodoLinesTomorrow.map((line, i) => (
-                    <li
-                      key={i}
-                      className="rounded-lg bg-slate-800/60 px-2.5 py-1.5 text-sm text-slate-200 sm:px-3 sm:py-2 sm:text-base"
-                    >
-                      {line}
+                  {dailyTodoLinesTomorrow.map((item, i) => (
+                    <li key={i} className="rounded-lg bg-slate-800/60 px-2.5 py-1.5 sm:px-3 sm:py-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setDailyTodoCompleteIndex((prev) => (prev?.panel === "tomorrow" && prev?.index === i ? null : { panel: "tomorrow", index: i }))}
+                          className={`min-w-0 flex-1 text-left text-sm text-slate-200 sm:text-base ${item.completed ? "line-through opacity-75" : ""}`}
+                        >
+                          {item.text}
+                        </button>
+                        {dailyTodoCompleteIndex?.panel === "tomorrow" && dailyTodoCompleteIndex?.index === i && !item.completed && (
+                          <button
+                            type="button"
+                            onClick={() => void setTodoItemCompleted("tomorrow", i)}
+                            className="shrink-0 rounded bg-emerald-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-emerald-500 sm:py-1.5 sm:text-sm"
+                          >
+                            완료
+                          </button>
+                        )}
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -2606,15 +2666,15 @@ function MainMenuPage() {
             </p>
           )}
           <p className="text-sm text-slate-400">한 줄씩 입력하세요. 빈 줄은 저장 시 제외됩니다.</p>
-          {dailyTodoEditLines.map((line, i) => (
+          {dailyTodoEditItems.map((item, i) => (
             <div key={i} className="flex gap-2">
               <input
                 type="text"
-                value={line}
+                value={item.text}
                 onChange={(e) => {
-                  const next = [...dailyTodoEditLines];
-                  next[i] = e.target.value;
-                  setDailyTodoEditLines(next);
+                  const next = [...dailyTodoEditItems];
+                  next[i] = { ...next[i], text: e.target.value };
+                  setDailyTodoEditItems(next);
                 }}
                 className="flex-1 rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 placeholder-slate-500"
                 placeholder="할 일 한 줄"
@@ -2622,7 +2682,7 @@ function MainMenuPage() {
               <button
                 type="button"
                 onClick={() =>
-                  setDailyTodoEditLines(dailyTodoEditLines.filter((_, j) => j !== i))
+                  setDailyTodoEditItems(dailyTodoEditItems.filter((_, j) => j !== i))
                 }
                 className="rounded-lg bg-slate-700 px-3 py-2 text-slate-300 hover:bg-slate-600"
               >
@@ -2633,15 +2693,15 @@ function MainMenuPage() {
           <div className="flex flex-wrap gap-2 pt-2">
             <button
               type="button"
-              onClick={() => setDailyTodoEditLines([...dailyTodoEditLines, ""])}
+              onClick={() => setDailyTodoEditItems([...dailyTodoEditItems, { text: "", completed: false }])}
               className="rounded-lg border border-slate-600 bg-slate-800 px-4 py-2 text-sm text-slate-200 hover:bg-slate-700"
             >
               + 줄 추가
             </button>
             <button
               type="button"
-              onClick={() => setDailyTodoEditLines([])}
-              disabled={dailyTodoSaving || dailyTodoEditLines.length === 0}
+              onClick={() => setDailyTodoEditItems([])}
+              disabled={dailyTodoSaving || dailyTodoEditItems.length === 0}
               className="rounded-lg border border-red-800 bg-red-900/50 px-4 py-2 text-sm text-red-200 hover:bg-red-800/70 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               전체삭제
