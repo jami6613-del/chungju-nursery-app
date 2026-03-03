@@ -2914,8 +2914,16 @@ function SeasonOrdersPage() {
   if (!user) return <Navigate to="/" replace />;
 
   return (
-    <div className="flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-slate-950 text-slate-100">
-      <header className="shrink-0 border-b border-slate-800 bg-slate-900/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
+    <div
+      className="grid overflow-hidden bg-slate-950 text-slate-100"
+      style={{
+        height: "100dvh",
+        maxHeight: "100vh",
+        minHeight: "-webkit-fill-available",
+        gridTemplateRows: "auto 1fr",
+      }}
+    >
+      <header className="min-h-0 border-b border-slate-800 bg-slate-900/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
         <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-0">
           <div className="min-w-0">
             <div className="truncate text-lg font-extrabold tracking-tight sm:text-2xl">충주 친환경 육묘장</div>
@@ -2943,7 +2951,7 @@ function SeasonOrdersPage() {
         <p className="mt-4 border-t border-slate-700 pt-3 text-xs text-slate-400">권한에 관한 문의는 최고관리자에게 문의바랍니다 (정효조 / 010-2604-6588)</p>
       </Modal>
 
-      <main className="relative min-h-0 flex-1 overflow-hidden">
+      <main className="relative min-h-0 overflow-hidden">
         <div
           className="absolute inset-0 flex flex-row overflow-x-auto overflow-y-hidden px-2 pt-2 pb-3 snap-x snap-mandatory sm:px-3"
           style={{ WebkitOverflowScrolling: "touch" }}
@@ -2964,12 +2972,14 @@ function SeasonOrdersPage() {
             return (
               <div
                 key={boardIndex}
-                className="flex h-full w-[calc(100vw-1rem)] min-w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-shrink-0 snap-start flex-col overflow-hidden rounded-xl border-4 border-slate-400 bg-slate-200/40 sm:w-[calc((100vw-2rem)/2)] sm:min-w-[calc((100vw-2rem)/2)] sm:max-w-[calc((100vw-2rem)/2)] lg:w-[calc((100vw-4rem)/3)] lg:min-w-[calc((100vw-4rem)/3)] lg:max-w-[calc((100vw-4rem)/3)]"
+                className="grid h-full w-[calc(100vw-1rem)] min-w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-shrink-0 snap-start overflow-hidden rounded-xl border-4 border-slate-400 bg-slate-200/40 sm:w-[calc((100vw-2rem)/2)] sm:min-w-[calc((100vw-2rem)/2)] sm:max-w-[calc((100vw-2rem)/2)] lg:w-[calc((100vw-4rem)/3)] lg:min-w-[calc((100vw-4rem)/3)] lg:max-w-[calc((100vw-4rem)/3)]"
                 style={{
                   boxShadow: "0 4px 6px -1px rgba(0,0,0,0.12), 0 8px 20px -4px rgba(0,0,0,0.14), 0 0 0 1px rgba(0,0,0,0.06) inset",
+                  gridTemplateRows: "auto 1fr auto",
+                  minHeight: 0,
                 }}
               >
-                <div className="flex shrink-0 items-center justify-between border-b-2 border-slate-400 bg-gradient-to-b from-slate-300 to-slate-400 px-3 py-2.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3)] sm:px-3 sm:py-3">
+                <div className="flex min-h-0 shrink-0 items-center justify-between border-b-2 border-slate-400 bg-gradient-to-b from-slate-300 to-slate-400 px-3 py-2.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3)] sm:px-3 sm:py-3">
                   <button
                     type="button"
                     onClick={() => handleCropNameOpen(boardIndex)}
@@ -2985,12 +2995,14 @@ function SeasonOrdersPage() {
                     +
                   </button>
                 </div>
-                <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-gradient-to-b from-slate-50/95 to-white">
-                  <div
-                    className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-2"
-                    style={{ boxShadow: "inset 0 2px 8px rgba(0,0,0,0.04)", WebkitOverflowScrolling: "touch", minHeight: 0 }}
-                  >
-                    <div className="space-y-1">
+                <div
+                  className="min-h-0 overflow-y-auto overflow-x-hidden bg-gradient-to-b from-slate-50/95 to-white p-2 sm:p-2"
+                  style={{
+                    boxShadow: "inset 0 2px 8px rgba(0,0,0,0.04)",
+                    WebkitOverflowScrolling: "touch",
+                  }}
+                >
+                  <div className="space-y-1">
                       {items.map((item) => (
                         <button
                           key={item.id}
@@ -3012,13 +3024,15 @@ function SeasonOrdersPage() {
                           <span className="min-w-0 shrink font-medium text-slate-900">{formatContactDisplay(item.contact)}</span>
                         </button>
                       ))}
-                    </div>
                   </div>
-                  <div className="flex shrink-0 items-center justify-center border-t-2 border-slate-400 bg-gradient-to-b from-slate-200 to-slate-300 px-2 py-2 text-center font-bold text-slate-800 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.25)]" style={{ fontSize: "clamp(0.9rem, 3.5vw, 1.1rem)", minHeight: "2.5rem" }}>
-                    {varietySummaryEntries.length > 0
-                      ? varietySummaryEntries.map(([v, n]) => `${v}: ${n}개`).join(" │ ")
-                      : "—"}
-                  </div>
+                </div>
+                <div
+                  className="flex shrink-0 items-center justify-center border-t-2 border-slate-400 bg-gradient-to-b from-slate-200 to-slate-300 px-2 py-2 text-center font-bold text-slate-800 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.25)]"
+                  style={{ fontSize: "clamp(0.9rem, 3.5vw, 1.1rem)", minHeight: "2.5rem" }}
+                >
+                  {varietySummaryEntries.length > 0
+                    ? varietySummaryEntries.map(([v, n]) => `${v}: ${n}개`).join(" │ ")
+                    : "—"}
                 </div>
               </div>
             );
