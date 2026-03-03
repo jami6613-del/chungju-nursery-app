@@ -7,6 +7,7 @@ export interface SeasonOrderItem {
   variety: string;
   quantity: string;
   contact: string;
+  note: string;
 }
 
 export interface SeasonOrderData {
@@ -39,6 +40,7 @@ function loadData(): SeasonOrderData {
             variety: typeof it.variety === "string" ? it.variety : "",
             quantity: typeof it.quantity === "string" ? it.quantity : "",
             contact: typeof it.contact === "string" ? it.contact : "",
+            note: typeof it.note === "string" ? it.note : "",
           });
         }
       }
@@ -82,6 +84,7 @@ export function addSeasonOrderItem(
     variety: variety.trim(),
     quantity: quantity.trim(),
     contact: contact.trim(),
+    note: "",
   };
   data.items.push(item);
   saveData(data);
@@ -90,7 +93,7 @@ export function addSeasonOrderItem(
 
 export function updateSeasonOrderItem(
   id: string,
-  updates: Partial<Pick<SeasonOrderItem, "orderer" | "variety" | "quantity" | "contact">>,
+  updates: Partial<Pick<SeasonOrderItem, "orderer" | "variety" | "quantity" | "contact" | "note">>,
 ): SeasonOrderItem | null {
   const data = loadData();
   const idx = data.items.findIndex((i) => i.id === id);
