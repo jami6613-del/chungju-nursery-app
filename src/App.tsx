@@ -2982,7 +2982,7 @@ function SeasonOrdersPage() {
         <p className="mt-4 border-t border-slate-700 pt-3 text-xs text-slate-400">권한에 관한 문의는 최고관리자에게 문의바랍니다 (정효조 / 010-2604-6588)</p>
       </Modal>
 
-      <main className="flex min-h-0 flex-1 flex-col px-2 pt-2 pb-2" style={{ paddingBottom: "3.5rem" }}>
+      <main className="flex min-h-0 flex-1 flex-col overflow-hidden px-2 pt-2 pb-2">
         <div
           ref={scrollRef}
           className="flex min-h-0 flex-row overflow-x-auto overflow-y-hidden snap-x snap-mandatory sm:px-1"
@@ -3058,20 +3058,15 @@ function SeasonOrdersPage() {
           );
         })}
         </div>
+        <div
+          className="flex min-h-0 shrink-0 items-center justify-center border-t-2 border-slate-400 bg-gradient-to-b from-slate-200 to-slate-300 px-3 py-2 text-center font-bold text-slate-800 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.25)]"
+          style={{ fontSize: "clamp(0.9rem, 3.5vw, 1.1rem)", minHeight: "2.5rem" }}
+        >
+          {varietyByBoard[visibleBoardIndex]?.length
+            ? varietyByBoard[visibleBoardIndex].map(([v, n]) => `${v}: ${n}개`).join(" │ ")
+            : "품종별 수량 합계"}
+        </div>
       </main>
-
-      <footer
-        className="fixed left-0 right-0 bottom-0 z-[9999] border-t-2 border-slate-500 bg-slate-300 px-3 py-2.5 text-center font-bold text-slate-800"
-        style={{
-          fontSize: "clamp(0.9rem, 3.5vw, 1.1rem)",
-          minHeight: "2.75rem",
-          paddingBottom: "max(0.5rem, env(safe-area-inset-bottom, 0px))",
-        }}
-      >
-        {varietyByBoard[visibleBoardIndex]?.length
-          ? varietyByBoard[visibleBoardIndex].map(([v, n]) => `${v}: ${n}개`).join(" │ ")
-          : "품종별 수량 합계"}
-      </footer>
 
       <Modal
         open={cropNameBoardIndex !== null}
