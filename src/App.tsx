@@ -26,6 +26,14 @@ import { DateWheel } from "./components/DateWheel";
 import { Modal } from "./components/Modal";
 import { TextField, SelectField, PrimaryButton, SecondaryButton } from "./components/ui";
 import { fetchDailyTodos, saveDailyTodos, type DailyTodoItem } from "./lib/dailyTodosApi";
+import {
+  fetchSeasonOrderData,
+  setBoardCropName,
+  addSeasonOrderItem,
+  updateSeasonOrderItem,
+  deleteSeasonOrderItem,
+  type SeasonOrderItem,
+} from "./lib/seasonOrdersApi";
 import { ROLE_LABEL, ROLE_LEVELS, canRequestEdits, canWriteOrders, canReflectToPlan, canAddPlanItem, canEditDailyTodos, canExportExcel, canIssueCertificate } from "./lib/permissions";
 import { fetchPendingApprovalUsers, approveUser, fetchApprovedUsers } from "./lib/approvalApi";
 import { savePushSubscription } from "./lib/pushApi";
@@ -2290,6 +2298,24 @@ function MainMenuPage() {
       ),
     },
     {
+      key: "seasonOrders",
+      title: "시즌 작물 주문현황",
+      to: "/season-orders",
+      icon: (
+        <svg viewBox="0 0 40 40" className="h-11 w-11 text-teal-300">
+          <rect x="6" y="8" width="28" height="24" rx="3" className="fill-teal-500/20" />
+          <path
+            d="M12 16h8M12 22h12M12 28h6"
+            className="stroke-teal-300"
+            strokeWidth="2"
+            fill="none"
+            strokeLinecap="round"
+          />
+          <circle cx="28" cy="28" r="5" className="fill-teal-400/80" />
+        </svg>
+      ),
+    },
+    {
       key: "admin",
       title: "관리자 메뉴",
       to: "/admin",
@@ -2793,6 +2819,358 @@ function canEditDeleteUnprocessedOrder(
   if (order.created_by === user.id) return true;
   const authorLevel = order.created_by_role_level ?? 3;
   return user.role_level < authorLevel; // 숫자 작을수록 상위 등급
+}
+
+const SEASON_ORDER_BOARD_COUNT = 5;
+
+function parseQuantityToNumber(q: string): number {
+  const n = parseInt(String(q || "").replace(/[^\d]/g, ""), 10);
+  return Number.isNaN(n) ? 0 : n;
+}
+
+function SeasonOrdersPage() {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const [roleInfoOpen, setRoleInfoOpen] = React.useState(false);
+  const [data, setData] = React.useState(fetchSeasonOrderData);
+  const [cropNameBoardIndex, setCropNameBoardIndex] = React.useState<number | null>(null);
+  const [cropNameInput, setCropNameInput] = React.useState("");
+  const [addBoardIndex, setAddBoardIndex] = React.useState<number | null>(null);
+  const [addForm, setAddForm] = React.useState({
+    orderer: "",
+    variety: "",
+    quantity: "",
+    contact: "",
+    note: "",
+  });
+  const [editItem, setEditItem] = React.useState<SeasonOrderItem | null>(null);
+  const [editForm, setEditForm] = React.useState({ orderer: "", variety: "", quantity: "", contact: "", note: "" });
+
+  const loadData = React.useCallback(() => setData(fetchSeasonOrderData()), []);
+
+  const handleCropNameOpen = (boardIndex: number) => {
+    setCropNameBoardIndex(boardIndex);
+    setCropNameInput(data.boards[boardIndex] ?? "");
+  };
+
+  const handleCropNameSave = () => {
+    if (cropNameBoardIndex === null) return;
+    setBoardCropName(cropNameBoardIndex, cropNameInput);
+    loadData();
+    setCropNameBoardIndex(null);
+  };
+
+  const handleAddOpen = (boardIndex: number) => {
+    setAddBoardIndex(boardIndex);
+    setAddForm({ orderer: "", variety: "", quantity: "", contact: "", note: "" });
+  };
+
+  const handleAddSave = () => {
+    if (addBoardIndex === null) return;
+    addSeasonOrderItem(
+      addBoardIndex,
+      addForm.orderer,
+      addForm.variety,
+      addForm.quantity,
+      addForm.contact,
+      addForm.note,
+    );
+    loadData();
+    setAddBoardIndex(null);
+  };
+
+  const handleEditOpen = (item: SeasonOrderItem) => {
+    setEditItem(item);
+    setEditForm({
+      orderer: item.orderer,
+      variety: item.variety,
+      quantity: item.quantity,
+      contact: item.contact,
+      note: item.note,
+    });
+  };
+
+  const handleEditSave = () => {
+    if (!editItem) return;
+    updateSeasonOrderItem(editItem.id, editForm);
+    loadData();
+    setEditItem(null);
+  };
+
+  const handleDeleteItem = (item: SeasonOrderItem) => {
+    if (!window.confirm("이 주문을 삭제하시겠습니까?")) return;
+    deleteSeasonOrderItem(item.id);
+    loadData();
+    setEditItem(null);
+  };
+
+  if (!user) return <Navigate to="/" replace />;
+
+  return (
+    <div className="flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-slate-950 text-slate-100">
+      <header className="shrink-0 border-b border-slate-800 bg-slate-900/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-0">
+          <div className="min-w-0">
+            <div className="truncate text-lg font-extrabold tracking-tight sm:text-2xl">충주 친환경 육묘장</div>
+            <div className="text-xs text-slate-400 sm:text-sm">시즌 작물 주문현황</div>
+          </div>
+          <div className="flex flex-shrink-0 items-center gap-2.5 text-right text-[0.825rem] sm:gap-3 sm:text-[1.1rem]">
+            <button type="button" onClick={() => setRoleInfoOpen(true)} className="rounded-full bg-slate-800 px-2.5 py-2 text-slate-200 hover:bg-slate-700 sm:px-3.5 sm:py-2.5">
+              {ROLE_LABEL[user.role_level]}
+            </button>
+            <button type="button" onClick={() => void signOut()} className="rounded-lg bg-slate-800 px-2.5 py-2 text-slate-200 hover:bg-slate-700 sm:px-3.5 sm:py-2.5">
+              로그아웃
+            </button>
+            <button type="button" onClick={() => navigate("/menu")} className="rounded-lg bg-slate-800 px-2.5 py-2 text-slate-200 hover:bg-slate-700 sm:px-3.5 sm:py-2.5">
+              메인메뉴
+            </button>
+          </div>
+        </div>
+      </header>
+      <Modal open={roleInfoOpen} title="권한 등급 안내" onClose={() => setRoleInfoOpen(false)}>
+        <div className="space-y-2 text-sm text-slate-200">
+          {ROLE_LEVELS.map((level) => (
+            <div key={level}>{ROLE_LABEL[level]}{level === user.role_level && <span className="ml-1 text-amber-400">* 현재 나의 등급입니다.</span>}</div>
+          ))}
+        </div>
+        <p className="mt-4 border-t border-slate-700 pt-3 text-xs text-slate-400">권한에 관한 문의는 최고관리자에게 문의바랍니다 (정효조 / 010-2604-6588)</p>
+      </Modal>
+
+      <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <div
+          className="flex min-h-full flex-1 flex-row overflow-x-auto overflow-y-hidden px-2 pt-2 pb-3 snap-x snap-mandatory sm:px-3"
+          style={{ WebkitOverflowScrolling: "touch" }}
+        >
+          {Array.from({ length: SEASON_ORDER_BOARD_COUNT }, (_, boardIndex) => {
+            const items = data.items
+              .filter((i) => i.boardIndex === boardIndex)
+              .sort((a, b) => (a.variety || "").localeCompare(b.variety || "", undefined, { numeric: true }));
+            const varietyTotals: Record<string, number> = {};
+            for (const it of items) {
+              const v = it.variety || "미지정";
+              varietyTotals[v] = (varietyTotals[v] || 0) + parseQuantityToNumber(it.quantity);
+            }
+            const varietySummaryEntries = Object.entries(varietyTotals)
+              .filter(([, n]) => n > 0)
+              .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }));
+
+            return (
+              <div
+                key={boardIndex}
+                className="flex w-[calc(100vw-1rem)] min-w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-shrink-0 snap-start flex-col overflow-hidden rounded-xl border-4 border-slate-400 bg-slate-200/40 sm:w-[calc((100vw-2rem)/2)] sm:min-w-[calc((100vw-2rem)/2)] sm:max-w-[calc((100vw-2rem)/2)] lg:w-[calc((100vw-4rem)/3)] lg:min-w-[calc((100vw-4rem)/3)] lg:max-w-[calc((100vw-4rem)/3)]"
+                style={{
+                  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.12), 0 8px 20px -4px rgba(0,0,0,0.14), 0 0 0 1px rgba(0,0,0,0.06) inset",
+                }}
+              >
+                <div className="flex shrink-0 items-center justify-between border-b-2 border-slate-400 bg-gradient-to-b from-slate-300 to-slate-400 px-3 py-2.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3)] sm:px-3 sm:py-3">
+                  <button
+                    type="button"
+                    onClick={() => handleCropNameOpen(boardIndex)}
+                    className="flex-1 cursor-pointer select-none text-center text-lg font-bold leading-tight text-slate-800 drop-shadow-sm sm:text-xl [font-size:clamp(0.75rem,5vw,1.75rem)]"
+                  >
+                    {data.boards[boardIndex] || "작물명을 터치하여 입력"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAddOpen(boardIndex)}
+                    className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-slate-500/80 text-white shadow-md hover:bg-slate-600 sm:h-8 sm:w-8"
+                  >
+                    +
+                  </button>
+                </div>
+                <div className="flex min-h-0 flex-1 flex-col bg-gradient-to-b from-slate-50/95 to-white">
+                  <div
+                    className="min-h-0 flex-1 space-y-1 overflow-y-auto p-2 sm:p-2"
+                    style={{ boxShadow: "inset 0 2px 8px rgba(0,0,0,0.04)", WebkitOverflowScrolling: "touch" }}
+                  >
+                    {items.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => handleEditOpen(item)}
+                        className="flex w-full flex-nowrap items-center gap-x-1 overflow-hidden rounded-lg bg-slate-200/40 px-2 py-1.5 text-left hover:bg-slate-200/60 sm:rounded-lg"
+                        style={{
+                          fontFamily: "'Malgun Gothic', '맑은 고딕', sans-serif",
+                          fontSize: "clamp(1rem, 3.5vw, 1.35rem)",
+                          letterSpacing: "-0.03em",
+                        }}
+                      >
+                        <span className="min-w-0 shrink font-medium text-slate-900">{item.orderer || "-"}</span>
+                        <span className="shrink-0 text-slate-500">│</span>
+                        <span className="min-w-0 shrink font-medium text-slate-900">{item.variety || "-"}</span>
+                        <span className="shrink-0 text-slate-500">│</span>
+                        <span className="min-w-0 shrink font-medium text-slate-900">{item.quantity || "-"}</span>
+                        <span className="shrink-0 text-slate-500">│</span>
+                        <span className="min-w-0 shrink font-medium text-slate-900">{item.contact || "-"}</span>
+                        {item.note ? (
+                          <>
+                            <span className="shrink-0 text-slate-500">│</span>
+                            <span className="min-w-0 shrink truncate text-slate-700">{item.note}</span>
+                          </>
+                        ) : null}
+                      </button>
+                    ))}
+                  </div>
+                  {varietySummaryEntries.length > 0 && (
+                    <div className="shrink-0 border-t-2 border-slate-400 bg-gradient-to-b from-slate-200 to-slate-300 px-2 py-2 text-center font-bold text-slate-800 text-[0.9rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.25)]">
+                      {varietySummaryEntries.map(([v, n]) => `${v}: ${n}개`).join(" │ ")}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </main>
+
+      <Modal
+        open={cropNameBoardIndex !== null}
+        title="작물명 입력"
+        onClose={() => setCropNameBoardIndex(null)}
+      >
+        <p className="mb-3 text-sm text-slate-400">작물명을 입력하세요</p>
+        <input
+          type="text"
+          value={cropNameInput}
+          onChange={(e) => setCropNameInput(e.target.value)}
+          placeholder="작물명"
+          className="mb-4 w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 placeholder-slate-500"
+          autoFocus
+        />
+        <div className="flex justify-end gap-2">
+          <SecondaryButton onClick={() => setCropNameBoardIndex(null)}>취소</SecondaryButton>
+          <PrimaryButton onClick={handleCropNameSave}>저장</PrimaryButton>
+        </div>
+      </Modal>
+
+      <Modal
+        open={addBoardIndex !== null}
+        title="주문 추가"
+        onClose={() => setAddBoardIndex(null)}
+      >
+        <div className="space-y-3">
+          <div>
+            <label className="mb-1 block text-xs text-slate-400">주문자</label>
+            <input
+              value={addForm.orderer}
+              onChange={(e) => setAddForm((p) => ({ ...p, orderer: e.target.value }))}
+              className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              placeholder="주문자"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-slate-400">품종</label>
+            <input
+              value={addForm.variety}
+              onChange={(e) => setAddForm((p) => ({ ...p, variety: e.target.value }))}
+              className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              placeholder="품종"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-slate-400">수량</label>
+            <input
+              value={addForm.quantity}
+              onChange={(e) => setAddForm((p) => ({ ...p, quantity: e.target.value }))}
+              className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              placeholder="수량"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-slate-400">연락처</label>
+            <input
+              value={addForm.contact}
+              onChange={(e) => setAddForm((p) => ({ ...p, contact: e.target.value }))}
+              className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              placeholder="연락처"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-slate-400">비고</label>
+            <input
+              value={addForm.note}
+              onChange={(e) => setAddForm((p) => ({ ...p, note: e.target.value }))}
+              className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              placeholder="비고"
+            />
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <SecondaryButton onClick={() => setAddBoardIndex(null)}>취소</SecondaryButton>
+            <PrimaryButton onClick={handleAddSave}>등록</PrimaryButton>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        open={editItem !== null}
+        title="주문 수정/삭제"
+        onClose={() => setEditItem(null)}
+      >
+        {editItem && (
+          <div className="space-y-3">
+            <div>
+              <label className="mb-1 block text-xs text-slate-400">주문자</label>
+              <input
+                value={editForm.orderer}
+                onChange={(e) => setEditForm((p) => ({ ...p, orderer: e.target.value }))}
+                className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+                placeholder="주문자"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs text-slate-400">품종</label>
+              <input
+                value={editForm.variety}
+                onChange={(e) => setEditForm((p) => ({ ...p, variety: e.target.value }))}
+                className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+                placeholder="품종"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs text-slate-400">수량</label>
+              <input
+                value={editForm.quantity}
+                onChange={(e) => setEditForm((p) => ({ ...p, quantity: e.target.value }))}
+                className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+                placeholder="수량"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs text-slate-400">연락처</label>
+              <input
+                value={editForm.contact}
+                onChange={(e) => setEditForm((p) => ({ ...p, contact: e.target.value }))}
+                className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+                placeholder="연락처"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs text-slate-400">비고</label>
+              <input
+                value={editForm.note}
+                onChange={(e) => setEditForm((p) => ({ ...p, note: e.target.value }))}
+                className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+                placeholder="비고"
+              />
+            </div>
+            <div className="flex justify-between pt-2">
+              <button
+                type="button"
+                onClick={() => handleDeleteItem(editItem)}
+                className="rounded-lg bg-red-900/60 px-4 py-2 text-sm text-red-200 hover:bg-red-800/70"
+              >
+                삭제
+              </button>
+              <div className="flex gap-2">
+                <SecondaryButton onClick={() => setEditItem(null)}>취소</SecondaryButton>
+                <PrimaryButton onClick={handleEditSave}>저장</PrimaryButton>
+              </div>
+            </div>
+          </div>
+        )}
+      </Modal>
+    </div>
+  );
 }
 
 function PlanningPage() {
@@ -5256,6 +5634,7 @@ function AppRoutes() {
       <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/planning" element={<PlanningPage />} />
       <Route path="/certificate" element={<CertificatePage />} />
+      <Route path="/season-orders" element={<SeasonOrdersPage />} />
       <Route path="/admin" element={<AdminPage />} />
       <Route path="/admin/approvals" element={<AdminApprovalsPage />} />
       <Route path="/admin/staff" element={<AdminStaffPage />} />
