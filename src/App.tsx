@@ -1426,6 +1426,10 @@ function DashboardPage() {
                         )
                       : 1
                     : null;
+                const sowingTotal = (o.quantity_base ?? 0) + (o.quantity_extra ?? 0);
+                const shippingNum = o.shipping_quantity != null ? Number(o.shipping_quantity) : null;
+                const quantityMismatch =
+                  stage === "shipped" && shippingNum != null && sowingTotal !== shippingNum;
                 return (
                   <React.Fragment key={o.id}>
                     {isMonthBreak && (
@@ -1440,6 +1444,14 @@ function DashboardPage() {
                     )}
                     <tr
                       className={`cursor-pointer border-t border-slate-800 hover:opacity-90 ${rowBgByStage[stage]}`}
+                      style={
+                        quantityMismatch
+                          ? {
+                              backgroundImage:
+                                "repeating-linear-gradient(135deg, transparent 0, transparent 4px, rgba(220,38,38,0.18) 4px, rgba(220,38,38,0.18) 5px)",
+                            }
+                          : undefined
+                      }
                       onClick={() => openEditPopup(o)}
                     >
                       <td className="whitespace-nowrap px-1.5 py-1.5 sm:px-3 sm:py-2">{sowingShort}</td>
