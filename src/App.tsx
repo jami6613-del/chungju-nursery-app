@@ -618,6 +618,11 @@ function DashboardPage() {
   const [outdoorConfirmBusy, setOutdoorConfirmBusy] = React.useState(false);
   const [outdoorCancelConfirmOrder, setOutdoorCancelConfirmOrder] = React.useState<Order | null>(null);
   const [outdoorCancelConfirmBusy, setOutdoorCancelConfirmBusy] = React.useState(false);
+  const [outdoorDayEditOrder, setOutdoorDayEditOrder] = React.useState<Order | null>(null);
+  const [outdoorDayEditValue, setOutdoorDayEditValue] = React.useState("");
+  const [outdoorDayEditBusy, setOutdoorDayEditBusy] = React.useState(false);
+  const outdoorDayLongPressTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const outdoorDaySuppressClickRef = React.useRef(false);
   const [shippingCancelConfirmOrder, setShippingCancelConfirmOrder] = React.useState<Order | null>(null);
   const [shippingCancelConfirmBusy, setShippingCancelConfirmBusy] = React.useState(false);
   const [deleteConfirmOrder, setDeleteConfirmOrder] = React.useState<Order | null>(null);
@@ -961,6 +966,51 @@ function DashboardPage() {
       alert("야외경화 취소 저장에 실패했습니다.");
     } finally {
       setOutdoorCancelConfirmBusy(false);
+    }
+  };
+
+  const clearOutdoorDayLongPressTimer = React.useCallback(() => {
+    if (outdoorDayLongPressTimerRef.current) {
+      clearTimeout(outdoorDayLongPressTimerRef.current);
+      outdoorDayLongPressTimerRef.current = null;
+    }
+  }, []);
+
+  const handleOutdoorDayEditSubmit = async () => {
+    if (!outdoorDayEditOrder || !user) return;
+    const n = parseInt(outdoorDayEditValue.trim(), 10);
+    if (Number.isNaN(n) || n < 1) {
+      alert("1 이상의 숫자를 입력해 주세요.");
+      return;
+    }
+    setOutdoorDayEditBusy(true);
+    const orderId = outdoorDayEditOrder.id;
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    const d = new Date(todayStr + "T00:00:00");
+    d.setDate(d.getDate() - (n - 1));
+    const newDateStr =
+      d.getFullYear() +
+      "-" +
+      String(d.getMonth() + 1).padStart(2, "0") +
+      "-" +
+      String(d.getDate()).padStart(2, "0");
+    try {
+      const { error } = await supabase
+        .from("orders")
+        .update({ outdoor_hardening: true, outdoor_hardening_at: newDateStr })
+        .eq("id", orderId);
+      if (error) throw error;
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === orderId ? { ...o, outdoor_hardening: true, outdoor_hardening_at: newDateStr } : o,
+        ),
+      );
+      setOutdoorDayEditOrder(null);
+      setOutdoorDayEditValue("");
+    } catch {
+      alert("야외경화 일차 수정에 실패했습니다.");
+    } finally {
+      setOutdoorDayEditBusy(false);
     }
   };
 
@@ -1452,7 +1502,13 @@ function DashboardPage() {
                             }
                           : undefined
                       }
-                      onClick={() => openEditPopup(o)}
+                      onClick={() => {
+                        if (outdoorDaySuppressClickRef.current) {
+                          outdoorDaySuppressClickRef.current = false;
+                          return;
+                        }
+                        openEditPopup(o);
+                      }}
                     >
                       <td className="whitespace-nowrap px-1.5 py-1.5 sm:px-3 sm:py-2">{sowingShort}</td>
                       <td className="min-w-0 max-w-[3.5rem] truncate px-1.5 py-1.5 sm:max-w-none sm:px-3 sm:py-2">{o.customer_name}</td>
@@ -1465,8 +1521,23 @@ function DashboardPage() {
                       <td className="whitespace-nowrap px-1.5 py-1.5 sm:px-3 sm:py-2">
                         {outdoorDays != null ? (
                           <span
-                            className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1 text-xs font-bold leading-none text-white"
-                            title={`야외경화 ${outdoorDays}일째`}
+                            role="button"
+                            tabIndex={0}
+                            className="inline-flex h-5 min-w-5 cursor-pointer items-center justify-center rounded-full bg-orange-500 px-1 text-xs font-bold leading-none text-white"
+                            title={`야외경화 ${outdoorDays}일째 (2초 길게 누르면 일차 수정)`}
+                            onPointerDown={(e) => {
+                              e.stopPropagation();
+                              clearOutdoorDayLongPressTimer();
+                              outdoorDayLongPressTimerRef.current = setTimeout(() => {
+                                outdoorDayLongPressTimerRef.current = null;
+                                outdoorDaySuppressClickRef.current = true;
+                                setOutdoorDayEditOrder(o);
+                                setOutdoorDayEditValue(String(outdoorDays));
+                              }, 2000);
+                            }}
+                            onPointerUp={clearOutdoorDayLongPressTimer}
+                            onPointerLeave={clearOutdoorDayLongPressTimer}
+                            onPointerCancel={clearOutdoorDayLongPressTimer}
                           >
                             {outdoorDays}
                           </span>
@@ -1964,6 +2035,45 @@ function DashboardPage() {
       </Modal>
 
       <Modal
+        open={outdoorDayEditOrder !== null}
+        onClose={() => {
+          if (!outdoorDayEditBusy) {
+            setOutdoorDayEditOrder(null);
+            setOutdoorDayEditValue("");
+          }
+        }}
+        title="야외경화 일차 수정"
+      >
+        <div className="flex flex-col gap-4">
+          <p className="text-slate-200">야외 경화 일차를 몇 일차로 변경할까요?</p>
+          <input
+            type="number"
+            min={1}
+            inputMode="numeric"
+            value={outdoorDayEditValue}
+            onChange={(e) => setOutdoorDayEditValue(e.target.value.replace(/\D/g, "").slice(0, 4))}
+            className="w-24 rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+            placeholder="일차"
+          />
+          <div className="flex justify-end gap-2">
+            <SecondaryButton
+              onClick={() => {
+                if (!outdoorDayEditBusy) {
+                  setOutdoorDayEditOrder(null);
+                  setOutdoorDayEditValue("");
+                }
+              }}
+            >
+              취소
+            </SecondaryButton>
+            <PrimaryButton onClick={handleOutdoorDayEditSubmit} disabled={outdoorDayEditBusy}>
+              확인
+            </PrimaryButton>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
         open={deleteConfirmOrder !== null}
         onClose={() => {
           if (!deleteOrderBusy) {
@@ -2353,7 +2463,7 @@ function MainMenuPage() {
     "rounded-xl border-2 border-slate-600/80 bg-slate-900/95 shadow-[inset_0_0_30px_rgba(0,0,0,0.5),0_4px_20px_rgba(0,0,0,0.4)] overflow-hidden sm:rounded-2xl";
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-b from-slate-950 via-slate-950 to-slate-900 text-slate-50">
+    <div className="flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-gradient-to-b from-slate-950 via-slate-950 to-slate-900 text-slate-50">
       <header className="shrink-0 border-b border-slate-800 bg-slate-950/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-0">
           <div className="min-w-0 flex-1 sm:min-w-0">
@@ -2400,9 +2510,9 @@ function MainMenuPage() {
         </p>
       </Modal>
 
-      <main className="flex min-h-0 flex-1 flex-col overflow-auto px-3 py-3 sm:px-4 sm:py-4">
-        {/* 전광판 3개: 내용이 많아지면 자연히 커지고, 그 아래 메뉴 버튼이 밀려남. 전체가 화면을 넘으면 스크롤. */}
-        <section className="flex shrink-0 flex-col gap-2 pb-2 sm:gap-3 sm:pb-3">
+      <main className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-3 py-3 sm:px-4 sm:py-4" style={{ WebkitOverflowScrolling: "touch" }}>
+        {/* 전광판 + 메뉴: 내용이 많으면 아래로 스크롤하여 메뉴 버튼까지 볼 수 있음 */}
+        <section className="flex flex-col gap-2 pb-2 sm:gap-3 sm:pb-3">
           {/* 1. 오늘의 파종 */}
           <div className={billboardBase}>
             <button
@@ -2626,8 +2736,8 @@ function MainMenuPage() {
           </div>
         </section>
 
-        {/* 하단 절반: 메뉴 버튼 4개 (모바일 2x2, PC도 2열) */}
-        <section className="shrink-0 pt-1">
+        {/* 하단: 메뉴 버튼 5개 (모바일 2x2, PC도 2열). 전광판이 많아도 아래로 스크롤하면 보임 */}
+        <section className="shrink-0 pb-4 pt-1" style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom, 0px))" }}>
           <div className="grid w-full max-w-3xl mx-auto grid-cols-2 gap-3 sm:gap-4">
             {tiles.map((tile) => {
               const disabled = tile.disabled;
