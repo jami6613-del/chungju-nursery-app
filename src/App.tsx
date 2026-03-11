@@ -1448,7 +1448,7 @@ function DashboardPage() {
                         quantityMismatch
                           ? {
                               backgroundImage:
-                                "repeating-linear-gradient(135deg, transparent 0, transparent 4px, rgba(220,38,38,0.18) 4px, rgba(220,38,38,0.18) 5px)",
+                                "repeating-linear-gradient(135deg, transparent 0, transparent 4px, rgba(220,38,38,0.75) 4px, rgba(220,38,38,0.75) 5px)",
                             }
                           : undefined
                       }
