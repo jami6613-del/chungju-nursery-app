@@ -346,7 +346,7 @@ export async function addOrdersFromPlanItems(
     const baseStr = i >= 0 ? (item.quantity || "").slice(0, i).trim() : (item.quantity || "").trim();
     const extraStr = i >= 0 ? (item.quantity || "").slice(i + 1).trim() : "";
     const quantity_base = parseInt(baseStr, 10) || 0;
-    const quantity_extra = parseInt(extraStr, 10) || 0;
+    const quantity_extra = parseFloat(extraStr.replace(",", ".")) || 0;
     const trayType = item.tray_type === "직접입력" ? (item.tray_custom || "").trim() : (item.tray_type || "").trim();
     const payload = {
       customer_name: (item.orderer || "").trim(),

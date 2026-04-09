@@ -10,6 +10,8 @@ export function TextField({
   size = "md",
   inputClassName,
   step,
+  inputMode,
+  pattern,
 }: {
   label: string;
   value: string;
@@ -21,6 +23,8 @@ export function TextField({
   inputClassName?: string;
   /** number 타입에서 소수점 허용 시 step="any" */
   step?: string;
+  inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
+  pattern?: string;
 }) {
   const isLg = size === "lg";
   return (
@@ -32,6 +36,8 @@ export function TextField({
         placeholder={placeholder}
         disabled={disabled}
         step={step}
+        inputMode={inputMode}
+        pattern={pattern}
         onChange={(e) => onChange(e.target.value)}
         className={`rounded-lg border border-slate-700 bg-slate-900 text-slate-50 shadow-inner shadow-black/40 focus:border-brand focus:outline-none disabled:opacity-60 sm:rounded-xl placeholder-slate-500 ${isLg ? "px-3 py-2 text-sm sm:px-4 sm:py-3 sm:text-base" : "px-2.5 py-1.5 text-sm sm:px-3 sm:py-2"} ${inputClassName ?? ""}`}
       />

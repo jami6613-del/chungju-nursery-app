@@ -795,7 +795,7 @@ function DashboardPage() {
         shipping_date: formState.shipping_date || null,
         tray_type: trayValue,
         quantity_base: Number(formState.quantity_base || "0"),
-        quantity_extra: Number(formState.quantity_extra || "0"),
+        quantity_extra: Number(String(formState.quantity_extra || "0").replace(",", ".")) || 0,
         shipping_quantity: formState.shipping_quantity
           ? Number(formState.shipping_quantity)
           : null,
@@ -1736,8 +1736,9 @@ function DashboardPage() {
                 label="추가 판"
                 value={formState.quantity_extra}
                 onChange={(v) => handleFormChange({ quantity_extra: v })}
-                type="number"
-                step="any"
+                type="text"
+                inputMode="decimal"
+                pattern="[0-9]*[\\.,]?[0-9]*"
                 size="lg"
               />
             </div>
