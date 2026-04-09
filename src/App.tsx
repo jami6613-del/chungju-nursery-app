@@ -3421,6 +3421,19 @@ function PlanningPage() {
   const unprocessedTouchStartRef = React.useRef<{ x: number; y: number } | null>(null);
   const unprocessedTouchMovedRef = React.useRef(false);
 
+  const scrollUnprocessedToTop = React.useCallback(() => {
+    const el = unprocessedListScrollRef.current;
+    if (!el) return;
+    // 페이지를 바꿀 때, 항상 상단부터 보이도록 강제
+    requestAnimationFrame(() => {
+      try {
+        el.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      } catch {
+        el.scrollTop = 0;
+      }
+    });
+  }, []);
+
   const threeDays = React.useMemo(() => getThreeDaysFrom(focusDate), [focusDate]);
 
   React.useEffect(() => {
@@ -4130,7 +4143,10 @@ function PlanningPage() {
                     <button
                       type="button"
                       disabled={unprocessedPage <= 1}
-                      onClick={() => setUnprocessedPage((p) => Math.max(1, p - 1))}
+                      onClick={() => {
+                        setUnprocessedPage((p) => Math.max(1, p - 1));
+                        scrollUnprocessedToTop();
+                      }}
                       className="rounded-lg bg-slate-800 px-2 py-1 text-xs text-slate-200 disabled:opacity-50 hover:bg-slate-700 sm:px-3 sm:py-1.5 sm:text-sm"
                     >
                       이전
@@ -4147,14 +4163,38 @@ function PlanningPage() {
                       <button
                         key={p}
                         type="button"
-                        onClick={() => setUnprocessedPage(p)}
+                        onClick={() => {
+                          setUnprocessedPage(p);
+                          scrollUnprocessedToTop();
+                        }}
                         className={`min-w-[1.75rem] rounded-lg px-1.5 py-1 text-xs sm:min-w-[2rem] sm:px-2 sm:py-1.5 sm:text-sm ${
                           p === unprocessedPage
                             ? "bg-amber-600 text-white"
                             : "bg-slate-800 text-slate-200 hover:bg-slate-700"
                         }`}
                       >
+                        <span className="relative inline-flex items-start justify-center">
                         {p}
+                        {(() => {
+                          const visible = unprocessed.filter((o) => !o.deleted_at);
+                          const maxPages = Math.min(UNPROCESSED_MAX_PAGES, Math.ceil(visible.length / UNPROCESSED_PAGE_SIZE));
+                          if (p > maxPages) return null;
+                          // 이 페이지에 '미반영(reflected_at 없음)' 글이 하나라도 있으면 빨간 점 표시
+                          const startIdx = (p - 1) * UNPROCESSED_PAGE_SIZE;
+                          const endIdx = Math.min(visible.length, startIdx + UNPROCESSED_PAGE_SIZE);
+                          let hasPending = false;
+                          for (let i = startIdx; i < endIdx; i++) {
+                            if (!visible[i].reflected_at) {
+                              hasPending = true;
+                              break;
+                            }
+                          }
+                          if (!hasPending) return null;
+                          return (
+                            <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-red-500 shadow-[0_0_0_2px_rgba(15,23,42,0.85)]" />
+                          );
+                        })()}
+                        </span>
                       </button>
                     ))}
                     <button
@@ -4166,15 +4206,16 @@ function PlanningPage() {
                           Math.ceil(unprocessed.filter((o) => !o.deleted_at).length / UNPROCESSED_PAGE_SIZE),
                         )
                       }
-                      onClick={() =>
+                      onClick={() => {
                         setUnprocessedPage((p) =>
                           Math.min(
                             UNPROCESSED_MAX_PAGES,
                             Math.ceil(unprocessed.filter((o) => !o.deleted_at).length / UNPROCESSED_PAGE_SIZE),
                             p + 1,
                           ),
-                        )
-                      }
+                        );
+                        scrollUnprocessedToTop();
+                      }}
                       className="rounded-lg bg-slate-800 px-2 py-1 text-xs text-slate-200 disabled:opacity-50 hover:bg-slate-700 sm:px-3 sm:py-1.5 sm:text-sm"
                     >
                       다음
