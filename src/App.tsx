@@ -4125,11 +4125,8 @@ function PlanningPage() {
                     ));
                   })()}
                 </ul>
-              </>
-            )}
-          </div>
-          {unprocessed.filter((o) => !o.deleted_at).length > UNPROCESSED_PAGE_SIZE && (
-            <div className="flex flex-wrap items-center justify-center gap-1.5 border-t border-slate-800 p-2 sm:gap-2 sm:p-3">
+                {unprocessed.filter((o) => !o.deleted_at).length > UNPROCESSED_PAGE_SIZE && (
+                  <div className="sticky bottom-0 z-10 mt-2 flex flex-wrap items-center justify-center gap-1.5 border-t border-slate-800 bg-slate-950/95 p-2 backdrop-blur sm:gap-2 sm:p-3">
                     <button
                       type="button"
                       disabled={unprocessedPage <= 1}
@@ -4138,27 +4135,36 @@ function PlanningPage() {
                     >
                       이전
                     </button>
-                    {Array.from({ length: Math.min(UNPROCESSED_MAX_PAGES, Math.ceil(unprocessed.filter((o) => !o.deleted_at).length / UNPROCESSED_PAGE_SIZE)) }, (_, i) => i + 1).map(
-                      (p) => (
-                        <button
-                          key={p}
-                          type="button"
-                          onClick={() => setUnprocessedPage(p)}
-                          className={`min-w-[1.75rem] rounded-lg px-1.5 py-1 text-xs sm:min-w-[2rem] sm:px-2 sm:py-1.5 sm:text-sm ${
-                            p === unprocessedPage
-                              ? "bg-amber-600 text-white"
-                              : "bg-slate-800 text-slate-200 hover:bg-slate-700"
-                          }`}
-                        >
-                          {p}
-                        </button>
-                      ),
-                    )}
+                    {Array.from(
+                      {
+                        length: Math.min(
+                          UNPROCESSED_MAX_PAGES,
+                          Math.ceil(unprocessed.filter((o) => !o.deleted_at).length / UNPROCESSED_PAGE_SIZE),
+                        ),
+                      },
+                      (_, i) => i + 1,
+                    ).map((p) => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => setUnprocessedPage(p)}
+                        className={`min-w-[1.75rem] rounded-lg px-1.5 py-1 text-xs sm:min-w-[2rem] sm:px-2 sm:py-1.5 sm:text-sm ${
+                          p === unprocessedPage
+                            ? "bg-amber-600 text-white"
+                            : "bg-slate-800 text-slate-200 hover:bg-slate-700"
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ))}
                     <button
                       type="button"
                       disabled={
                         unprocessedPage >=
-                        Math.min(UNPROCESSED_MAX_PAGES, Math.ceil(unprocessed.filter((o) => !o.deleted_at).length / UNPROCESSED_PAGE_SIZE))
+                        Math.min(
+                          UNPROCESSED_MAX_PAGES,
+                          Math.ceil(unprocessed.filter((o) => !o.deleted_at).length / UNPROCESSED_PAGE_SIZE),
+                        )
                       }
                       onClick={() =>
                         setUnprocessedPage((p) =>
@@ -4175,6 +4181,9 @@ function PlanningPage() {
                     </button>
                   </div>
                 )}
+              </>
+            )}
+          </div>
         </section>
       </main>
 
