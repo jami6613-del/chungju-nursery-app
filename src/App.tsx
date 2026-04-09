@@ -804,17 +804,19 @@ function DashboardPage() {
       };
 
       if (formState.id) {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from("orders")
           .update(payload)
           .eq("id", formState.id)
           .select()
           .single();
+        if (error) throw error;
         if (data) {
           setOrders((prev) => prev.map((o) => (o.id === data.id ? (data as Order) : o)));
         }
       } else {
-        const { data } = await supabase.from("orders").insert(payload).select().single();
+        const { data, error } = await supabase.from("orders").insert(payload).select().single();
+        if (error) throw error;
         if (data)
           setOrders((prev) =>
             [...prev, data as Order].sort((a, b) =>
@@ -824,6 +826,9 @@ function DashboardPage() {
       }
       setFormOpen(false);
       setFormState(emptyForm);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "저장에 실패했습니다.";
+      alert(msg + "\n\n소수점 저장이 안 되면 Supabase에서 supabase-orders-allow-decimal.sql 을 실행해 주세요.");
     } finally {
       setFormBusy(false);
     }
