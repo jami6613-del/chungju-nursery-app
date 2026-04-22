@@ -3196,7 +3196,7 @@ function SeasonOrdersPage() {
           className="flex min-h-0 flex-row overflow-x-auto overflow-y-hidden snap-x snap-mandatory sm:px-1"
           style={{
             WebkitOverflowScrolling: "touch",
-            height: "72%",
+            height: "78%",
             minHeight: 0,
           }}
         >
@@ -3278,7 +3278,7 @@ function SeasonOrdersPage() {
         </div>
         <div
           className="flex min-h-0 shrink-0 items-start justify-center border-t-2 border-slate-400 bg-gradient-to-b from-slate-200 to-slate-300 px-3 py-2 text-center font-bold text-slate-800 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.25)]"
-          style={{ fontSize: "clamp(0.9rem, 3.5vw, 1.1rem)", height: "28%", minHeight: "5.5rem" }}
+          style={{ fontSize: "clamp(0.9rem, 3.5vw, 1.1rem)", height: "23%", minHeight: "5rem" }}
         >
           {varietyByBoard[visibleBoardIndex]?.length ? (
             <div className="flex w-full flex-wrap justify-center gap-x-3 gap-y-1 overflow-hidden leading-tight">
