@@ -6,6 +6,7 @@ export interface SeasonOrderItem {
   orderer: string;
   variety: string;
   quantity: string;
+  quantity_unit: "판" | "포기";
   contact: string;
   note: string;
 }
@@ -39,6 +40,7 @@ function loadData(): SeasonOrderData {
             orderer: typeof it.orderer === "string" ? it.orderer : "",
             variety: typeof it.variety === "string" ? it.variety : "",
             quantity: typeof it.quantity === "string" ? it.quantity : "",
+            quantity_unit: (it as { quantity_unit?: unknown }).quantity_unit === "포기" ? "포기" : "판",
             contact: typeof it.contact === "string" ? it.contact : "",
             note: typeof it.note === "string" ? it.note : "",
           });
@@ -53,6 +55,19 @@ function loadData(): SeasonOrderData {
 
 function saveData(data: SeasonOrderData): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function normalizeKoreanMobile(contact: string): string {
+  const digits = String(contact || "").replace(/\D/g, "");
+  if (!digits) return "";
+
+  // 8자리만 입력하면 010을 붙여서 처리 (12345678 / 1234-5678)
+  const full = digits.length === 8 ? `010${digits}` : digits;
+
+  if (full.length >= 11) return `${full.slice(0, 3)}-${full.slice(3, 7)}-${full.slice(7, 11)}`;
+  if (full.length >= 7) return `${full.slice(0, 3)}-${full.slice(3, 7)}-${full.slice(7)}`;
+  if (full.length >= 4) return `${full.slice(0, 3)}-${full.slice(3)}`;
+  return full;
 }
 
 export function fetchSeasonOrderData(): SeasonOrderData {
@@ -74,6 +89,7 @@ export function addSeasonOrderItem(
   orderer: string,
   variety: string,
   quantity: string,
+  quantityUnit: "판" | "포기",
   contact: string,
 ): SeasonOrderItem {
   const data = loadData();
@@ -83,7 +99,8 @@ export function addSeasonOrderItem(
     orderer: orderer.trim(),
     variety: variety.trim(),
     quantity: quantity.trim(),
-    contact: contact.trim(),
+    quantity_unit: quantityUnit === "포기" ? "포기" : "판",
+    contact: normalizeKoreanMobile(contact.trim()),
     note: "",
   };
   data.items.push(item);
@@ -93,12 +110,21 @@ export function addSeasonOrderItem(
 
 export function updateSeasonOrderItem(
   id: string,
-  updates: Partial<Pick<SeasonOrderItem, "orderer" | "variety" | "quantity" | "contact" | "note">>,
+  updates: Partial<Pick<SeasonOrderItem, "orderer" | "variety" | "quantity" | "quantity_unit" | "contact" | "note">>,
 ): SeasonOrderItem | null {
   const data = loadData();
   const idx = data.items.findIndex((i) => i.id === id);
   if (idx < 0) return null;
-  const item = { ...data.items[idx], ...updates };
+  const merged = { ...data.items[idx], ...updates } as SeasonOrderItem;
+  const item: SeasonOrderItem = {
+    ...merged,
+    quantity_unit: merged.quantity_unit === "포기" ? "포기" : "판",
+    contact: updates.contact != null ? normalizeKoreanMobile(String(updates.contact)) : merged.contact,
+    orderer: typeof merged.orderer === "string" ? merged.orderer : "",
+    variety: typeof merged.variety === "string" ? merged.variety : "",
+    quantity: typeof merged.quantity === "string" ? merged.quantity : "",
+    note: typeof merged.note === "string" ? merged.note : "",
+  };
   data.items[idx] = item;
   saveData(data);
   return item;

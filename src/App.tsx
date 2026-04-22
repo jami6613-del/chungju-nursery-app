@@ -2952,8 +2952,17 @@ function canEditDeleteUnprocessedOrder(
 const SEASON_ORDER_BOARD_COUNT = 5;
 
 function parseQuantityToNumber(q: string): number {
-  const n = parseInt(String(q || "").replace(/[^\d]/g, ""), 10);
+  const s = String(q || "").replace(",", ".");
+  const m = s.match(/-?\d+(\.\d+)?/);
+  const n = m ? parseFloat(m[0]) : NaN;
   return Number.isNaN(n) ? 0 : n;
+}
+
+function formatQty(n: number): string {
+  if (!Number.isFinite(n)) return "0";
+  if (Number.isInteger(n)) return String(n);
+  // 소수는 최대 2자리까지만 (0.5 / 1.25 등)
+  return String(parseFloat(n.toFixed(2)));
 }
 
 /** 연락처: 숫자만 or 하이픈 포함 입력 → 000-0000-0000 형식 표시 */
@@ -2978,10 +2987,25 @@ function SeasonOrdersPage() {
     orderer: "",
     variety: "",
     quantity: "",
+    quantity_unit: "판" as "판" | "포기",
     contact: "",
   });
   const [editItem, setEditItem] = React.useState<SeasonOrderItem | null>(null);
-  const [editForm, setEditForm] = React.useState({ orderer: "", variety: "", quantity: "", contact: "", note: "" });
+  const [editForm, setEditForm] = React.useState({ orderer: "", variety: "", quantity: "", quantity_unit: "판" as "판" | "포기", contact: "", note: "" });
+
+  const [sortKey, setSortKey] = React.useState<"variety" | "orderer">("variety");
+  const [ordererFilter, setOrdererFilter] = React.useState("");
+
+  const varietyOptions = React.useMemo(() => {
+    const set = new Set<string>();
+    for (const it of data.items) {
+      const v = (it.variety || "").trim();
+      if (v) set.add(v);
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  }, [data.items]);
+
+  const [varietySuggestOpen, setVarietySuggestOpen] = React.useState(false);
 
   const loadData = React.useCallback(() => setData(fetchSeasonOrderData()), []);
 
@@ -2999,7 +3023,8 @@ function SeasonOrdersPage() {
 
   const handleAddOpen = (boardIndex: number) => {
     setAddBoardIndex(boardIndex);
-    setAddForm({ orderer: "", variety: "", quantity: "", contact: "" });
+    setAddForm({ orderer: "", variety: "", quantity: "", quantity_unit: "판", contact: "" });
+    setVarietySuggestOpen(false);
   };
 
   const handleAddSave = () => {
@@ -3009,10 +3034,12 @@ function SeasonOrdersPage() {
       addForm.orderer,
       addForm.variety,
       addForm.quantity,
+      addForm.quantity_unit,
       addForm.contact,
     );
     loadData();
     setAddBoardIndex(null);
+    setVarietySuggestOpen(false);
   };
 
   const handleEditOpen = (item: SeasonOrderItem) => {
@@ -3021,6 +3048,7 @@ function SeasonOrdersPage() {
       orderer: item.orderer,
       variety: item.variety,
       quantity: item.quantity,
+      quantity_unit: (item.quantity_unit as "판" | "포기") ?? "판",
       contact: item.contact,
       note: item.note ?? "",
     });
@@ -3044,21 +3072,33 @@ function SeasonOrdersPage() {
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   const varietyByBoard = React.useMemo(() => {
-    const out: Array<Array<[string, number]>> = [];
+    const out: Array<Array<{ name: string; label: string }>> = [];
     for (let boardIndex = 0; boardIndex < SEASON_ORDER_BOARD_COUNT; boardIndex++) {
-      const items = data.items.filter((i) => i.boardIndex === boardIndex);
-      const varietyTotals: Record<string, number> = {};
+      const items = data.items
+        .filter((i) => i.boardIndex === boardIndex)
+        .filter((i) => (ordererFilter.trim() ? (i.orderer || "").includes(ordererFilter.trim()) : true));
+      const varietyTotals: Record<string, { pan: number; pogi: number }> = {};
       for (const it of items) {
         const v = it.variety || "미지정";
-        varietyTotals[v] = (varietyTotals[v] || 0) + parseQuantityToNumber(it.quantity);
+        const qty = parseQuantityToNumber(it.quantity);
+        if (!varietyTotals[v]) varietyTotals[v] = { pan: 0, pogi: 0 };
+        if (it.quantity_unit === "포기") varietyTotals[v].pogi += qty;
+        else varietyTotals[v].pan += qty;
       }
       const entries = Object.entries(varietyTotals)
-        .filter(([, n]) => n > 0)
+        .filter(([, t]) => (t.pan || 0) > 0 || (t.pogi || 0) > 0)
         .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }));
-      out.push(entries);
+      out.push(
+        entries.map(([name, t]) => {
+          const parts: string[] = [];
+          if ((t.pan || 0) > 0) parts.push(`${formatQty(t.pan)}판`);
+          if ((t.pogi || 0) > 0) parts.push(`${formatQty(t.pogi)}포기`);
+          return { name, label: parts.join(", ") };
+        }),
+      );
     }
     return out;
-  }, [data.items]);
+  }, [data.items, ordererFilter]);
 
   React.useEffect(() => {
     const el = scrollRef.current;
@@ -3101,6 +3141,45 @@ function SeasonOrdersPage() {
             </button>
           </div>
         </div>
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <input
+              value={ordererFilter}
+              onChange={(e) => setOrdererFilter(e.target.value)}
+              placeholder="주문자 검색"
+              className="min-w-0 flex-1 rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+            />
+            {ordererFilter.trim() && (
+              <button
+                type="button"
+                onClick={() => setOrdererFilter("")}
+                className="shrink-0 rounded-lg bg-lime-400 px-3 py-2 text-sm font-bold text-lime-950 hover:bg-lime-300"
+              >
+                전체주문 보기
+              </button>
+            )}
+          </div>
+          <div className="flex shrink-0 gap-1.5">
+            <button
+              type="button"
+              onClick={() => setSortKey("orderer")}
+              className={`rounded-lg px-3 py-2 text-sm font-semibold ${
+                sortKey === "orderer" ? "bg-amber-600 text-white" : "bg-slate-800 text-slate-200 hover:bg-slate-700"
+              }`}
+            >
+              주문자별
+            </button>
+            <button
+              type="button"
+              onClick={() => setSortKey("variety")}
+              className={`rounded-lg px-3 py-2 text-sm font-semibold ${
+                sortKey === "variety" ? "bg-amber-600 text-white" : "bg-slate-800 text-slate-200 hover:bg-slate-700"
+              }`}
+            >
+              품종별
+            </button>
+          </div>
+        </div>
       </header>
       <Modal open={roleInfoOpen} title="권한 등급 안내" onClose={() => setRoleInfoOpen(false)}>
         <div className="space-y-2 text-sm text-slate-200">
@@ -3124,7 +3203,12 @@ function SeasonOrdersPage() {
         {Array.from({ length: SEASON_ORDER_BOARD_COUNT }, (_, boardIndex) => {
           const items = data.items
             .filter((i) => i.boardIndex === boardIndex)
-            .sort((a, b) => (a.variety || "").localeCompare(b.variety || "", undefined, { numeric: true }));
+            .filter((i) => (ordererFilter.trim() ? (i.orderer || "").includes(ordererFilter.trim()) : true))
+            .sort((a, b) => {
+              const ka = sortKey === "orderer" ? (a.orderer || "") : (a.variety || "");
+              const kb = sortKey === "orderer" ? (b.orderer || "") : (b.variety || "");
+              return ka.localeCompare(kb, undefined, { numeric: true }) || (a.variety || "").localeCompare(b.variety || "", undefined, { numeric: true });
+            });
 
           return (
             <div
@@ -3180,7 +3264,7 @@ function SeasonOrdersPage() {
                           <span className="shrink-0 text-slate-500">│</span>
                           <span className="min-w-0 shrink font-medium text-slate-900">{formatContactDisplay(item.contact)}</span>
                           {(item.note ?? "").trim() ? (
-                            <span className="ml-1 shrink-0 rounded bg-slate-500/80 px-1.5 py-0.5 text-xs font-medium text-white">(비고 확인)</span>
+                            <span className="ml-1 shrink-0 rounded bg-fuchsia-600/80 px-1 py-0.5 text-[0.7rem] font-bold leading-none text-white">비고</span>
                           ) : null}
                         </button>
                   ))}
@@ -3192,11 +3276,19 @@ function SeasonOrdersPage() {
         </div>
         <div
           className="flex min-h-0 shrink-0 items-center justify-center border-t-2 border-slate-400 bg-gradient-to-b from-slate-200 to-slate-300 px-3 py-2 text-center font-bold text-slate-800 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.25)]"
-          style={{ fontSize: "clamp(0.9rem, 3.5vw, 1.1rem)", minHeight: "2.5rem" }}
+          style={{ fontSize: "clamp(0.9rem, 3.5vw, 1.1rem)", minHeight: "4.25rem" }}
         >
-          {varietyByBoard[visibleBoardIndex]?.length
-            ? varietyByBoard[visibleBoardIndex].map(([v, n]) => `${v}: ${n}개`).join(" │ ")
-            : "품종별 수량 합계"}
+          {varietyByBoard[visibleBoardIndex]?.length ? (
+            <div className="flex max-h-[4.25rem] flex-wrap justify-center gap-x-3 gap-y-1 overflow-hidden leading-tight">
+              {varietyByBoard[visibleBoardIndex].map((x) => (
+                <span key={x.name} className="whitespace-nowrap">
+                  {x.name} : {x.label}
+                </span>
+              ))}
+            </div>
+          ) : (
+            "품종별 수량 합계"
+          )}
         </div>
       </main>
 
@@ -3237,21 +3329,74 @@ function SeasonOrdersPage() {
           </div>
           <div>
             <label className="mb-1 block text-xs text-slate-400">품종</label>
-            <input
-              value={addForm.variety}
-              onChange={(e) => setAddForm((p) => ({ ...p, variety: e.target.value }))}
-              className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
-              placeholder="품종"
-            />
+            <div className="relative">
+              <input
+                value={addForm.variety}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setAddForm((p) => ({ ...p, variety: v }));
+                  setVarietySuggestOpen(true);
+                }}
+                onFocus={() => setVarietySuggestOpen(true)}
+                onBlur={() => setTimeout(() => setVarietySuggestOpen(false), 120)}
+                className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+                placeholder="품종"
+                autoComplete="off"
+              />
+              {varietySuggestOpen && addForm.variety.trim() && (
+                <div className="absolute left-0 right-0 top-full z-20 mt-1 max-h-40 overflow-auto rounded-lg border border-slate-700 bg-slate-900 shadow-xl">
+                  {varietyOptions
+                    .filter((x) => x.includes(addForm.variety.trim()))
+                    .slice(0, 8)
+                    .map((x) => (
+                      <button
+                        key={x}
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => {
+                          setAddForm((p) => ({ ...p, variety: x }));
+                          setVarietySuggestOpen(false);
+                        }}
+                        className="block w-full px-3 py-2 text-left text-slate-100 hover:bg-slate-800"
+                      >
+                        {x}
+                      </button>
+                    ))}
+                </div>
+              )}
+            </div>
           </div>
           <div>
             <label className="mb-1 block text-xs text-slate-400">수량</label>
-            <input
-              value={addForm.quantity}
-              onChange={(e) => setAddForm((p) => ({ ...p, quantity: e.target.value }))}
-              className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
-              placeholder="수량"
-            />
+            <div className="flex items-center gap-2">
+              <input
+                value={addForm.quantity}
+                onChange={(e) => setAddForm((p) => ({ ...p, quantity: e.target.value }))}
+                inputMode="decimal"
+                className="w-[6.5rem] rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+                placeholder="예: 2.5"
+              />
+              <div className="flex gap-1">
+                <button
+                  type="button"
+                  onClick={() => setAddForm((p) => ({ ...p, quantity_unit: "판" }))}
+                  className={`rounded-lg px-3 py-2 text-sm font-semibold ${
+                    addForm.quantity_unit === "판" ? "bg-amber-600 text-white" : "bg-slate-700 text-slate-200 hover:bg-slate-600"
+                  }`}
+                >
+                  판
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAddForm((p) => ({ ...p, quantity_unit: "포기" }))}
+                  className={`rounded-lg px-3 py-2 text-sm font-semibold ${
+                    addForm.quantity_unit === "포기" ? "bg-amber-600 text-white" : "bg-slate-700 text-slate-200 hover:bg-slate-600"
+                  }`}
+                >
+                  포기
+                </button>
+              </div>
+            </div>
           </div>
           <div>
             <label className="mb-1 block text-xs text-slate-400">연락처</label>
@@ -3296,12 +3441,35 @@ function SeasonOrdersPage() {
             </div>
             <div>
               <label className="mb-1 block text-xs text-slate-400">수량</label>
-              <input
-                value={editForm.quantity}
-                onChange={(e) => setEditForm((p) => ({ ...p, quantity: e.target.value }))}
-                className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
-                placeholder="수량"
-              />
+              <div className="flex items-center gap-2">
+                <input
+                  value={editForm.quantity}
+                  onChange={(e) => setEditForm((p) => ({ ...p, quantity: e.target.value }))}
+                  inputMode="decimal"
+                  className="w-[6.5rem] rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+                  placeholder="예: 2.5"
+                />
+                <div className="flex gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setEditForm((p) => ({ ...p, quantity_unit: "판" }))}
+                    className={`rounded-lg px-3 py-2 text-sm font-semibold ${
+                      editForm.quantity_unit === "판" ? "bg-amber-600 text-white" : "bg-slate-700 text-slate-200 hover:bg-slate-600"
+                    }`}
+                  >
+                    판
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditForm((p) => ({ ...p, quantity_unit: "포기" }))}
+                    className={`rounded-lg px-3 py-2 text-sm font-semibold ${
+                      editForm.quantity_unit === "포기" ? "bg-amber-600 text-white" : "bg-slate-700 text-slate-200 hover:bg-slate-600"
+                    }`}
+                  >
+                    포기
+                  </button>
+                </div>
+              </div>
             </div>
             <div>
               <label className="mb-1 block text-xs text-slate-400">연락처</label>
