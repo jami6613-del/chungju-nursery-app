@@ -2991,7 +2991,7 @@ function SeasonOrdersPage() {
     contact: "",
   });
   const [editItem, setEditItem] = React.useState<SeasonOrderItem | null>(null);
-  const [editForm, setEditForm] = React.useState({ orderer: "", variety: "", quantity: "", quantity_unit: "판" as "판" | "포기", contact: "", note: "" });
+  const [editForm, setEditForm] = React.useState({ orderer: "", variety: "", quantity: "", quantity_unit: "판" as "판" | "포기", contact: "", note: "", sold: false });
 
   const [sortKey, setSortKey] = React.useState<"variety" | "orderer">("variety");
   const [ordererFilter, setOrdererFilter] = React.useState("");
@@ -3051,6 +3051,7 @@ function SeasonOrdersPage() {
       quantity_unit: (item.quantity_unit as "판" | "포기") ?? "판",
       contact: item.contact,
       note: item.note ?? "",
+      sold: item.sold === true,
     });
   };
 
@@ -3076,6 +3077,7 @@ function SeasonOrdersPage() {
     for (let boardIndex = 0; boardIndex < SEASON_ORDER_BOARD_COUNT; boardIndex++) {
       const items = data.items
         .filter((i) => i.boardIndex === boardIndex)
+        .filter((i) => !i.sold)
         .filter((i) => (ordererFilter.trim() ? (i.orderer || "").includes(ordererFilter.trim()) : true));
       const varietyTotals: Record<string, { pan: number; pogi: number }> = {};
       for (const it of items) {
@@ -3249,7 +3251,11 @@ function SeasonOrdersPage() {
                       key={item.id}
                       type="button"
                       onClick={() => handleEditOpen(item)}
-                      className="flex w-full flex-nowrap items-center gap-x-1 overflow-hidden rounded-lg bg-slate-200/40 px-2 py-1.5 text-left hover:bg-slate-200/60 sm:rounded-lg"
+                      className={`flex w-full flex-nowrap items-center gap-x-1 overflow-hidden rounded-lg px-2 py-1.5 text-left sm:rounded-lg ${
+                        item.sold
+                          ? "bg-slate-900/20 text-slate-600 opacity-60"
+                          : "bg-slate-200/40 hover:bg-slate-200/60"
+                      }`}
                       style={{
                         fontFamily: "'Malgun Gothic', '맑은 고딕', sans-serif",
                         fontSize: "clamp(1.2rem, 4.2vw, 1.62rem)",
@@ -3500,6 +3506,22 @@ function SeasonOrdersPage() {
                 삭제
               </button>
               <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = !editForm.sold;
+                    setEditForm((p) => ({ ...p, sold: next }));
+                    updateSeasonOrderItem(editItem.id, { sold: next });
+                    loadData();
+                  }}
+                  className={`rounded-lg px-3 py-2 text-sm font-bold ${
+                    editForm.sold
+                      ? "bg-slate-700 text-slate-200 hover:bg-slate-600"
+                      : "bg-indigo-600 text-white hover:bg-indigo-500"
+                  }`}
+                >
+                  {editForm.sold ? "판매완료 취소" : "판매완료"}
+                </button>
                 <SecondaryButton onClick={() => setEditItem(null)}>취소</SecondaryButton>
                 <PrimaryButton onClick={handleEditSave}>저장</PrimaryButton>
               </div>

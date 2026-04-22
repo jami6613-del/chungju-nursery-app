@@ -9,6 +9,7 @@ export interface SeasonOrderItem {
   quantity_unit: "판" | "포기";
   contact: string;
   note: string;
+  sold: boolean;
 }
 
 export interface SeasonOrderData {
@@ -43,6 +44,7 @@ function loadData(): SeasonOrderData {
             quantity_unit: (it as { quantity_unit?: unknown }).quantity_unit === "포기" ? "포기" : "판",
             contact: typeof it.contact === "string" ? it.contact : "",
             note: typeof it.note === "string" ? it.note : "",
+            sold: (it as { sold?: unknown }).sold === true,
           });
         }
       }
@@ -102,6 +104,7 @@ export function addSeasonOrderItem(
     quantity_unit: quantityUnit === "포기" ? "포기" : "판",
     contact: normalizeKoreanMobile(contact.trim()),
     note: "",
+    sold: false,
   };
   data.items.push(item);
   saveData(data);
@@ -110,7 +113,7 @@ export function addSeasonOrderItem(
 
 export function updateSeasonOrderItem(
   id: string,
-  updates: Partial<Pick<SeasonOrderItem, "orderer" | "variety" | "quantity" | "quantity_unit" | "contact" | "note">>,
+  updates: Partial<Pick<SeasonOrderItem, "orderer" | "variety" | "quantity" | "quantity_unit" | "contact" | "note" | "sold">>,
 ): SeasonOrderItem | null {
   const data = loadData();
   const idx = data.items.findIndex((i) => i.id === id);
@@ -124,6 +127,7 @@ export function updateSeasonOrderItem(
     variety: typeof merged.variety === "string" ? merged.variety : "",
     quantity: typeof merged.quantity === "string" ? merged.quantity : "",
     note: typeof merged.note === "string" ? merged.note : "",
+    sold: merged.sold === true,
   };
   data.items[idx] = item;
   saveData(data);
