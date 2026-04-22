@@ -3260,7 +3260,9 @@ function SeasonOrdersPage() {
                       <span className="shrink-0 text-slate-500">│</span>
                       <span className="min-w-0 shrink font-medium text-slate-900">{item.variety || "-"}</span>
                       <span className="shrink-0 text-slate-500">│</span>
-                        <span className="min-w-0 shrink font-medium text-slate-900">{item.quantity || "-"}</span>
+                        <span className="min-w-0 shrink font-medium text-slate-900">
+                          {item.quantity || "-"}{item.quantity_unit === "포기" ? " 포기" : ""}
+                        </span>
                           <span className="shrink-0 text-slate-500">│</span>
                           <span className="min-w-0 shrink font-medium text-slate-900">{formatContactDisplay(item.contact)}</span>
                           {(item.note ?? "").trim() ? (
@@ -3276,10 +3278,10 @@ function SeasonOrdersPage() {
         </div>
         <div
           className="flex min-h-0 shrink-0 items-center justify-center border-t-2 border-slate-400 bg-gradient-to-b from-slate-200 to-slate-300 px-3 py-2 text-center font-bold text-slate-800 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.25)]"
-          style={{ fontSize: "clamp(0.9rem, 3.5vw, 1.1rem)", minHeight: "4.25rem" }}
+          style={{ fontSize: "clamp(0.9rem, 3.5vw, 1.1rem)", height: "15%", minHeight: "3.25rem" }}
         >
           {varietyByBoard[visibleBoardIndex]?.length ? (
-            <div className="flex max-h-[4.25rem] flex-wrap justify-center gap-x-3 gap-y-1 overflow-hidden leading-tight">
+            <div className="flex max-h-full flex-wrap justify-center gap-x-3 gap-y-1 overflow-y-auto overflow-x-hidden leading-tight" style={{ WebkitOverflowScrolling: "touch" }}>
               {varietyByBoard[visibleBoardIndex].map((x) => (
                 <span key={x.name} className="whitespace-nowrap">
                   {x.name} : {x.label}
