@@ -28,6 +28,8 @@ import { TextField, SelectField, PrimaryButton, SecondaryButton } from "./compon
 import { fetchDailyTodos, saveDailyTodos, type DailyTodoItem } from "./lib/dailyTodosApi";
 import {
   fetchSeasonOrderData,
+  getLegacySeasonOrdersLocalSnapshot,
+  migrateLegacyLocalToSupabase,
   setBoardCropName,
   addSeasonOrderItem,
   updateSeasonOrderItem,
@@ -2979,7 +2981,7 @@ function SeasonOrdersPage() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [roleInfoOpen, setRoleInfoOpen] = React.useState(false);
-  const [data, setData] = React.useState(fetchSeasonOrderData);
+  const [data, setData] = React.useState<{ boards: Record<number, string>; items: SeasonOrderItem[] }>({ boards: {}, items: [] });
   const [cropNameBoardIndex, setCropNameBoardIndex] = React.useState<number | null>(null);
   const [cropNameInput, setCropNameInput] = React.useState("");
   const [addBoardIndex, setAddBoardIndex] = React.useState<number | null>(null);
@@ -3007,7 +3009,27 @@ function SeasonOrdersPage() {
 
   const [varietySuggestOpen, setVarietySuggestOpen] = React.useState(false);
 
-  const loadData = React.useCallback(() => setData(fetchSeasonOrderData()), []);
+  const loadData = React.useCallback(async () => {
+    const next = await fetchSeasonOrderData();
+    setData(next);
+  }, []);
+
+  React.useEffect(() => {
+    void (async () => {
+      // Supabase가 비어있고(처음 설치), 기존 기기에 localStorage 데이터가 있으면 1회 자동 이관
+      const current = await fetchSeasonOrderData();
+      const hasAny = current.items.length > 0 || Object.values(current.boards).some((v) => (v || "").trim() !== "");
+      if (!hasAny) {
+        const res = await migrateLegacyLocalToSupabase(user?.id);
+        if (res.migrated) {
+          const after = await fetchSeasonOrderData();
+          setData(after);
+          return;
+        }
+      }
+      setData(current);
+    })();
+  }, [user?.id]);
 
   const handleCropNameOpen = (boardIndex: number) => {
     setCropNameBoardIndex(boardIndex);
@@ -3016,8 +3038,10 @@ function SeasonOrdersPage() {
 
   const handleCropNameSave = () => {
     if (cropNameBoardIndex === null) return;
-    setBoardCropName(cropNameBoardIndex, cropNameInput);
-    loadData();
+    void (async () => {
+      await setBoardCropName(cropNameBoardIndex, cropNameInput, user?.id);
+      await loadData();
+    })();
     setCropNameBoardIndex(null);
   };
 
@@ -3029,15 +3053,18 @@ function SeasonOrdersPage() {
 
   const handleAddSave = () => {
     if (addBoardIndex === null) return;
-    addSeasonOrderItem(
-      addBoardIndex,
-      addForm.orderer,
-      addForm.variety,
-      addForm.quantity,
-      addForm.quantity_unit,
-      addForm.contact,
-    );
-    loadData();
+    void (async () => {
+      await addSeasonOrderItem(
+        addBoardIndex,
+        addForm.orderer,
+        addForm.variety,
+        addForm.quantity,
+        addForm.quantity_unit,
+        addForm.contact,
+        user?.id,
+      );
+      await loadData();
+    })();
     setAddBoardIndex(null);
     setVarietySuggestOpen(false);
   };
@@ -3057,15 +3084,19 @@ function SeasonOrdersPage() {
 
   const handleEditSave = () => {
     if (!editItem) return;
-    updateSeasonOrderItem(editItem.id, editForm);
-    loadData();
+    void (async () => {
+      await updateSeasonOrderItem(editItem.id, editForm, user?.id);
+      await loadData();
+    })();
     setEditItem(null);
   };
 
   const handleDeleteItem = (item: SeasonOrderItem) => {
     if (!window.confirm("이 주문을 삭제하시겠습니까?")) return;
-    deleteSeasonOrderItem(item.id);
-    loadData();
+    void (async () => {
+      await deleteSeasonOrderItem(item.id);
+      await loadData();
+    })();
     setEditItem(null);
   };
 
@@ -3143,6 +3174,28 @@ function SeasonOrdersPage() {
             </button>
           </div>
         </div>
+        {user.role_level === 0 && (
+          <div className="mt-2 flex justify-end">
+            <button
+              type="button"
+              onClick={() => {
+                const snap = getLegacySeasonOrdersLocalSnapshot();
+                void (async () => {
+                  const res = await migrateLegacyLocalToSupabase(user.id, { force: true });
+                  await loadData();
+                  alert(
+                    `로컬데이터: ${snap.itemsCount}건\n이관결과: ${res.migrated ? "성공" : "실패"}${
+                      res.reason ? `\n사유: ${res.reason}` : ""
+                    }`,
+                  );
+                })();
+              }}
+              className="rounded-lg bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-100 hover:bg-slate-700 sm:text-sm"
+            >
+              관리자: 로컬데이터 서버 업로드
+            </button>
+          </div>
+        )}
         <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
           <div className="flex min-w-0 flex-1 items-center gap-2">
             <input
@@ -3511,8 +3564,10 @@ function SeasonOrdersPage() {
                   onClick={() => {
                     const next = !editForm.sold;
                     setEditForm((p) => ({ ...p, sold: next }));
-                    updateSeasonOrderItem(editItem.id, { sold: next });
-                    loadData();
+                    void (async () => {
+                      await updateSeasonOrderItem(editItem.id, { sold: next }, user?.id);
+                      await loadData();
+                    })();
                   }}
                   className={`rounded-lg px-3 py-2 text-sm font-bold ${
                     editForm.sold
