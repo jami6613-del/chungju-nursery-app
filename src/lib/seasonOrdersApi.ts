@@ -100,8 +100,8 @@ export async function migrateLegacyLocalToSupabase(
   opts?: { force?: boolean },
 ): Promise<{ migrated: boolean; reason?: string }> {
   try {
-    if (!opts?.force && localStorage.getItem(MIGRATED_FLAG_KEY) === "1")
-      return { migrated: false, reason: "이미 이관 완료(플래그)" };
+    // 플래그가 켜져 있어도, 서버가 비어있으면(0건이면) 재이관을 허용해야 데이터 유실처럼 보이지 않음
+    const flagged = localStorage.getItem(MIGRATED_FLAG_KEY) === "1";
     const legacy = readLegacyLocalData();
     if (!legacy || (legacy.items.length === 0 && Object.keys(legacy.boards).length === 0))
       return { migrated: false, reason: "로컬 데이터 없음" };
@@ -110,9 +110,14 @@ export async function migrateLegacyLocalToSupabase(
     const { count } = await supabase
       .from("season_orders_items")
       .select("*", { count: "exact", head: true });
-    if (!opts?.force && (count ?? 0) > 0) {
+    const serverCount = count ?? 0;
+    if (!opts?.force && serverCount > 0) {
       localStorage.setItem(MIGRATED_FLAG_KEY, "1");
       return { migrated: false, reason: "서버에 이미 데이터 존재" };
+    }
+    if (!opts?.force && flagged && serverCount === 0) {
+      // 서버가 비어있는데 플래그만 켜져있는 케이스(업그레이드 과정에서 흔함): 재이관 진행
+      localStorage.removeItem(MIGRATED_FLAG_KEY);
     }
 
     // boards 업서트
