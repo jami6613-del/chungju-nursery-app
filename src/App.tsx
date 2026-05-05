@@ -34,9 +34,6 @@ import {
   updateSeasonOrderItem,
   deleteSeasonOrderItem,
   type SeasonOrderItem,
-  fetchSeasonInventory,
-  upsertSeasonInventory,
-  type SeasonInventoryRow,
 } from "./lib/seasonOrdersApi";
 import { ROLE_LABEL, ROLE_LEVELS, canRequestEdits, canWriteOrders, canReflectToPlan, canAddPlanItem, canEditDailyTodos, canExportExcel, canIssueCertificate } from "./lib/permissions";
 import { fetchPendingApprovalUsers, approveUser, fetchApprovedUsers } from "./lib/approvalApi";
@@ -3000,10 +2997,6 @@ function SeasonOrdersPage() {
   const [sortKey, setSortKey] = React.useState<"variety" | "orderer">("variety");
   const [ordererFilter, setOrdererFilter] = React.useState("");
 
-  const [inventoryOpen, setInventoryOpen] = React.useState(false);
-  const [inventoryRows, setInventoryRows] = React.useState<Array<SeasonInventoryRow>>([]);
-  const [inventoryBusy, setInventoryBusy] = React.useState(false);
-
   const varietyOptions = React.useMemo(() => {
     const set = new Set<string>();
     for (const it of data.items) {
@@ -3109,36 +3102,6 @@ function SeasonOrdersPage() {
   const [visibleBoardIndex, setVisibleBoardIndex] = React.useState(0);
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
-  const openInventory = React.useCallback(async () => {
-    setInventoryBusy(true);
-    try {
-      const boardIndex = visibleBoardIndex;
-      const boardVarieties = Array.from(
-        new Set(
-          data.items
-            .filter((x) => x.boardIndex === boardIndex)
-            .map((x) => (x.variety || "").trim())
-            .filter(Boolean),
-        ),
-      ).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
-
-      const existing = await fetchSeasonInventory(boardIndex);
-      const map = new Map(existing.map((r) => [r.variety, r]));
-      const merged: SeasonInventoryRow[] = boardVarieties.map((v) => ({
-        boardIndex,
-        variety: v,
-        stock_pan: map.get(v)?.stock_pan ?? 0,
-        deducted_pan: map.get(v)?.deducted_pan ?? 0,
-        stock_pogi: map.get(v)?.stock_pogi ?? 0,
-        deducted_pogi: map.get(v)?.deducted_pogi ?? 0,
-      }));
-      setInventoryRows(merged);
-      setInventoryOpen(true);
-    } finally {
-      setInventoryBusy(false);
-    }
-  }, [data.items, visibleBoardIndex]);
-
   const varietyByBoard = React.useMemo(() => {
     const out: Array<Array<{ name: string; label: string }>> = [];
     for (let boardIndex = 0; boardIndex < SEASON_ORDER_BOARD_COUNT; boardIndex++) {
@@ -3210,18 +3173,6 @@ function SeasonOrdersPage() {
             </button>
           </div>
         </div>
-        {user.role_level === 0 && (
-          <div className="mt-2 flex justify-end">
-            <button
-              type="button"
-              onClick={() => void openInventory()}
-              disabled={inventoryBusy}
-              className="rounded-lg bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-100 hover:bg-slate-700 disabled:opacity-60 sm:text-sm"
-            >
-              {inventoryBusy ? "불러오는 중..." : "재고관리"}
-            </button>
-          </div>
-        )}
         <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
           <div className="flex min-w-0 flex-1 items-center gap-2">
             <input
@@ -3611,128 +3562,6 @@ function SeasonOrdersPage() {
         )}
       </Modal>
 
-      <Modal
-        open={inventoryOpen}
-        title="재고관리"
-        onClose={() => {
-          if (!inventoryBusy) setInventoryOpen(false);
-        }}
-      >
-        <div className="space-y-3">
-          <p className="text-sm text-slate-400">
-            현재 보고있는 화이트보드의 품종들에 대해 재고/삭감을 관리합니다.
-          </p>
-          <div className="max-h-[60vh] overflow-auto rounded-lg border border-slate-700 bg-slate-900/60 p-2" style={{ WebkitOverflowScrolling: "touch" }}>
-            <table className="w-full text-sm text-slate-100">
-              <thead className="sticky top-0 bg-slate-900/95 text-xs text-slate-400">
-                <tr>
-                  <th className="px-2 py-2 text-left">품종</th>
-                  <th className="px-2 py-2 text-right">재고(판)</th>
-                  <th className="px-2 py-2 text-right">삭감(판)</th>
-                  <th className="px-2 py-2 text-right">잔여(판)</th>
-                  <th className="px-2 py-2 text-right">재고(포기)</th>
-                  <th className="px-2 py-2 text-right">삭감(포기)</th>
-                  <th className="px-2 py-2 text-right">잔여(포기)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {inventoryRows.map((r, idx) => {
-                  const leftPan = (r.stock_pan || 0) - (r.deducted_pan || 0);
-                  const leftPogi = (r.stock_pogi || 0) - (r.deducted_pogi || 0);
-                  return (
-                    <tr key={r.variety} className="border-t border-slate-800">
-                      <td className="px-2 py-2 text-left font-semibold text-slate-200">{r.variety}</td>
-                      <td className="px-2 py-2 text-right">
-                        <input
-                          value={String(r.stock_pan)}
-                          onChange={(e) => {
-                            const v = Number(String(e.target.value).replace(",", ".")) || 0;
-                            setInventoryRows((prev) => prev.map((x, i) => (i === idx ? { ...x, stock_pan: v } : x)));
-                          }}
-                          inputMode="decimal"
-                          className="w-20 rounded border border-slate-700 bg-slate-950/40 px-2 py-1 text-right"
-                        />
-                      </td>
-                      <td className="px-2 py-2 text-right">
-                        <input
-                          value={String(r.deducted_pan)}
-                          onChange={(e) => {
-                            const v = Number(String(e.target.value).replace(",", ".")) || 0;
-                            setInventoryRows((prev) => prev.map((x, i) => (i === idx ? { ...x, deducted_pan: v } : x)));
-                          }}
-                          inputMode="decimal"
-                          className="w-20 rounded border border-slate-700 bg-slate-950/40 px-2 py-1 text-right"
-                        />
-                      </td>
-                      <td className="px-2 py-2 text-right font-bold text-emerald-300">{formatQty(leftPan)}</td>
-                      <td className="px-2 py-2 text-right">
-                        <input
-                          value={String(r.stock_pogi)}
-                          onChange={(e) => {
-                            const v = Number(String(e.target.value).replace(",", ".")) || 0;
-                            setInventoryRows((prev) => prev.map((x, i) => (i === idx ? { ...x, stock_pogi: v } : x)));
-                          }}
-                          inputMode="decimal"
-                          className="w-20 rounded border border-slate-700 bg-slate-950/40 px-2 py-1 text-right"
-                        />
-                      </td>
-                      <td className="px-2 py-2 text-right">
-                        <input
-                          value={String(r.deducted_pogi)}
-                          onChange={(e) => {
-                            const v = Number(String(e.target.value).replace(",", ".")) || 0;
-                            setInventoryRows((prev) => prev.map((x, i) => (i === idx ? { ...x, deducted_pogi: v } : x)));
-                          }}
-                          inputMode="decimal"
-                          className="w-20 rounded border border-slate-700 bg-slate-950/40 px-2 py-1 text-right"
-                        />
-                      </td>
-                      <td className="px-2 py-2 text-right font-bold text-emerald-300">{formatQty(leftPogi)}</td>
-                    </tr>
-                  );
-                })}
-                {inventoryRows.length === 0 && (
-                  <tr>
-                    <td colSpan={7} className="px-3 py-6 text-center text-slate-400">
-                      이 화이트보드에 등록된 품종이 없습니다.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-          <div className="flex justify-end gap-2 pt-1">
-            <SecondaryButton onClick={() => !inventoryBusy && setInventoryOpen(false)}>닫기</SecondaryButton>
-            <PrimaryButton
-              onClick={() => {
-                void (async () => {
-                  setInventoryBusy(true);
-                  try {
-                    const boardIndex = visibleBoardIndex;
-                    await upsertSeasonInventory(
-                      boardIndex,
-                      inventoryRows.map((r) => ({
-                        variety: r.variety,
-                        stock_pan: r.stock_pan,
-                        deducted_pan: r.deducted_pan,
-                        stock_pogi: r.stock_pogi,
-                        deducted_pogi: r.deducted_pogi,
-                      })),
-                      user?.id,
-                    );
-                    setInventoryOpen(false);
-                  } finally {
-                    setInventoryBusy(false);
-                  }
-                })();
-              }}
-              disabled={inventoryBusy}
-            >
-              {inventoryBusy ? "저장 중..." : "저장"}
-            </PrimaryButton>
-          </div>
-        </div>
-      </Modal>
     </div>
   );
 }
