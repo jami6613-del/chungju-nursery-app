@@ -313,25 +313,32 @@ export async function deleteSowingPlanItem(id: string): Promise<{
   return { ok: true, sourceUnprocessedId: sourceId };
 }
 
-/** plan_date가 beforeDate 이전인 파종계획 삭제. 연동된 미처리 주문은 반영 해제 */
+/** plan_date가 beforeDate 이전인 파종계획 삭제.
+ *  연동된 미처리 주문(게시글)이 있으면 함께 영구 삭제하여,
+ *  자동 삭제 후 게시글이 "미반영" 상태로 되살아나 빨간점/배지가 다시 켜지는 현상을 방지한다. */
 export async function deleteOldSowingPlanItems(beforeDate: string): Promise<void> {
   const { data: oldItems } = await supabase
     .from("sowing_plan_items")
     .select("id, source_unprocessed_id")
     .lt("plan_date", beforeDate);
   const rows = (oldItems as { id: string; source_unprocessed_id: string | null }[]) ?? [];
-  const sourceIds = rows.map((r) => r.source_unprocessed_id).filter((id): id is string => !!id);
-  for (const id of sourceIds) {
-    await supabase
-      .from("unprocessed_orders")
-      .update({ reflected_at: null, reflected_plan_date: null })
-      .eq("id", id);
-  }
-  const { error } = await supabase
+  const sourceIds = Array.from(
+    new Set(rows.map((r) => r.source_unprocessed_id).filter((id): id is string => !!id)),
+  );
+
+  const { error: delPlanError } = await supabase
     .from("sowing_plan_items")
     .delete()
     .lt("plan_date", beforeDate);
-  if (error) throw new Error(error.message);
+  if (delPlanError) throw new Error(delPlanError.message);
+
+  if (sourceIds.length > 0) {
+    const { error: delUnprocError } = await supabase
+      .from("unprocessed_orders")
+      .delete()
+      .in("id", sourceIds);
+    if (delUnprocError) throw new Error(delUnprocError.message);
+  }
 }
 
 /** 파종계획 항목들을 파종 및 출하현황(orders)에 일괄 등록 */
