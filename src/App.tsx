@@ -2918,7 +2918,7 @@ const UNPROCESSED_PAGE_SIZE = 10;
 const UNPROCESSED_MAX_PAGES = 10;
 const MAX_UNPROCESSED = UNPROCESSED_PAGE_SIZE * UNPROCESSED_MAX_PAGES; // 200
 const PLAN_DATE_DAYS_AGO = 60;
-const PLAN_DATE_DAYS_AHEAD = 30;
+const PLAN_DATE_DAYS_AHEAD = 60;
 
 function getPlanAllowedRange(): { min: string; max: string } {
   const t = new Date();
