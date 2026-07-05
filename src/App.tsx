@@ -3736,11 +3736,15 @@ function PlanningPage() {
     if (!isSupabaseConfigured) return;
     setUnprocessedLoading(true);
     try {
-      await deleteOldSoftDeletedUnprocessedOrders();
+      try {
+        await deleteOldSoftDeletedUnprocessedOrders();
+      } catch {
+        // deleted_at 컬럼 미적용 등으로 실패해도 목록 로드는 계속
+      }
       const list = await fetchUnprocessedOrders();
       setUnprocessed(list);
     } catch {
-      setUnprocessed([]);
+      // 기존 목록 유지 (에러 시 빈 목록으로 덮어쓰지 않음)
     } finally {
       setUnprocessedLoading(false);
     }
@@ -3763,9 +3767,14 @@ function PlanningPage() {
     void loadUnprocessed();
   }, [loadUnprocessed]);
 
-  const unprocessedPendingCount = React.useMemo(
-    () => unprocessed.filter((o) => !o.deleted_at && !o.reflected_at).length,
+  const visibleUnprocessed = React.useMemo(
+    () => unprocessed.filter((o) => !o.deleted_at),
     [unprocessed],
+  );
+
+  const unprocessedPendingCount = React.useMemo(
+    () => visibleUnprocessed.filter((o) => !o.reflected_at).length,
+    [visibleUnprocessed],
   );
   React.useEffect(() => {
     setAppIconBadge(unprocessedPendingCount);
@@ -3773,7 +3782,7 @@ function PlanningPage() {
 
   const totalUnprocessedPages = Math.min(
     UNPROCESSED_MAX_PAGES,
-    Math.max(1, Math.ceil(unprocessed.length / UNPROCESSED_PAGE_SIZE)),
+    Math.max(1, Math.ceil(visibleUnprocessed.length / UNPROCESSED_PAGE_SIZE)),
   );
   React.useEffect(() => {
     if (unprocessedPage > totalUnprocessedPages)
@@ -3848,30 +3857,36 @@ function PlanningPage() {
         (user.name || user.email) ?? null,
         user.role_level,
       );
-      let next = [order, ...unprocessed];
+      const withoutDup = unprocessed.filter((o) => o.id !== order.id);
+      let next = [order, ...withoutDup];
+      const toDelete: UnprocessedOrder[] = [];
       if (next.length > MAX_UNPROCESSED) {
-        // 파종계획에 이미 반영된 주문은 자동 삭제 대상에서 제외한다.
-        // (sowing_plan_items가 외래키로 참조하므로 삭제하면 FK 제약 위반이 발생하고,
-        //  반영된 주문은 계획과 연결된 의미 있는 데이터라 임의로 지우면 안 된다.)
         const sorted = [...next]
-          .filter((o) => !o.reflected_at)
+          .filter((o) => !o.reflected_at && o.id !== order.id)
           .sort((a, b) => (a.created_at || "").localeCompare(b.created_at || ""));
         const overflow = next.length - MAX_UNPROCESSED;
-        const toDelete = sorted.slice(0, overflow);
-        const deleteIds = new Set<string>();
-        for (const o of toDelete) {
-          try {
-            await deleteUnprocessedOrder(o.id);
-            deleteIds.add(o.id);
-          } catch {
-            // 삭제 실패(예: 참조 제약)해도 새 주문 등록은 유지한다.
-          }
-        }
+        toDelete.push(...sorted.slice(0, overflow));
+        const deleteIds = new Set(toDelete.map((o) => o.id));
         next = next.filter((x) => !deleteIds.has(x.id));
       }
       setUnprocessed(next);
+      setUnprocessedPage(1);
+      scrollUnprocessedToTop();
       setAddUnprocessedOpen(false);
       setAddUnprocessedText("");
+      for (const o of toDelete) {
+        try {
+          await deleteUnprocessedOrder(o.id);
+        } catch {
+          // 삭제 실패해도 새 주문 등록은 유지
+        }
+      }
+      try {
+        const list = await fetchUnprocessedOrders();
+        setUnprocessed(list);
+      } catch {
+        // 낙관적 갱신은 이미 반영됨
+      }
     } catch (e) {
       const msg = e instanceof Error ? e.message : "등록에 실패했습니다.";
       setAddUnprocessedError(msg);
@@ -4324,7 +4339,7 @@ function PlanningPage() {
               <>
                 <ul className="space-y-1.5 sm:space-y-2">
                   {(() => {
-                    const visible = unprocessed.filter((o) => !o.deleted_at);
+                    const visible = visibleUnprocessed;
                     const totalPages = Math.min(
                       UNPROCESSED_MAX_PAGES,
                       Math.max(1, Math.ceil(visible.length / UNPROCESSED_PAGE_SIZE)),
@@ -4380,7 +4395,7 @@ function PlanningPage() {
                     ));
                   })()}
                 </ul>
-                {unprocessed.filter((o) => !o.deleted_at).length > UNPROCESSED_PAGE_SIZE && (
+                {visibleUnprocessed.length > UNPROCESSED_PAGE_SIZE && (
                   <div className="sticky bottom-0 z-10 mt-2 flex flex-wrap items-center justify-center gap-1.5 border-t border-slate-800 bg-slate-950/95 p-2 backdrop-blur sm:gap-2 sm:p-3">
                     <button
                       type="button"
@@ -4397,7 +4412,7 @@ function PlanningPage() {
                       {
                         length: Math.min(
                           UNPROCESSED_MAX_PAGES,
-                          Math.ceil(unprocessed.filter((o) => !o.deleted_at).length / UNPROCESSED_PAGE_SIZE),
+                          Math.ceil(visibleUnprocessed.length / UNPROCESSED_PAGE_SIZE),
                         ),
                       },
                       (_, i) => i + 1,
@@ -4418,7 +4433,7 @@ function PlanningPage() {
                         <span className="relative inline-flex items-start justify-center">
                         {p}
                         {(() => {
-                          const visible = unprocessed.filter((o) => !o.deleted_at);
+                          const visible = visibleUnprocessed;
                           const maxPages = Math.min(UNPROCESSED_MAX_PAGES, Math.ceil(visible.length / UNPROCESSED_PAGE_SIZE));
                           if (p > maxPages) return null;
                           // 이 페이지에 '미반영(reflected_at 없음)' 글이 하나라도 있으면 빨간 점 표시
@@ -4445,14 +4460,14 @@ function PlanningPage() {
                         unprocessedPage >=
                         Math.min(
                           UNPROCESSED_MAX_PAGES,
-                          Math.ceil(unprocessed.filter((o) => !o.deleted_at).length / UNPROCESSED_PAGE_SIZE),
+                          Math.ceil(visibleUnprocessed.length / UNPROCESSED_PAGE_SIZE),
                         )
                       }
                       onClick={() => {
                         setUnprocessedPage((p) =>
                           Math.min(
                             UNPROCESSED_MAX_PAGES,
-                            Math.ceil(unprocessed.filter((o) => !o.deleted_at).length / UNPROCESSED_PAGE_SIZE),
+                            Math.ceil(visibleUnprocessed.length / UNPROCESSED_PAGE_SIZE),
                             p + 1,
                           ),
                         );

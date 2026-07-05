@@ -14,6 +14,19 @@ function isMissingNewColumnsError(message: string): boolean {
   );
 }
 
+/** unprocessed_orders 선택 컬럼이 아직 없을 때 true */
+function isMissingUnprocessedOptionalColumnError(message: string): boolean {
+  const m = message.toLowerCase();
+  return (
+    (m.includes("schema cache") && m.includes("column")) ||
+    (m.includes("could not find") &&
+      (m.includes("created_by_email") ||
+        m.includes("created_by_role_level") ||
+        m.includes("deleted_at"))) ||
+    (m.includes("column") && m.includes("does not exist"))
+  );
+}
+
 function mapPlanRow(row: Record<string, unknown>): SowingPlanItem {
   const seed = row.seed_owner as string | undefined;
   return {
@@ -62,10 +75,11 @@ export async function fetchSowingPlanItems(
 }
 
 export async function fetchUnprocessedOrders(): Promise<UnprocessedOrder[]> {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("unprocessed_orders")
     .select("*")
     .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
   return ((data as Record<string, unknown>[]) ?? []).map(mapUnprocessedRow);
 }
 
@@ -132,19 +146,28 @@ export async function addUnprocessedOrder(
   createdByEmail: string | null,
   createdByRoleLevel: number,
 ): Promise<UnprocessedOrder> {
-  const { data, error } = await supabase
-    .from("unprocessed_orders")
-    .insert({
+  const fullPayload: Record<string, unknown> = {
+    content: content.trim(),
+    created_by: createdBy,
+    created_by_email: createdByEmail ?? null,
+    created_by_role_level: createdByRoleLevel,
+  };
+  let result = await supabase.from("unprocessed_orders").insert(fullPayload).select().single();
+  if (result.error && isMissingUnprocessedOptionalColumnError(result.error.message)) {
+    const legacyPayload: Record<string, unknown> = {
       content: content.trim(),
       created_by: createdBy,
-      created_by_email: createdByEmail ?? null,
-      created_by_role_level: createdByRoleLevel,
-    })
-    .select()
-    .single();
-  if (error) throw new Error(error.message);
-  if (!data) throw new Error("등록 결과를 받지 못했습니다.");
-  return mapUnprocessedRow(data as Record<string, unknown>);
+    };
+    if (createdByEmail) legacyPayload.created_by_email = createdByEmail;
+    result = await supabase.from("unprocessed_orders").insert(legacyPayload).select().single();
+  }
+  if (result.error) throw new Error(result.error.message);
+  if (!result.data) throw new Error("등록 결과를 받지 못했습니다.");
+  const row = mapUnprocessedRow(result.data as Record<string, unknown>);
+  if (!row.created_at) row.created_at = new Date().toISOString();
+  if (row.created_by_role_level == null) row.created_by_role_level = createdByRoleLevel;
+  if (!row.created_by_email && createdByEmail) row.created_by_email = createdByEmail;
+  return row;
 }
 
 export async function updateUnprocessedOrder(id: string, content: string): Promise<UnprocessedOrder> {
