@@ -3850,12 +3850,23 @@ function PlanningPage() {
       );
       let next = [order, ...unprocessed];
       if (next.length > MAX_UNPROCESSED) {
-        const sorted = [...next].sort((a, b) =>
-          (a.created_at || "").localeCompare(b.created_at || ""),
-        );
-        const toDelete = sorted.slice(0, next.length - MAX_UNPROCESSED);
-        const deleteIds = new Set(toDelete.map((d) => d.id));
-        for (const o of toDelete) await deleteUnprocessedOrder(o.id);
+        // 파종계획에 이미 반영된 주문은 자동 삭제 대상에서 제외한다.
+        // (sowing_plan_items가 외래키로 참조하므로 삭제하면 FK 제약 위반이 발생하고,
+        //  반영된 주문은 계획과 연결된 의미 있는 데이터라 임의로 지우면 안 된다.)
+        const sorted = [...next]
+          .filter((o) => !o.reflected_at)
+          .sort((a, b) => (a.created_at || "").localeCompare(b.created_at || ""));
+        const overflow = next.length - MAX_UNPROCESSED;
+        const toDelete = sorted.slice(0, overflow);
+        const deleteIds = new Set<string>();
+        for (const o of toDelete) {
+          try {
+            await deleteUnprocessedOrder(o.id);
+            deleteIds.add(o.id);
+          } catch {
+            // 삭제 실패(예: 참조 제약)해도 새 주문 등록은 유지한다.
+          }
+        }
         next = next.filter((x) => !deleteIds.has(x.id));
       }
       setUnprocessed(next);
