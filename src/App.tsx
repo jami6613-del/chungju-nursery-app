@@ -44,6 +44,8 @@ import { createOrdersExcelBlob } from "./lib/excelExport";
 import { createCertificatePdf, ordersToRows, type CertificateInput } from "./lib/certificatePdf";
 import { CUSTOMER_PRESETS, EXCLUDED_ORDERERS_FROM_AUTOCOMPLETE, getCustomerPreset, getOrdererForCertificate } from "./lib/certificatePresets";
 import { CertificateContent } from "./components/CertificateContent";
+import { WatchSetup } from "./components/WatchSetup";
+import { planQuantityParse, summarizePlanTrays } from "./lib/planSummary";
 
 const TRAY_OPTIONS = ["200", "406", "72", "128", "포트", "105", "164", "직접입력"];
 
@@ -2216,6 +2218,8 @@ function MainMenuPage() {
   const { user, signOut, refresh } = useAuth();
   const navigate = useNavigate();
   const [roleInfoOpen, setRoleInfoOpen] = React.useState(false);
+  const [watchSetupOpen, setWatchSetupOpen] = React.useState(false);
+  const closeWatchSetup = React.useCallback(() => setWatchSetupOpen(false), []);
   React.useEffect(() => {
     if (user?.role_level === 0 && !user.name?.trim()) {
       updateMyName("정효조").then(() => refresh()).catch(() => refresh());
@@ -2568,6 +2572,14 @@ function MainMenuPage() {
             )}
           </div>
 
+          {user.is_approved && (
+            <button type="button" onClick={() => setWatchSetupOpen(true)}
+              className="min-h-11 self-end rounded-lg border border-slate-700 bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-200">
+              ⌚ 워치 연결
+            </button>
+          )}
+          {watchSetupOpen && <WatchSetup onClose={closeWatchSetup} />}
+
           {/* 2. 발아실 -> 실내 육묘 */}
           <div className={billboardBase}>
             <button
@@ -2900,20 +2912,6 @@ function planQuantityDisplay(base: string, extra: string): string {
   const e = extra.trim();
   return e ? `${b || "-"}+${e}` : (b || "-");
 }
-function planQuantityParse(quantity: string): { base: string; extra: string } {
-  const i = quantity.indexOf("+");
-  if (i >= 0)
-    return { base: quantity.slice(0, i).trim(), extra: quantity.slice(i + 1).trim() };
-  return { base: quantity.trim(), extra: "" };
-}
-/** "50+1" → 51, "100+4" → 104 (트레이 개수 합산용) */
-function planQuantityToTotal(quantity: string): number {
-  const { base, extra } = planQuantityParse(quantity || "");
-  const b = parseInt(base, 10) || 0;
-  const e = parseInt(extra, 10) || 0;
-  return b + e;
-}
-
 const UNPROCESSED_PAGE_SIZE = 10;
 const UNPROCESSED_MAX_PAGES = 10;
 const MAX_UNPROCESSED = UNPROCESSED_PAGE_SIZE * UNPROCESSED_MAX_PAGES; // 200
@@ -4184,15 +4182,7 @@ function PlanningPage() {
               <div className="flex min-h-full flex-1 flex-nowrap gap-3 sm:min-w-0 sm:gap-4">
                 {threeDays.map((dateStr) => {
                   const items = planItems.filter((i) => i.plan_date === dateStr);
-                  const trayTotals: Record<string, number> = {};
-                  for (const item of items) {
-                    const trayKey =
-                      (item.tray_type === "직접입력" ? (item.tray_custom || "").trim() : (item.tray_type || "").trim()) || "미지정";
-                    trayTotals[trayKey] = (trayTotals[trayKey] || 0) + planQuantityToTotal(item.quantity || "");
-                  }
-                  const traySummaryEntries = Object.entries(trayTotals)
-                    .filter(([, n]) => n > 0)
-                    .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }));
+                  const traySummaryEntries = summarizePlanTrays(items);
                   return (
                     <div
                       key={dateStr}
@@ -6120,4 +6110,3 @@ export default function App() {
     </AuthProvider>
   );
 }
-
