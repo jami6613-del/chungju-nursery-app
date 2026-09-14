@@ -23,6 +23,8 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
+  // 워치 요약/API 오류는 캐시나 오프라인 index.html로 대체하지 않는다.
+  if (new URL(event.request.url).pathname.startsWith("/api/")) return;
   const isNav = event.request.mode === "navigate" || event.request.destination === "document";
   if (isNav) {
     event.respondWith(
@@ -78,4 +80,3 @@ self.addEventListener("notificationclick", (event) => {
     }),
   );
 });
-

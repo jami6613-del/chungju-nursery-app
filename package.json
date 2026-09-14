@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:watch": "tsc -p tsconfig.watch-tests.json && node --test .watch-tests/tests/watch-summary.test.js .watch-tests/tests/watch-database.test.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.48.0",
@@ -19,6 +20,8 @@
     "react-router-dom": "^6.28.0"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
+    "@types/node": "^22.20.2",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react-swc": "^3.7.0",
