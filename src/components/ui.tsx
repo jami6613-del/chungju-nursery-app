@@ -12,6 +12,7 @@ export function TextField({
   step,
   inputMode,
   pattern,
+  autoComplete,
 }: {
   label: string;
   value: string;
@@ -25,6 +26,7 @@ export function TextField({
   step?: string;
   inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
   pattern?: string;
+  autoComplete?: React.InputHTMLAttributes<HTMLInputElement>["autoComplete"];
 }) {
   const isLg = size === "lg";
   return (
@@ -38,6 +40,7 @@ export function TextField({
         step={step}
         inputMode={inputMode}
         pattern={pattern}
+        autoComplete={autoComplete}
         onChange={(e) => onChange(e.target.value)}
         className={`rounded-lg border border-autumn-border bg-autumn-surface text-autumn-ink shadow-inner shadow-autumn-shadow/5 focus:border-brand focus:outline-none disabled:opacity-60 sm:rounded-xl placeholder-autumn-secondary ${isLg ? "px-3 py-2 text-sm sm:px-4 sm:py-3 sm:text-base" : "px-2.5 py-1.5 text-sm sm:px-3 sm:py-2"} ${inputClassName ?? ""}`}
       />
@@ -82,12 +85,14 @@ export function SelectField({
 
 export function PrimaryButton({
   children,
+  className,
   onClick,
   type = "button",
   disabled,
   size = "md",
 }: {
   children: React.ReactNode;
+  className?: string;
   onClick?: () => void;
   type?: "button" | "submit";
   disabled?: boolean;
@@ -99,7 +104,7 @@ export function PrimaryButton({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`rounded-lg bg-brand font-semibold text-white shadow-lg shadow-autumn-shadow/10 hover:bg-brand-dark disabled:opacity-60 sm:rounded-xl ${isLg ? "px-4 py-2.5 text-sm sm:px-5 sm:py-3 sm:text-base" : "px-3 py-2 text-xs sm:px-4 sm:py-2 sm:text-sm"}`}
+      className={`rounded-lg bg-brand font-semibold text-white shadow-lg shadow-autumn-shadow/10 hover:bg-brand-dark disabled:opacity-60 sm:rounded-xl ${isLg ? "px-4 py-2.5 text-sm sm:px-5 sm:py-3 sm:text-base" : "px-3 py-2 text-xs sm:px-4 sm:py-2 sm:text-sm"} ${className ?? ""}`}
     >
       {children}
     </button>
@@ -108,12 +113,14 @@ export function PrimaryButton({
 
 export function SecondaryButton({
   children,
+  className,
   onClick,
   type = "button",
   disabled,
   size = "md",
 }: {
   children: React.ReactNode;
+  className?: string;
   onClick?: () => void;
   type?: "button" | "submit";
   disabled?: boolean;
@@ -125,7 +132,7 @@ export function SecondaryButton({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`rounded-lg border border-autumn-border bg-autumn-surface font-semibold text-autumn-ink hover:bg-autumn-soft disabled:opacity-60 sm:rounded-xl ${isLg ? "px-4 py-2.5 text-sm sm:px-5 sm:py-3 sm:text-base" : "px-3 py-2 text-xs sm:px-4 sm:py-2 sm:text-sm"}`}
+      className={`rounded-lg border border-autumn-border bg-autumn-surface font-semibold text-autumn-ink hover:bg-autumn-soft disabled:opacity-60 sm:rounded-xl ${isLg ? "px-4 py-2.5 text-sm sm:px-5 sm:py-3 sm:text-base" : "px-3 py-2 text-xs sm:px-4 sm:py-2 sm:text-sm"} ${className ?? ""}`}
     >
       {children}
     </button>

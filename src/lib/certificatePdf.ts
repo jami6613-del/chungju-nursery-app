@@ -1,4 +1,5 @@
 import type { Order } from "../types";
+import type { jsPDFOptions } from "jspdf";
 
 export interface CertificateInput {
   customerName: string;
@@ -63,16 +64,23 @@ export function ordersToRows(
 /** HTML 요소를 PDF Blob으로 변환 (한글 지원, 도장 투명 배경) */
 export async function createCertificatePdf(element: HTMLElement): Promise<Blob> {
   const { default: html2pdf } = await import("html2pdf.js");
-  const worker = html2pdf()
-    .set({
-      margin: 0,
-      image: { type: "png", quality: 1 },
-      html2canvas: { scale: 2, useCORS: true, logging: false },
-      jsPDF: { unit: "mm", format: "a4", compress: false },
-      pagebreak: { mode: ["css", "legacy"], before: ".html2pdf__page-break" },
-    })
+  const worker = html2pdf();
+  // html2pdf 0.14 omits supported jsPDF/page-break options from its declarations.
+  // Validate the library options and the additional documented options together.
+  const options = {
+    margin: 0,
+    image: { type: "png", quality: 1 },
+    html2canvas: { scale: 2, useCORS: true, logging: false },
+    jsPDF: { unit: "mm", format: "a4", compress: false },
+    pagebreak: { mode: ["css", "legacy"], before: ".html2pdf__page-break" },
+  } satisfies Parameters<typeof worker.set>[0] & {
+    jsPDF: jsPDFOptions;
+    pagebreak: { mode: ("css" | "legacy" | "avoid-all")[]; before: string };
+  };
+  const pdfWorker = worker
+    .set(options)
     .from(element)
     .toPdf();
-  const blob = await worker.outputPdf("blob");
+  const blob = await pdfWorker.outputPdf("blob");
   return blob as Blob;
 }

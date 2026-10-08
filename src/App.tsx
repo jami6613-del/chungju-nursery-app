@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { Routes, Route, Navigate, useNavigate, Link, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { isSupabaseConfigured, supabase } from "./supabaseClient";
-import type { Order, SowingPlanItem, UnprocessedOrder, SeedOwner } from "./types";
+import type { Order, SowingPlanItem, UnprocessedOrder, SeedOwner, UserRoleLevel } from "./types";
 import { getOrderStage, getOrderIndoorStartDate } from "./types";
 import {
   addOrdersFromPlanItems,
@@ -106,7 +106,7 @@ function PushPermissionGate({
       const sub = await reg.pushManager.getSubscription();
       const subscription = sub || (await reg.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+        applicationServerKey: urlBase64ToArrayBuffer(VAPID_PUBLIC_KEY),
       }));
       await savePushSubscription(userId, subscription);
       localStorage.setItem(`${PUSH_CONSENT_STORAGE_KEY}_${userId}`, "1");
@@ -162,14 +162,18 @@ function PushPermissionGate({
   );
 }
 
-/** VAPID 공개키(URL-safe base64)를 Uint8Array로 변환 */
-function urlBase64ToUint8Array(base64: string): Uint8Array {
+/** VAPID 공개키(URL-safe base64)를 Push API용 ArrayBuffer로 변환 */
+function urlBase64ToArrayBuffer(base64: string): ArrayBuffer {
   const padding = "=".repeat((4 - (base64.length % 4)) % 4);
   const b64 = (base64 + padding).replace(/-/g, "+").replace(/_/g, "/");
   const raw = atob(b64);
   const out = new Uint8Array(raw.length);
   for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
-  return out;
+  return out.buffer;
+}
+
+function isUserRoleLevel(value: number): value is UserRoleLevel {
+  return value === 0 || value === 1 || value === 2 || value === 3;
 }
 
 const WEEKDAY_KO = ["일", "월", "화", "수", "목", "금", "토"];
@@ -2924,12 +2928,24 @@ function planQuantityParse(quantity: string): { base: string; extra: string } {
     return { base: quantity.slice(0, i).trim(), extra: quantity.slice(i + 1).trim() };
   return { base: quantity.trim(), extra: "" };
 }
-/** "50+1" → 51, "100+4" → 104 (트레이 개수 합산용) */
-function planQuantityToTotal(quantity: string): number {
+/** 기본판과 추가판은 각각 소수 수량으로 유지합니다. */
+function planQuantityToParts(quantity: string): { base: number; extra: number } {
   const { base, extra } = planQuantityParse(quantity || "");
-  const b = parseInt(base, 10) || 0;
-  const e = parseInt(extra, 10) || 0;
-  return b + e;
+  return {
+    base: parseFloat(base.replace(",", ".")) || 0,
+    extra: parseFloat(extra.replace(",", ".")) || 0,
+  };
+}
+
+/** 0.1 + 0.2 같은 부동소수점 표시 오차만 입력 소수 자릿수 기준으로 정리합니다. */
+function addPlanQuantity(current: number, next: number): number {
+  const decimalPlaces = (value: number) => {
+    const [coefficient, exponent = "0"] = String(value).toLowerCase().split("e");
+    return Math.max(0, (coefficient.split(".")[1]?.length ?? 0) - Number(exponent));
+  };
+  const precision = Math.max(decimalPlaces(current), decimalPlaces(next));
+  const sum = current + next;
+  return precision <= 100 ? Number(sum.toFixed(precision)) : sum;
 }
 
 const UNPROCESSED_PAGE_SIZE = 10;
@@ -4205,14 +4221,19 @@ function PlanningPage() {
               <div className="flex min-h-full flex-1 flex-nowrap gap-3 sm:min-w-0 sm:gap-4">
                 {threeDays.map((dateStr) => {
                   const items = planItems.filter((i) => i.plan_date === dateStr);
-                  const trayTotals: Record<string, number> = {};
+                  const trayTotals: Record<string, { base: number; extra: number }> = {};
                   for (const item of items) {
                     const trayKey =
                       (item.tray_type === "직접입력" ? (item.tray_custom || "").trim() : (item.tray_type || "").trim()) || "미지정";
-                    trayTotals[trayKey] = (trayTotals[trayKey] || 0) + planQuantityToTotal(item.quantity || "");
+                    const quantity = planQuantityToParts(item.quantity || "");
+                    const current = trayTotals[trayKey] ?? { base: 0, extra: 0 };
+                    trayTotals[trayKey] = {
+                      base: addPlanQuantity(current.base, quantity.base),
+                      extra: addPlanQuantity(current.extra, quantity.extra),
+                    };
                   }
                   const traySummaryEntries = Object.entries(trayTotals)
-                    .filter(([, n]) => n > 0)
+                    .filter(([, quantity]) => quantity.base > 0 || quantity.extra > 0)
                     .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }));
                   return (
                     <div
@@ -4321,7 +4342,13 @@ function PlanningPage() {
                         </div>
                         {traySummaryEntries.length > 0 && (
                           <div className="shrink-0 border-t-2 border-autumn-line bg-gradient-to-b from-autumn-soft to-autumn-sand px-2 py-2 text-center font-bold text-autumn-ink text-[0.9625rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.25)]">
-                            {traySummaryEntries.map(([tray, n]) => `${tray}구 : ${n}개`).join(" │ ")}
+                            {traySummaryEntries.map(([tray, quantity]) => (
+                              <div key={tray} className="flex flex-wrap items-baseline justify-center gap-x-1">
+                                <span className="break-all">{tray}구:</span>
+                                <span>기본 {quantity.base}판</span>
+                                <span>· 추가 {quantity.extra}판</span>
+                              </div>
+                            ))}
                           </div>
                         )}
                       </div>
@@ -6086,7 +6113,7 @@ function AdminStaffPage() {
                 </div>
                 <div className="flex shrink-0 flex-wrap items-center gap-2 border-t border-autumn-border pt-3 sm:border-t-0 sm:pt-0">
                   <span className="text-xs text-autumn-secondary">현재 등급:</span>
-                  <span className="text-sm text-autumn-body">{ROLE_LABEL[u.role_level]}</span>
+                  <span className="text-sm text-autumn-body">{isUserRoleLevel(u.role_level) ? ROLE_LABEL[u.role_level] : "등급 확인 필요"}</span>
                   <span className="text-xs text-autumn-secondary">변경:</span>
                   <select
                     value={roleByUserId[u.id] ?? u.role_level}

@@ -30,7 +30,7 @@ export async function fetchCurrentUser(): Promise<AppUser | null> {
 
   return {
     id: data.id,
-    email: user.email,
+    email: user.email ?? null,
     name: data.name ?? null,
     role_level: data.role_level ?? 3,
     is_approved: data.is_approved ?? false,
