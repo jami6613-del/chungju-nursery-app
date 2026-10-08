@@ -61,6 +61,55 @@ test('base and extra subtotals remain separate without floating point display no
   assert.equal(quantities.addPlanQuantity(0, 1e-101), 1e-101);
 });
 
+// Exercise the actual whiteboard aggregation and footer JSX without auth or live data.
+function renderWhiteboardSummary(items) {
+  const source = fs.readFileSync(path.join(root, 'src/App.tsx'), 'utf8');
+  const setupStart = source.indexOf('const trayTotals:');
+  const setupEnd = source.indexOf('\n                  return (', setupStart);
+  const footerStart = source.indexOf('<div className="shrink-0 border-t-2', setupEnd);
+  const footerEnd = source.indexOf('\n                        )}', footerStart);
+  assert.ok(setupStart >= 0 && setupEnd > setupStart && footerStart > setupEnd && footerEnd > footerStart);
+  const snippet = `module.exports = function(items) { ${source.slice(setupStart, setupEnd)}; return (${source.slice(footerStart, footerEnd)}); };`;
+  const js = ts.transpileModule(snippet, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
+    fileName: 'whiteboard-summary.tsx',
+  }).outputText;
+  const module = { exports: {} };
+  vm.runInNewContext(js, { module, exports: module.exports, require, ...quantities });
+  return renderToStaticMarkup(module.exports(items));
+}
+
+test('whiteboard totals combine decimal base and extra per tray across all rows', () => {
+  const items = [
+    { tray_type: '200', quantity: '3.5+0.5' },
+    { tray_type: '200', quantity: '1.25+0.25' },
+    { tray_type: '406', quantity: '2.5+0.5' },
+  ];
+  const before = JSON.stringify(items);
+  const html = renderWhiteboardSummary(items);
+  assert.match(html, /200구:<\/span><span>총 5.5판<\/span>/);
+  assert.match(html, /406구:<\/span><span>총 3판<\/span>/);
+  assert.doesNotMatch(html, /기본|추가|parseInt/);
+  assert.equal(JSON.stringify(items), before, 'Original row quantities must remain separate and unchanged');
+  assert.match(renderWhiteboardSummary([items[0]]), /총 4판/);
+});
+
+test('whiteboard totals preserve small decimals, extra-only rows and custom tray grouping', () => {
+  const html = renderWhiteboardSummary([
+    { tray_type: '200', quantity: '0.1+0.2' },
+    { tray_type: '직접입력', tray_custom: ' 200 ', quantity: '+0.025' },
+    { tray_type: '직접입력', tray_custom: '72', quantity: '3,25+0,125' },
+    { tray_type: '406', quantity: '' },
+    { tray_type: '', quantity: '+0.5' },
+  ]);
+  assert.match(html, /200구:<\/span><span>총 0.325판<\/span>/);
+  assert.match(html, /72구:<\/span><span>총 3.375판<\/span>/);
+  assert.match(html, /미지정구:<\/span><span>총 0.5판<\/span>/);
+  assert.doesNotMatch(html, /406구|0\.300000|기본|추가/);
+  assert.ok(html.indexOf('72구:') < html.indexOf('200구:'), 'Keep numeric tray sorting');
+  assert.doesNotMatch(renderWhiteboardSummary([]), /총 /);
+});
+
 test('plan to actual API inserts base and extra decimals as distinct fields', async () => {
   const payloads = [];
   const supabase = { from: (table) => {

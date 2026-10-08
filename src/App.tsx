@@ -4345,8 +4345,7 @@ function PlanningPage() {
                             {traySummaryEntries.map(([tray, quantity]) => (
                               <div key={tray} className="flex flex-wrap items-baseline justify-center gap-x-1">
                                 <span className="break-all">{tray}구:</span>
-                                <span>기본 {quantity.base}판</span>
-                                <span>· 추가 {quantity.extra}판</span>
+                                <span>총 {addPlanQuantity(quantity.base, quantity.extra)}판</span>
                               </div>
                             ))}
                           </div>
