@@ -3,8 +3,8 @@
   "short_name": "충주육묘장",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#020617",
-  "theme_color": "#020617",
+  "background_color": "#f5ede1",
+  "theme_color": "#f5ede1",
   "orientation": "portrait",
   "icons": [
     {

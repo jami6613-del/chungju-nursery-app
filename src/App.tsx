@@ -117,9 +117,9 @@ function PushPermissionGate({
 
   if (status === "denied") {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-slate-950 px-6 text-center text-slate-100">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-autumn-canvas px-6 text-center text-autumn-ink">
         <div className="mb-2 text-2xl font-bold">알림 허용이 필요합니다</div>
-        <p className="mb-6 text-sm text-slate-300">
+        <p className="mb-6 text-sm text-autumn-body">
           주문 및 파종계획에 새 게시글이 등록되면 바로 알려드리려면 알림을 허용해 주세요. Lv1 사용자는 알림을 허용해야 메인메뉴로 이동할 수 있습니다.
         </p>
         <PrimaryButton onClick={() => setStatus("idle")}>다시 요청</PrimaryButton>
@@ -129,13 +129,13 @@ function PushPermissionGate({
 
   if (status === "error" && errorMessage) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-slate-950 px-6 text-center text-slate-100">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-autumn-canvas px-6 text-center text-autumn-ink">
         <div className="mb-2 text-2xl font-bold">알림 설정 실패</div>
-        <p className="mb-6 text-sm text-slate-300">{errorMessage}</p>
+        <p className="mb-6 text-sm text-autumn-body">{errorMessage}</p>
         <PrimaryButton onClick={() => { setStatus("idle"); setErrorMessage(null); }}>다시 시도</PrimaryButton>
         <button
           type="button"
-          className="mt-3 text-sm text-slate-400 underline"
+          className="mt-3 text-sm text-autumn-secondary underline"
           onClick={() => { localStorage.setItem(`${PUSH_CONSENT_STORAGE_KEY}_${userId}`, "1"); onSuccess(); }}
         >
           알림 없이 메인메뉴로
@@ -145,9 +145,9 @@ function PushPermissionGate({
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-950 px-6 text-center text-slate-100">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-autumn-canvas px-6 text-center text-autumn-ink">
       <div className="mb-2 text-2xl font-bold">푸시 알림 허용</div>
-      <p className="mb-6 text-sm text-slate-300">
+      <p className="mb-6 text-sm text-autumn-body">
         주문 및 파종계획에 새로 등록된 게시글이 있을 때 푸시 알림을 받으려면 알림을 허용해 주세요. Lv1 사용자는 앱 사용을 위해 알림 허용이 필요합니다.
       </p>
       <PrimaryButton onClick={requestAndSubscribe} disabled={status === "asking"}>
@@ -206,9 +206,9 @@ function Lv0NicknameAutoSet({ onRefresh }: { onRefresh: () => Promise<void> }) {
     };
   }, [onRefresh]);
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-950 text-slate-100">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-autumn-canvas text-autumn-ink">
       <div className="mb-2 text-lg font-semibold">충주 친환경 육묘장</div>
-      <div className="text-sm text-slate-400">닉네임 설정 중...</div>
+      <div className="text-sm text-autumn-secondary">닉네임 설정 중...</div>
     </div>
   );
 }
@@ -246,9 +246,9 @@ function NicknameGate({
     }
   };
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-950 px-6 text-slate-100">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-autumn-canvas px-6 text-autumn-ink">
       <div className="mb-2 text-2xl font-bold">닉네임 설정</div>
-      <p className="mb-6 text-sm text-slate-300">
+      <p className="mb-6 text-sm text-autumn-body">
         메인화면에 표시할 닉네임을 3~8글자 한글로 입력해 주세요.
       </p>
       <form onSubmit={handleSubmit} className="flex w-full max-w-xs flex-col gap-3">
@@ -259,7 +259,7 @@ function NicknameGate({
           type="text"
           placeholder="예: 홍길동"
         />
-        {error && <div className="text-xs text-red-400">{error}</div>}
+        {error && <div className="text-xs text-red-700">{error}</div>}
         <PrimaryButton type="submit" disabled={busy}>
           {busy ? "저장 중..." : "확인"}
         </PrimaryButton>
@@ -270,21 +270,21 @@ function NicknameGate({
 
 function SupabaseSetupPage() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-950 px-6 text-center text-slate-100">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-autumn-canvas px-6 text-center text-autumn-ink">
       <div className="mb-2 text-2xl font-extrabold">충주 친환경 육묘장</div>
-      <div className="mb-6 text-sm text-slate-300">
+      <div className="mb-6 text-sm text-autumn-body">
         Supabase 환경변수가 설정되지 않아 앱을 시작할 수 없습니다.
       </div>
-      <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/80 p-5 text-left text-sm">
+      <div className="w-full max-w-md rounded-2xl border border-autumn-border bg-autumn-surface/80 p-5 text-left text-sm">
         <div className="mb-2 font-semibold">설정 방법</div>
-        <ol className="list-decimal space-y-1 pl-5 text-slate-200">
+        <ol className="list-decimal space-y-1 pl-5 text-autumn-ink">
           <li>
-            <code className="rounded bg-slate-800 px-1">.env.example</code>을 복사해{" "}
-            <code className="rounded bg-slate-800 px-1">.env</code> 생성
+            <code className="rounded bg-autumn-soft px-1">.env.example</code>을 복사해{" "}
+            <code className="rounded bg-autumn-soft px-1">.env</code> 생성
           </li>
           <li>
-            <code className="rounded bg-slate-800 px-1">VITE_SUPABASE_URL</code>,{" "}
-            <code className="rounded bg-slate-800 px-1">VITE_SUPABASE_ANON_KEY</code> 입력
+            <code className="rounded bg-autumn-soft px-1">VITE_SUPABASE_URL</code>,{" "}
+            <code className="rounded bg-autumn-soft px-1">VITE_SUPABASE_ANON_KEY</code> 입력
           </li>
           <li>개발 서버 재시작</li>
         </ol>
@@ -381,18 +381,18 @@ function LoginPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center bg-slate-950 text-slate-100">
+      <div className="flex h-screen flex-col items-center justify-center bg-autumn-canvas text-autumn-ink">
         <div className="mb-4 text-lg font-semibold">충주 친환경 육묘장</div>
-        <div className="text-sm text-slate-400">로딩 중...</div>
+        <div className="text-sm text-autumn-secondary">로딩 중...</div>
       </div>
     );
   }
 
   if (pendingMessage && !user?.is_approved) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center bg-slate-950 px-6 text-center text-slate-100">
+      <div className="flex h-screen flex-col items-center justify-center bg-autumn-canvas px-6 text-center text-autumn-ink">
         <div className="mb-2 text-2xl font-bold">가입 신청 완료</div>
-        <p className="mb-6 text-sm text-slate-300">{pendingMessage}</p>
+        <p className="mb-6 text-sm text-autumn-body">{pendingMessage}</p>
         <PrimaryButton
           onClick={() => {
             void signOut();
@@ -408,9 +408,9 @@ function LoginPage() {
 
   if (user && !user.is_approved) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center bg-slate-950 px-6 text-center text-slate-100">
+      <div className="flex h-screen flex-col items-center justify-center bg-autumn-canvas px-6 text-center text-autumn-ink">
         <div className="mb-2 text-2xl font-bold">승인 대기 중</div>
-        <p className="mb-6 text-sm text-slate-300">
+        <p className="mb-6 text-sm text-autumn-body">
           관리자 승인 후 로그인할 수 있습니다. 최고관리자에게 문의하세요.
         </p>
         <PrimaryButton onClick={() => void signOut()}>
@@ -445,13 +445,13 @@ function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-950 px-4 py-6 text-slate-100 sm:px-6 sm:py-10">
+    <div className="autumn-shell flex min-h-screen flex-col bg-autumn-canvas px-4 py-6 text-autumn-ink sm:px-6 sm:py-10">
       <div className="mb-6 sm:mb-10">
         <div className="text-2xl font-extrabold tracking-tight sm:text-3xl">충주 친환경 육묘장</div>
-        <div className="mt-1 text-sm text-slate-400">사내 전용 파종·출하 관리</div>
+        <div className="mt-1 text-sm text-autumn-secondary">사내 전용 파종·출하 관리</div>
       </div>
 
-      <div className="mx-auto w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/80 p-4 shadow-xl shadow-black/50 sm:p-6">
+      <div className="mx-auto w-full max-w-md rounded-2xl border border-autumn-border bg-autumn-surface/80 p-4 shadow-xl shadow-autumn-shadow/10 sm:p-6">
         <div className="mb-4 flex gap-2 text-sm">
           <button
             type="button"
@@ -459,7 +459,7 @@ function LoginPage() {
             className={`flex-1 rounded-xl px-3 py-2 font-semibold ${
               mode === "login"
                 ? "bg-brand text-white"
-                : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                : "bg-autumn-soft text-autumn-body hover:bg-autumn-muted"
             }`}
           >
             로그인
@@ -470,7 +470,7 @@ function LoginPage() {
             className={`flex-1 rounded-xl px-3 py-2 font-semibold ${
               mode === "register"
                 ? "bg-brand text-white"
-                : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                : "bg-autumn-soft text-autumn-body hover:bg-autumn-muted"
             }`}
           >
             직원인증 및 등록
@@ -499,14 +499,14 @@ function LoginPage() {
             autoComplete={mode === "login" ? "current-password" : "new-password"}
           />
 
-          {error && <div className="text-xs text-red-400">{error}</div>}
+          {error && <div className="text-xs text-red-700">{error}</div>}
 
           <PrimaryButton type="submit" disabled={busy}>
             {mode === "login" ? "로그인" : "가입 신청"}
           </PrimaryButton>
 
           {mode === "register" && (
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1 text-xs text-autumn-secondary">
               이메일 형식으로 가입해 주세요. 가입 신청 후 관리자 승인 시 로그인할 수 있습니다.
             </p>
           )}
@@ -1055,43 +1055,43 @@ function DashboardPage() {
   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 
   const rowBgByStage: Record<string, string> = {
-    germination: "bg-yellow-200/90 text-slate-900",   // 발아실: 연노랑
-    indoor: "bg-green-600/80 text-slate-100",         // 실내 육묘: 녹색
-    outdoor: "bg-orange-400/90 text-slate-900",       // 야외 경화: 주황색
-    shipped: "bg-slate-800 text-slate-100",           // 출하 완료: 어두운 네이비(범례와 동일)
+    germination: "bg-yellow-200/90 text-autumn-ink",   // 발아실: 연노랑
+    indoor: "bg-green-700 text-white",         // 실내 육묘: 녹색
+    outdoor: "bg-orange-400/90 text-autumn-ink",       // 야외 경화: 주황색
+    shipped: "bg-slate-800 text-white",                // 출하 완료: 남색(범례와 동일)
   };
 
   const listScrollRef = React.useRef<HTMLDivElement>(null);
   useTouchScroll(listScrollRef);
 
   return (
-    <div className="order-list-page flex h-[100dvh] flex-col overflow-hidden bg-slate-950 text-slate-50">
-      <header className="shrink-0 border-b border-slate-800 bg-slate-900/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
+    <div className="order-list-page flex h-[100dvh] flex-col overflow-hidden bg-autumn-canvas text-autumn-ink">
+      <header className="shrink-0 border-b border-autumn-border bg-autumn-surface/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
         <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-0">
           <div className="min-w-0">
             <div className="truncate text-lg font-extrabold tracking-tight sm:text-2xl md:text-3xl">충주 친환경 육묘장</div>
-            <div className="text-xs text-slate-400 sm:text-base">파종 및 출하현황</div>
+            <div className="text-xs text-autumn-secondary sm:text-base">파종 및 출하현황</div>
           </div>
           <div className="flex flex-shrink-0 items-center gap-2.5 text-right text-[0.825rem] sm:gap-3 sm:text-[1.1rem]">
             <button
               type="button"
               onClick={() => setRoleInfoOpen(true)}
-              className="rounded-full bg-slate-800 px-2.5 py-2 text-slate-200 hover:bg-slate-700 sm:px-3.5 sm:py-2.5"
+              className="rounded-full bg-autumn-soft px-2.5 py-2 text-autumn-ink hover:bg-autumn-muted sm:px-3.5 sm:py-2.5"
             >
               {ROLE_LABEL[user.role_level]}
             </button>
             <button
               type="button"
               onClick={() => void signOut()}
-              className="rounded-lg bg-slate-800 px-2.5 py-2 text-slate-200 hover:bg-slate-700 sm:px-3.5 sm:py-2.5"
+              className="rounded-lg bg-autumn-soft px-2.5 py-2 text-autumn-ink hover:bg-autumn-muted sm:px-3.5 sm:py-2.5"
             >
               로그아웃
             </button>
-            <span className="hidden text-slate-400 sm:inline">{formatDateTimeKO(now)}</span>
+            <span className="hidden text-autumn-secondary sm:inline">{formatDateTimeKO(now)}</span>
             <button
               type="button"
               onClick={() => navigate("/menu")}
-              className="rounded-lg bg-slate-800 px-2.5 py-2 text-slate-200 hover:bg-slate-700 sm:px-3.5 sm:py-2.5"
+              className="rounded-lg bg-autumn-soft px-2.5 py-2 text-autumn-ink hover:bg-autumn-muted sm:px-3.5 sm:py-2.5"
             >
               메인메뉴
             </button>
@@ -1104,24 +1104,24 @@ function DashboardPage() {
         title="권한 등급 안내"
         onClose={() => setRoleInfoOpen(false)}
       >
-        <div className="space-y-2 text-sm text-slate-200">
+        <div className="space-y-2 text-sm text-autumn-ink">
           {ROLE_LEVELS.map((level) => (
             <div key={level}>
               {ROLE_LABEL[level]}
               {level === user.role_level && (
-                <span className="ml-1 text-amber-400">* 현재 나의 등급입니다.</span>
+                <span className="ml-1 text-amber-700">* 현재 나의 등급입니다.</span>
               )}
             </div>
           ))}
         </div>
-        <p className="mt-4 border-t border-slate-700 pt-3 text-xs text-slate-400">
+        <p className="mt-4 border-t border-autumn-border pt-3 text-xs text-autumn-secondary">
           권한에 관한 문의는 최고관리자에게 문의바랍니다 (정효조 / 010-2604-6588)
         </p>
       </Modal>
 
       <main className="flex min-h-0 flex-1 flex-col overflow-hidden px-3 pt-3 pb-3">
         {user.is_approved ? null : (
-          <div className="mb-3 shrink-0 rounded-xl border border-yellow-600 bg-yellow-950/40 px-4 py-3 text-base text-yellow-200">
+          <div className="mb-3 shrink-0 rounded-xl border border-yellow-300 bg-yellow-100/40 px-4 py-3 text-base text-yellow-800">
             관리자 승인 대기 중입니다. 읽기 전용으로만 이용 가능합니다.
           </div>
         )}
@@ -1135,7 +1135,7 @@ function DashboardPage() {
                   setExportYearToUse(selectedYear);
                   setExportYearModalOpen(true);
                 }}
-                className="rounded-lg border border-pink-400/60 bg-pink-400/30 px-3 py-2 text-sm font-medium text-pink-100 shadow-[0_0_12px_rgba(244,114,182,0.4)] hover:bg-pink-400/50 sm:rounded-xl sm:px-5 sm:py-3 sm:text-base"
+                className="rounded-lg border border-pink-400/60 bg-pink-400/30 px-3 py-2 text-sm font-medium text-pink-800 shadow-[0_4px_14px_rgba(90,57,36,0.1)] hover:bg-pink-400/50 sm:rounded-xl sm:px-5 sm:py-3 sm:text-base"
               >
                 엑셀로 추출
               </button>
@@ -1145,21 +1145,21 @@ function DashboardPage() {
           <button
             type="button"
             onClick={() => setYearSelectOpen(true)}
-            className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm font-medium text-slate-200 hover:bg-slate-800 sm:rounded-xl sm:px-5 sm:py-3 sm:text-base"
+            className="rounded-lg border border-autumn-border bg-autumn-surface px-3 py-2 text-sm font-medium text-autumn-ink hover:bg-autumn-soft sm:rounded-xl sm:px-5 sm:py-3 sm:text-base"
           >
             연도선택
           </button>
           <button
             type="button"
             onClick={() => setSearchOpen(true)}
-            className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm font-medium text-slate-200 hover:bg-slate-800 sm:rounded-xl sm:px-5 sm:py-3 sm:text-base"
+            className="rounded-lg border border-autumn-border bg-autumn-surface px-3 py-2 text-sm font-medium text-autumn-ink hover:bg-autumn-soft sm:rounded-xl sm:px-5 sm:py-3 sm:text-base"
           >
             검색
           </button>
           <button
             type="button"
             onClick={() => void reload()}
-            className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200 hover:bg-slate-800 sm:rounded-xl sm:px-4 sm:py-3 sm:text-base"
+            className="rounded-lg border border-autumn-border bg-autumn-surface px-3 py-2 text-sm text-autumn-ink hover:bg-autumn-soft sm:rounded-xl sm:px-4 sm:py-3 sm:text-base"
           >
             새로고침
           </button>
@@ -1272,7 +1272,7 @@ function DashboardPage() {
               </PrimaryButton>
             </div>
             {!hasAnySearchCondition && (
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-autumn-secondary">
                 하나 이상의 조건을 입력한 뒤 검색하세요.
               </p>
             )}
@@ -1299,15 +1299,15 @@ function DashboardPage() {
                 }}
                 className={`rounded-xl px-4 py-3 text-base font-semibold sm:px-5 sm:py-3 sm:text-lg ${
                   selectedYear === y
-                    ? "border-2 border-brand bg-brand/20 text-brand"
-                    : "border border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800"
+                    ? "border-2 border-brand bg-brand/20 text-brand-dark"
+                    : "border border-autumn-border bg-autumn-surface text-autumn-ink hover:bg-autumn-soft"
                 }`}
               >
                 {y}년
               </button>
             ))}
           </div>
-          <p className="mt-4 text-sm text-slate-400">
+          <p className="mt-4 text-sm text-autumn-secondary">
             파종일자 기준 해당 연도 데이터만 표시됩니다.
           </p>
         </Modal>,
@@ -1321,7 +1321,7 @@ function DashboardPage() {
           title="엑셀 추출"
           titleSize="lg"
         >
-          <p className="mb-4 text-base text-slate-200">몇년도 데이터를 추출하시겠습니까?</p>
+          <p className="mb-4 text-base text-autumn-ink">몇년도 데이터를 추출하시겠습니까?</p>
           <div className="mb-4 flex flex-wrap gap-2 sm:gap-3">
             {availableYears.map((y) => (
               <button
@@ -1330,8 +1330,8 @@ function DashboardPage() {
                 onClick={() => setExportYearToUse(y)}
                 className={`rounded-xl px-4 py-3 text-base font-semibold sm:px-5 sm:py-3 sm:text-lg ${
                   exportYearToUse === y
-                    ? "border-2 border-pink-400 bg-pink-400/30 text-pink-200"
-                    : "border border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800"
+                    ? "border-2 border-pink-400 bg-pink-400/30 text-pink-800"
+                    : "border border-autumn-border bg-autumn-surface text-autumn-ink hover:bg-autumn-soft"
                 }`}
               >
                 {y}년
@@ -1357,7 +1357,7 @@ function DashboardPage() {
           title="엑셀 추출 완료"
           titleSize="lg"
         >
-          <p className="mb-4 text-base text-slate-200">추출이 완료되었습니다 파일로 저장하시겠습니까?</p>
+          <p className="mb-4 text-base text-autumn-ink">추출이 완료되었습니다 파일로 저장하시겠습니까?</p>
           <div className="flex gap-2">
             <SecondaryButton onClick={handleExportCancel} size="lg">
               취소
@@ -1370,22 +1370,22 @@ function DashboardPage() {
         document.body,
         )}
 
-        <div className="mb-2 flex shrink-0 flex-wrap items-center justify-between gap-2 text-xs text-slate-400 sm:gap-3 sm:text-sm">
+        <div className="mb-2 flex shrink-0 flex-wrap items-center justify-between gap-2 text-xs text-autumn-secondary sm:gap-3 sm:text-sm">
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-3">
             <span className="flex items-center gap-1">
-              <span className="h-3 w-4 rounded border border-slate-600 bg-yellow-200/90 sm:h-4 sm:w-6" />
+              <span className="h-3 w-4 rounded border border-autumn-line bg-yellow-200/90 sm:h-4 sm:w-6" />
               연노랑: 발아실
             </span>
             <span className="flex items-center gap-1">
-              <span className="h-3 w-4 rounded border border-slate-600 bg-green-600/80 sm:h-4 sm:w-6" />
+              <span className="h-3 w-4 rounded border border-autumn-line bg-green-700 sm:h-4 sm:w-6" />
               녹색: 실내 육묘
             </span>
             <span className="flex items-center gap-1">
-              <span className="h-3 w-4 rounded border border-slate-600 bg-orange-400/90 sm:h-4 sm:w-6" />
+              <span className="h-3 w-4 rounded border border-autumn-line bg-orange-400/90 sm:h-4 sm:w-6" />
               주황: 야외 경화
             </span>
             <span className="flex items-center gap-1">
-              <span className="h-3 w-4 rounded border border-slate-600 bg-slate-800 sm:h-4 sm:w-6" />
+              <span className="h-3 w-4 rounded border border-autumn-line bg-slate-800 sm:h-4 sm:w-6" />
               남색: 출하완료
             </span>
           </div>
@@ -1393,7 +1393,7 @@ function DashboardPage() {
             <button
               type="button"
               onClick={() => setSearchConditions(emptySearchConditions)}
-              className="rounded-lg border border-slate-600 bg-slate-800 px-2.5 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-700 sm:rounded-xl sm:px-4 sm:py-2 sm:text-sm"
+              className="rounded-lg border border-autumn-line bg-autumn-soft px-2.5 py-1.5 text-xs font-medium text-autumn-ink hover:bg-autumn-muted sm:rounded-xl sm:px-4 sm:py-2 sm:text-sm"
             >
               전체리스트 보기
             </button>
@@ -1402,22 +1402,22 @@ function DashboardPage() {
 
         <div className="mb-2 flex shrink-0 flex-wrap items-center gap-x-4 gap-y-0.5 text-sm font-medium sm:gap-x-6 sm:text-base">
           <span>
-            <span className="text-yellow-300">발아실</span>
-            <span className="ml-1 text-slate-200">: {stageCounts.germination}판</span>
+            <span className="text-yellow-700">발아실</span>
+            <span className="ml-1 text-autumn-ink">: {stageCounts.germination}판</span>
           </span>
           <span>
-            <span className="text-green-400">실내</span>
-            <span className="ml-1 text-slate-200">: {stageCounts.indoor}판</span>
+            <span className="text-green-700">실내</span>
+            <span className="ml-1 text-autumn-ink">: {stageCounts.indoor}판</span>
           </span>
           <span>
-            <span className="text-orange-400">야외</span>
-            <span className="ml-1 text-slate-200">: {stageCounts.outdoor}판</span>
+            <span className="text-orange-700">야외</span>
+            <span className="ml-1 text-autumn-ink">: {stageCounts.outdoor}판</span>
           </span>
         </div>
 
         <div
           ref={listScrollRef}
-          className="order-list-scroll-area min-h-0 flex-1 overflow-auto rounded-xl border border-slate-800 bg-slate-900 sm:rounded-2xl"
+          className="order-list-scroll-area min-h-0 flex-1 overflow-auto rounded-xl border border-autumn-border bg-autumn-surface sm:rounded-2xl"
         >
           <div className="pb-[max(3rem,env(safe-area-inset-bottom)+2rem)] min-h-full">
           <table className="order-list-table min-w-full text-[0.75rem] sm:text-base sm:table-auto">
@@ -1432,7 +1432,7 @@ function DashboardPage() {
               <col className="order-col-fit" />
               <col className="order-col-note" />
             </colgroup>
-            <thead className="order-list-thead sticky top-0 z-10 bg-slate-950/95 text-[0.7rem] uppercase tracking-tight text-slate-400 backdrop-blur sm:text-sm sm:tracking-normal">
+            <thead className="order-list-thead sticky top-0 z-10 bg-autumn-canvas/95 text-[0.7rem] uppercase tracking-tight text-autumn-secondary backdrop-blur sm:text-sm sm:tracking-normal">
               <tr>
                 <th className="whitespace-nowrap px-1.5 py-2 text-left sm:px-3 sm:py-3">파종일</th>
                 <th className="whitespace-nowrap px-1.5 py-2 text-left sm:px-3 sm:py-3">주문자</th>
@@ -1448,14 +1448,14 @@ function DashboardPage() {
             <tbody>
               {loading && (
                 <tr>
-                  <td colSpan={9} className="px-1.5 py-3 text-center text-slate-400 sm:px-3 sm:py-6">
+                  <td colSpan={9} className="px-1.5 py-3 text-center text-autumn-secondary sm:px-3 sm:py-6">
                     불러오는 중...
                   </td>
                 </tr>
               )}
               {!loading && displayOrders.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-1.5 py-3 text-center text-slate-400 sm:px-3 sm:py-6">
+                  <td colSpan={9} className="px-1.5 py-3 text-center text-autumn-secondary sm:px-3 sm:py-6">
                     데이터가 없습니다.
                   </td>
                 </tr>
@@ -1490,7 +1490,7 @@ function DashboardPage() {
                   <React.Fragment key={o.id}>
                     {isMonthBreak && (
                       <tr aria-hidden="true" className="pointer-events-none">
-                        <td colSpan={9} className="border-t border-slate-600/40 py-1.5 sm:py-2" />
+                        <td colSpan={9} className="border-t border-autumn-line/40 py-1.5 sm:py-2" />
                       </tr>
                     )}
                     {!isMonthBreak && isDateBreak && (
@@ -1499,7 +1499,7 @@ function DashboardPage() {
                       </tr>
                     )}
                     <tr
-                      className={`cursor-pointer border-t border-slate-800 hover:opacity-90 ${rowBgByStage[stage]}`}
+                      className={`cursor-pointer border-t border-autumn-border hover:opacity-90 ${rowBgByStage[stage]}`}
                       style={
                         quantityMismatch
                           ? {
@@ -1529,7 +1529,7 @@ function DashboardPage() {
                           <span
                             role="button"
                             tabIndex={0}
-                            className="inline-flex h-5 min-w-5 cursor-pointer items-center justify-center rounded-full bg-orange-500 px-1 text-xs font-bold leading-none text-white"
+                            className="inline-flex h-5 min-w-5 cursor-pointer items-center justify-center rounded-full bg-orange-700 px-1 text-xs font-bold leading-none text-white"
                             title={`야외경화 ${outdoorDays}일째 (2초 길게 누르면 일차 수정)`}
                             onPointerDown={(e) => {
                               e.stopPropagation();
@@ -1566,20 +1566,20 @@ function DashboardPage() {
       {createPortal(
         <>
           {canRequestEdits(user) && user.role_level === 2 && (
-            <div className="fixed bottom-4 left-1/2 z-[90] w-[90%] max-w-md -translate-x-1/2 rounded-lg border border-blue-800 bg-blue-950/80 px-3 py-2 text-xs text-blue-100 shadow-lg shadow-black/40 sm:rounded-xl sm:px-4 sm:py-3 sm:text-base">
+            <div className="fixed bottom-4 left-1/2 z-[90] w-[90%] max-w-md -translate-x-1/2 rounded-lg border border-blue-300 bg-blue-100/80 px-3 py-2 text-xs text-blue-800 shadow-lg shadow-autumn-shadow/5 sm:rounded-xl sm:px-4 sm:py-3 sm:text-base">
               일반 실무자는 읽기 전용입니다. 수정이 필요하면 별도 게시판에 &quot;입력/수정 요청&quot; 글을
               남겨주세요.
             </div>
           )}
           {canWriteOrders(user) && (
             <div className="fixed bottom-5 right-4 z-[90] flex flex-col items-center sm:bottom-6 sm:right-6">
-              <span className="mb-1 rounded-lg bg-slate-400/85 px-2 py-0.5 text-[10px] font-semibold text-slate-900 sm:mb-1.5 sm:px-2.5 sm:py-1 sm:text-xs">
+              <span className="mb-1 rounded-lg bg-autumn-sand/85 px-2 py-0.5 text-[10px] font-semibold text-autumn-ink sm:mb-1.5 sm:px-2.5 sm:py-1 sm:text-xs">
                 파종입력
               </span>
               <button
                 type="button"
                 onClick={handleNew}
-                className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-brand text-2xl font-bold leading-none text-white shadow-xl shadow-black/40 sm:h-14 sm:w-14 sm:text-3xl"
+                className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-brand text-2xl font-bold leading-none text-white shadow-xl shadow-autumn-shadow/5 sm:h-14 sm:w-14 sm:text-3xl"
               >
                 <span className="inline-flex items-center justify-center leading-none">+</span>
               </button>
@@ -1611,7 +1611,7 @@ function DashboardPage() {
                 size="lg"
               />
               {formState.customer_name && !autocompleteCustomers.includes(formState.customer_name) && (
-                <div className="absolute left-0 right-0 top-full z-10 max-h-40 overflow-auto rounded-xl bg-slate-900 text-base shadow-lg">
+                <div className="absolute left-0 right-0 top-full z-10 max-h-40 overflow-auto rounded-xl bg-autumn-surface text-base shadow-lg">
                   {autocompleteCustomers
                     .filter((c) => c.includes(formState.customer_name))
                     .slice(0, 5)
@@ -1620,7 +1620,7 @@ function DashboardPage() {
                         key={c}
                         type="button"
                         onClick={() => handleFormChange({ customer_name: c })}
-                        className="block w-full px-4 py-2 text-left hover:bg-slate-800"
+                        className="block w-full px-4 py-2 text-left hover:bg-autumn-soft"
                       >
                         {c}
                       </button>
@@ -1636,7 +1636,7 @@ function DashboardPage() {
                 size="lg"
               />
               {formState.crop_name && !autocompleteCrops.includes(formState.crop_name) && (
-                <div className="absolute left-0 right-0 top-full z-10 max-h-40 overflow-auto rounded-xl bg-slate-900 text-base shadow-lg">
+                <div className="absolute left-0 right-0 top-full z-10 max-h-40 overflow-auto rounded-xl bg-autumn-surface text-base shadow-lg">
                   {autocompleteCrops
                     .filter((c) => c.includes(formState.crop_name))
                     .slice(0, 5)
@@ -1645,7 +1645,7 @@ function DashboardPage() {
                         key={c}
                         type="button"
                         onClick={() => handleFormChange({ crop_name: c })}
-                        className="block w-full px-4 py-2 text-left hover:bg-slate-800"
+                        className="block w-full px-4 py-2 text-left hover:bg-autumn-soft"
                       >
                         {c}
                       </button>
@@ -1701,10 +1701,10 @@ function DashboardPage() {
                         (e.target as HTMLElement).click();
                       }
                     }}
-                    className="flex flex-col gap-1 cursor-not-allowed rounded-xl border border-slate-700 bg-slate-900/60 px-4 py-3 text-base text-slate-500"
+                    className="flex flex-col gap-1 cursor-not-allowed rounded-xl border border-autumn-border bg-autumn-surface/60 px-4 py-3 text-base text-autumn-secondary"
                   >
-                    <span className="text-slate-400">출하일자</span>
-                    <span className="text-slate-500">출하정보 없음</span>
+                    <span className="text-autumn-secondary">출하일자</span>
+                    <span className="text-autumn-secondary">출하정보 없음</span>
                   </div>
                 );
               })()}
@@ -1712,7 +1712,7 @@ function DashboardPage() {
 
           <div className="flex gap-4 text-base">
             <div className="flex items-center gap-3">
-              <span className="text-slate-200">종자 소유자</span>
+              <span className="text-autumn-ink">종자 소유자</span>
               {(["육묘장", "주문자"] as SeedOwner[]).map((v) => (
                 <label key={v} className="flex items-center gap-2">
                   <input
@@ -1721,7 +1721,7 @@ function DashboardPage() {
                     onChange={() => handleFormChange({ seed_owner: v })}
                     className="h-4 w-4 accent-brand"
                   />
-                  <span className="text-slate-300">{v}</span>
+                  <span className="text-autumn-body">{v}</span>
                 </label>
               ))}
             </div>
@@ -1794,7 +1794,7 @@ function DashboardPage() {
                           Number(formState.quantity_extra || "0");
                         handleFormChange({ shipping_quantity: String(total) });
                       }}
-                      className="mt-6 flex-1 rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-base text-slate-100 hover:bg-slate-800"
+                      className="mt-6 flex-1 rounded-xl border border-autumn-border bg-autumn-surface px-4 py-3 text-base text-autumn-ink hover:bg-autumn-soft"
                     >
                       출하수량 = 파종수량과 동일
                     </button>
@@ -1824,10 +1824,10 @@ function DashboardPage() {
                       (e.target as HTMLElement).click();
                     }
                   }}
-                  className="flex flex-col gap-1 cursor-not-allowed rounded-xl border border-slate-700 bg-slate-900/60 px-4 py-3 text-base text-slate-500"
+                  className="flex flex-col gap-1 cursor-not-allowed rounded-xl border border-autumn-border bg-autumn-surface/60 px-4 py-3 text-base text-autumn-secondary"
                 >
-                  <span className="text-slate-400">출하수량</span>
-                  <span className="text-slate-500">출하정보 없음</span>
+                  <span className="text-autumn-secondary">출하수량</span>
+                  <span className="text-autumn-secondary">출하정보 없음</span>
                 </div>
               );
             })()}
@@ -1870,10 +1870,10 @@ function DashboardPage() {
       >
         {popupOrder && (
           <div className="flex flex-col gap-4 text-base">
-            <div className="text-base text-slate-300">
+            <div className="text-base text-autumn-body">
               {popupOrder.customer_name} / {popupOrder.crop_name}
             </div>
-            <div className="text-base text-slate-400">
+            <div className="text-base text-autumn-secondary">
               파종일자: {popupOrder.sowing_date} · 파종수량: {popupOrder.quantity_base}+
               {popupOrder.quantity_extra}
             </div>
@@ -1886,7 +1886,7 @@ function DashboardPage() {
                   type="button"
                   onClick={() => setShippingCancelConfirmOrder(popupOrder)}
                   disabled={!canWriteOrders(user)}
-                  className="rounded-xl border border-slate-500/70 bg-slate-200/80 px-5 py-3 text-base font-semibold text-slate-800 hover:bg-slate-300/80 disabled:opacity-50"
+                  className="rounded-xl border border-autumn-line/70 bg-autumn-soft/80 px-5 py-3 text-base font-semibold text-autumn-ink hover:bg-autumn-sand/80 disabled:opacity-50"
                 >
                   출하 취소
                 </button>
@@ -1904,7 +1904,7 @@ function DashboardPage() {
                   type="button"
                   onClick={() => setOutdoorConfirmOrder(popupOrder)}
                   disabled={!canWriteOrders(user)}
-                  className="rounded-xl border border-amber-500/70 bg-amber-100/80 px-5 py-3 text-base font-semibold text-slate-800 hover:bg-amber-200/80 disabled:opacity-50"
+                  className="rounded-xl border border-amber-500/70 bg-amber-100/80 px-5 py-3 text-base font-semibold text-autumn-ink hover:bg-amber-200/80 disabled:opacity-50"
                 >
                   야외 경화
                 </button>
@@ -1913,7 +1913,7 @@ function DashboardPage() {
                   type="button"
                   onClick={() => setOutdoorCancelConfirmOrder(popupOrder)}
                   disabled={!canWriteOrders(user)}
-                  className="rounded-xl border border-slate-500/70 bg-slate-200/80 px-5 py-3 text-base font-semibold text-slate-800 hover:bg-slate-300/80 disabled:opacity-50"
+                  className="rounded-xl border border-autumn-line/70 bg-autumn-soft/80 px-5 py-3 text-base font-semibold text-autumn-ink hover:bg-autumn-sand/80 disabled:opacity-50"
                 >
                   야외경화 취소
                 </button>
@@ -1925,13 +1925,13 @@ function DashboardPage() {
                   setPopupOrder(null);
                 }}
                 disabled={!canWriteOrders(user)}
-                className="rounded-xl border border-red-500/80 bg-red-500/90 px-5 py-3 text-base font-semibold text-white hover:bg-red-600 disabled:opacity-50"
+                className="rounded-xl border border-red-500/80 bg-red-600 px-5 py-3 text-base font-semibold text-white hover:bg-red-700 disabled:opacity-50"
               >
                 삭제
               </button>
             </div>
             {!canWriteOrders(user) && (
-              <div className="text-base text-slate-400">
+              <div className="text-base text-autumn-secondary">
                 현재 권한에서는 직접 수정/출하할 수 없습니다.
               </div>
             )}
@@ -1949,7 +1949,7 @@ function DashboardPage() {
       >
         {shippingCancelConfirmOrder && (
           <div className="flex flex-col gap-4 text-base">
-            <p className="text-slate-200">
+            <p className="text-autumn-ink">
               출하 완료 상태를 취소하고 이전 상태로 되돌리시겠습니까? 출하일과 출하수량이 삭제됩니다.
             </p>
             <div className="flex justify-end gap-3">
@@ -1983,7 +1983,7 @@ function DashboardPage() {
       >
         {outdoorCancelConfirmOrder && (
           <div className="flex flex-col gap-4 text-base">
-            <p className="text-slate-200">
+            <p className="text-autumn-ink">
               야외 경화 상태를 취소하고 이전 상태로 되돌리시겠습니까?
             </p>
             <div className="flex justify-end gap-3">
@@ -2017,7 +2017,7 @@ function DashboardPage() {
       >
         {outdoorConfirmOrder && (
           <div className="flex flex-col gap-4 text-base">
-            <p className="text-slate-200">
+            <p className="text-autumn-ink">
               야외 경화 상태로 변경하시겠습니까?
             </p>
             <div className="flex justify-end gap-3">
@@ -2052,14 +2052,14 @@ function DashboardPage() {
         title="야외경화 일차 수정"
       >
         <div className="flex flex-col gap-4">
-          <p className="text-slate-200">야외 경화 일차를 몇 일차로 변경할까요?</p>
+          <p className="text-autumn-ink">야외 경화 일차를 몇 일차로 변경할까요?</p>
           <input
             type="number"
             min={1}
             inputMode="numeric"
             value={outdoorDayEditValue}
             onChange={(e) => setOutdoorDayEditValue(e.target.value.replace(/\D/g, "").slice(0, 4))}
-            className="w-24 rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+            className="w-24 rounded-lg border border-autumn-line bg-autumn-soft px-3 py-2 text-autumn-ink"
             placeholder="일차"
           />
           <div className="flex justify-end gap-2">
@@ -2093,15 +2093,15 @@ function DashboardPage() {
       >
         {deleteConfirmOrder && (
           <div className="flex flex-col gap-4 text-base">
-            <p className="text-slate-200">
+            <p className="text-autumn-ink">
               이 파종 기록을 삭제하시겠습니까? 삭제 후에는 복구할 수 없습니다.
             </p>
-            <div className="rounded-xl border border-slate-700 bg-slate-900/50 px-4 py-2 text-slate-300">
+            <div className="rounded-xl border border-autumn-border bg-autumn-surface/50 px-4 py-2 text-autumn-body">
               {deleteConfirmOrder.customer_name} / {deleteConfirmOrder.crop_name} · 파종일:{" "}
               {deleteConfirmOrder.sowing_date}
             </div>
             {deleteOrderError && (
-              <p className="rounded-lg bg-red-900/40 px-3 py-2 text-sm text-red-200">
+              <p className="rounded-lg bg-red-100/40 px-3 py-2 text-sm text-red-800">
                 {deleteOrderError}
               </p>
             )}
@@ -2121,7 +2121,7 @@ function DashboardPage() {
                 type="button"
                 onClick={() => void handleDeleteOrderConfirm()}
                 disabled={deleteOrderBusy}
-                className="rounded-xl border border-red-500/80 bg-red-500/90 px-5 py-3 text-base font-semibold text-white hover:bg-red-600 disabled:opacity-50"
+                className="rounded-xl border border-red-500/80 bg-red-600 px-5 py-3 text-base font-semibold text-white hover:bg-red-700 disabled:opacity-50"
               >
                 삭제
               </button>
@@ -2140,7 +2140,7 @@ function DashboardPage() {
       >
         {shippingOnlyOrder && (
           <div className="flex flex-col gap-4 text-base">
-            <div className="rounded-xl border border-slate-700 bg-slate-900/50 px-4 py-2 text-slate-300">
+            <div className="rounded-xl border border-autumn-border bg-autumn-surface/50 px-4 py-2 text-autumn-body">
               {shippingOnlyOrder.customer_name} / {shippingOnlyOrder.crop_name} · 파종수량:{" "}
               {shippingOnlyOrder.quantity_base}+{shippingOnlyOrder.quantity_extra}
             </div>
@@ -2169,7 +2169,7 @@ function DashboardPage() {
                     ),
                   )
                 }
-                className="shrink-0 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-slate-100 hover:bg-slate-800"
+                className="shrink-0 rounded-xl border border-autumn-border bg-autumn-surface px-3 py-2.5 text-sm text-autumn-ink hover:bg-autumn-soft"
               >
                 파종수량과 동일
               </button>
@@ -2196,7 +2196,7 @@ function DashboardPage() {
 
       {noShippingToast && (
         <div
-          className="pointer-events-none fixed z-[70] rounded-xl border border-slate-600 bg-slate-800 px-4 py-3 text-base text-slate-100 shadow-xl transition-opacity duration-300"
+          className="pointer-events-none fixed z-[70] rounded-xl border border-autumn-line bg-autumn-soft px-4 py-3 text-base text-autumn-ink shadow-xl transition-opacity duration-300"
           style={{
             left: noShippingToast.x,
             top: noShippingToast.y,
@@ -2377,11 +2377,11 @@ function MainMenuPage() {
       title: "파종 및 출하현황",
       to: "/dashboard",
       icon: (
-        <svg viewBox="0 0 40 40" className="h-11 w-11 text-emerald-300">
+        <svg viewBox="0 0 40 40" className="h-11 w-11 text-emerald-700">
           <rect x="4" y="8" width="32" height="24" rx="4" className="fill-emerald-500/20" />
           <path
             d="M10 22l5-6 5 4 6-8 4 4"
-            className="stroke-emerald-300"
+            className="stroke-emerald-700"
             strokeWidth="2.2"
             fill="none"
             strokeLinecap="round"
@@ -2395,11 +2395,11 @@ function MainMenuPage() {
       title: "주문 및 파종계획",
       to: "/planning",
       icon: (
-        <svg viewBox="0 0 40 40" className="h-11 w-11 text-sky-300">
+        <svg viewBox="0 0 40 40" className="h-11 w-11 text-sky-700">
           <rect x="8" y="9" width="24" height="24" rx="4" className="fill-sky-500/15" />
           <path
             d="M14 13h12M14 18h9M14 23h6"
-            className="stroke-sky-300"
+            className="stroke-sky-700"
             strokeWidth="2"
             fill="none"
             strokeLinecap="round"
@@ -2413,11 +2413,11 @@ function MainMenuPage() {
       title: "육묘확인서 발급",
       to: "/certificate",
       icon: (
-        <svg viewBox="0 0 40 40" className="h-11 w-11 text-amber-300">
+        <svg viewBox="0 0 40 40" className="h-11 w-11 text-amber-700">
           <rect x="10" y="6" width="20" height="28" rx="3" className="fill-amber-500/15" />
           <path
             d="M14 14h12M14 19h10M14 24h8"
-            className="stroke-amber-200"
+            className="stroke-amber-800"
             strokeWidth="2"
             fill="none"
             strokeLinecap="round"
@@ -2431,11 +2431,11 @@ function MainMenuPage() {
       title: "시즌 작물 주문현황",
       to: "/season-orders",
       icon: (
-        <svg viewBox="0 0 40 40" className="h-11 w-11 text-teal-300">
+        <svg viewBox="0 0 40 40" className="h-11 w-11 text-teal-700">
           <rect x="6" y="8" width="28" height="24" rx="3" className="fill-teal-500/20" />
           <path
             d="M12 16h8M12 22h12M12 28h6"
-            className="stroke-teal-300"
+            className="stroke-teal-700"
             strokeWidth="2"
             fill="none"
             strokeLinecap="round"
@@ -2449,11 +2449,11 @@ function MainMenuPage() {
       title: "관리자 메뉴",
       to: "/admin",
       icon: (
-        <svg viewBox="0 0 40 40" className="h-11 w-11 text-rose-300">
+        <svg viewBox="0 0 40 40" className="h-11 w-11 text-rose-700">
           <circle cx="20" cy="14" r="5" className="fill-rose-400/80" />
           <path
             d="M10 30c1.8-4 5.2-6 10-6s8.2 2 10 6"
-            className="stroke-rose-300"
+            className="stroke-rose-700"
             strokeWidth="2"
             fill="none"
             strokeLinecap="round"
@@ -2467,33 +2467,33 @@ function MainMenuPage() {
   ];
 
   const billboardBase =
-    "rounded-xl border-2 border-slate-600/80 bg-slate-900/95 shadow-[inset_0_0_30px_rgba(0,0,0,0.5),0_4px_20px_rgba(0,0,0,0.4)] overflow-hidden sm:rounded-2xl";
+    "rounded-xl border-2 border-autumn-line/80 bg-autumn-surface/95 shadow-[0_3px_14px_rgba(90,57,36,0.06)] overflow-hidden sm:rounded-2xl";
 
   return (
-    <div className="flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-gradient-to-b from-slate-950 via-slate-950 to-slate-900 text-slate-50">
-      <header className="shrink-0 border-b border-slate-800 bg-slate-950/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
+    <div className="autumn-shell flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-gradient-to-b from-autumn-canvas via-autumn-canvas to-autumn-surface text-autumn-ink">
+      <header className="shrink-0 border-b border-autumn-border bg-autumn-canvas/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-0">
           <div className="min-w-0 flex-1 sm:min-w-0">
             <div className="break-words text-[1.35rem] font-extrabold leading-tight tracking-tight sm:text-[2.06rem] md:text-[2.35rem]">
               충주 친환경 육묘장
             </div>
-            <div className="hidden text-xs text-slate-400 sm:block">
+            <div className="hidden text-xs text-autumn-secondary sm:block">
               제작자 : 정효조(010-2604-6588 / jami6613@gmail.com)
             </div>
           </div>
           <div className="flex flex-shrink-0 items-center justify-end gap-1.5 text-right text-xs sm:gap-3 sm:text-base">
-            <span className="max-w-[8rem] truncate text-slate-400 sm:max-w-none">{user.name || user.email}</span>
+            <span className="max-w-[8rem] truncate text-autumn-secondary sm:max-w-none">{user.name || user.email}</span>
             <button
               type="button"
               onClick={() => setRoleInfoOpen(true)}
-              className="rounded-lg bg-slate-800 px-2 py-1 text-slate-200 hover:bg-slate-700 sm:px-4 sm:py-2"
+              className="rounded-lg bg-autumn-soft px-2 py-1 text-autumn-ink hover:bg-autumn-muted sm:px-4 sm:py-2"
             >
               {ROLE_LABEL[user.role_level]}
             </button>
             <button
               type="button"
               onClick={() => void signOut()}
-              className="rounded-lg bg-slate-800 px-2 py-1 text-slate-200 hover:bg-slate-700 sm:px-4 sm:py-2"
+              className="rounded-lg bg-autumn-soft px-2 py-1 text-autumn-ink hover:bg-autumn-muted sm:px-4 sm:py-2"
             >
               로그아웃
             </button>
@@ -2502,17 +2502,17 @@ function MainMenuPage() {
       </header>
 
       <Modal open={roleInfoOpen} title="권한 등급 안내" onClose={() => setRoleInfoOpen(false)}>
-        <div className="space-y-2 text-sm text-slate-200">
+        <div className="space-y-2 text-sm text-autumn-ink">
           {ROLE_LEVELS.map((level) => (
             <div key={level}>
               {ROLE_LABEL[level]}
               {level === user.role_level && (
-                <span className="ml-1 text-amber-400">* 현재 나의 등급입니다.</span>
+                <span className="ml-1 text-amber-700">* 현재 나의 등급입니다.</span>
               )}
             </div>
           ))}
         </div>
-        <p className="mt-4 border-t border-slate-700 pt-3 text-xs text-slate-400">
+        <p className="mt-4 border-t border-autumn-border pt-3 text-xs text-autumn-secondary">
           권한에 관한 문의는 최고관리자에게 문의바랍니다 (정효조 / 010-2604-6588)
         </p>
       </Modal>
@@ -2525,21 +2525,21 @@ function MainMenuPage() {
             <button
               type="button"
               onClick={() => toggleBillboard(0)}
-              className="flex w-full items-center justify-center gap-1.5 border-b border-amber-500/50 bg-amber-950/60 px-3 py-1.5 text-center sm:px-4 sm:py-2"
+              className="flex w-full items-center justify-center gap-1.5 border-b border-amber-500/50 bg-amber-100/60 px-3 py-1.5 text-center sm:px-4 sm:py-2"
             >
-              <span className="text-sm font-bold tracking-widest text-amber-200 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)] sm:text-lg">
+              <span className="text-sm font-bold tracking-widest text-amber-800 drop-shadow-none sm:text-lg">
                 ▼ 오늘의 파종 ▼
               </span>
-              <span className="text-[10px] text-amber-200/80 sm:text-xs">
+              <span className="text-[10px] text-amber-800/80 sm:text-xs">
                 {billboardExpanded[0] ? "접기" : "펼치기"}
               </span>
             </button>
             {billboardExpanded[0] && (
             <div className="min-h-[3rem] px-3 py-2 sm:min-h-[4rem] sm:px-4 sm:py-3">
               {billboardsLoading ? (
-                <p className="text-center text-xs text-slate-500 sm:text-sm">불러오는 중...</p>
+                <p className="text-center text-xs text-autumn-secondary sm:text-sm">불러오는 중...</p>
               ) : todayPlanItems.length === 0 ? (
-                <p className="text-center text-xs text-slate-500 sm:text-sm">오늘 예정된 파종이 없습니다.</p>
+                <p className="text-center text-xs text-autumn-secondary sm:text-sm">오늘 예정된 파종이 없습니다.</p>
               ) : (
                 <ul className="space-y-1.5 sm:space-y-2">
                   {todayPlanItems.map((item) => {
@@ -2548,17 +2548,17 @@ function MainMenuPage() {
                     return (
                       <li
                         key={item.id}
-                        className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 rounded-lg bg-slate-800/60 px-3 py-2 text-left text-sm text-slate-200 sm:gap-x-2 sm:gap-y-1 sm:px-4 sm:py-2.5 sm:text-lg"
+                        className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 rounded-lg bg-autumn-soft/60 px-3 py-2 text-left text-sm text-autumn-ink sm:gap-x-2 sm:gap-y-1 sm:px-4 sm:py-2.5 sm:text-lg"
                       >
-                        <span className="text-slate-300">{item.orderer || "-"}</span>
-                        <span className="text-slate-500">│</span>
-                        <span className="font-medium text-slate-100">{item.crop || "(작물명 없음)"}</span>
-                        <span className="text-slate-500">│</span>
-                        <span className="text-slate-300">{item.seed_owner || "-"}</span>
-                        <span className="text-slate-500">│</span>
-                        <span className="text-slate-300">{trayDisplay}</span>
-                        <span className="text-slate-500">│</span>
-                        <span className="font-mono text-amber-300">{item.quantity || "-"}</span>
+                        <span className="text-autumn-body">{item.orderer || "-"}</span>
+                        <span className="text-autumn-secondary">│</span>
+                        <span className="font-medium text-autumn-ink">{item.crop || "(작물명 없음)"}</span>
+                        <span className="text-autumn-secondary">│</span>
+                        <span className="text-autumn-body">{item.seed_owner || "-"}</span>
+                        <span className="text-autumn-secondary">│</span>
+                        <span className="text-autumn-body">{trayDisplay}</span>
+                        <span className="text-autumn-secondary">│</span>
+                        <span className="font-mono text-amber-700">{item.quantity || "-"}</span>
                       </li>
                     );
                   })}
@@ -2573,21 +2573,21 @@ function MainMenuPage() {
             <button
               type="button"
               onClick={() => toggleBillboard(1)}
-              className="flex w-full items-center justify-center gap-1.5 border-b border-emerald-500/50 bg-emerald-950/60 px-3 py-1.5 text-center sm:px-4 sm:py-2"
+              className="flex w-full items-center justify-center gap-1.5 border-b border-emerald-500/50 bg-emerald-100/60 px-3 py-1.5 text-center sm:px-4 sm:py-2"
             >
-              <span className="text-sm font-bold tracking-widest text-emerald-200 drop-shadow-[0_0_8px_rgba(52,211,153,0.4)] sm:text-lg">
+              <span className="text-sm font-bold tracking-widest text-emerald-800 drop-shadow-none sm:text-lg">
                 ▼ 발아실 → 실내 육묘 ▼
               </span>
-              <span className="text-[10px] text-emerald-200/80 sm:text-xs">
+              <span className="text-[10px] text-emerald-800/80 sm:text-xs">
                 {billboardExpanded[1] ? "접기" : "펼치기"}
               </span>
             </button>
             {billboardExpanded[1] && (
             <div className="min-h-[3rem] px-3 py-2 sm:min-h-[4rem] sm:px-4 sm:py-3">
               {billboardsLoading ? (
-                <p className="text-center text-xs text-slate-500 sm:text-sm">불러오는 중...</p>
+                <p className="text-center text-xs text-autumn-secondary sm:text-sm">불러오는 중...</p>
               ) : ordersMovedToIndoorToday.length === 0 ? (
-                <p className="text-center text-xs text-slate-500 sm:text-sm">오늘 실내 육묘로 전환된 작물이 없습니다.</p>
+                <p className="text-center text-xs text-autumn-secondary sm:text-sm">오늘 실내 육묘로 전환된 작물이 없습니다.</p>
               ) : (
                 <ul className="space-y-1.5 sm:space-y-2">
                   {ordersMovedToIndoorToday.map((o) => {
@@ -2596,15 +2596,15 @@ function MainMenuPage() {
                     return (
                       <li
                         key={o.id}
-                        className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 rounded-lg bg-slate-800/60 px-3 py-2 text-left text-sm text-slate-200 sm:gap-x-2 sm:gap-y-1 sm:px-4 sm:py-2.5 sm:text-lg"
+                        className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 rounded-lg bg-autumn-soft/60 px-3 py-2 text-left text-sm text-autumn-ink sm:gap-x-2 sm:gap-y-1 sm:px-4 sm:py-2.5 sm:text-lg"
                       >
-                        <span className="text-slate-300">{dateLabel} 파종</span>
-                        <span className="text-slate-500">│</span>
-                        <span className="text-slate-300">{o.customer_name}</span>
-                        <span className="text-slate-500">│</span>
-                        <span className="font-medium text-slate-100">{o.crop_name}</span>
-                        <span className="text-slate-500">│</span>
-                        <span className="font-mono text-emerald-300">
+                        <span className="text-autumn-body">{dateLabel} 파종</span>
+                        <span className="text-autumn-secondary">│</span>
+                        <span className="text-autumn-body">{o.customer_name}</span>
+                        <span className="text-autumn-secondary">│</span>
+                        <span className="font-medium text-autumn-ink">{o.crop_name}</span>
+                        <span className="text-autumn-secondary">│</span>
+                        <span className="font-mono text-emerald-700">
                           {o.quantity_base}+{o.quantity_extra}
                         </span>
                       </li>
@@ -2618,16 +2618,16 @@ function MainMenuPage() {
 
           {/* 3. 오늘의 할 일 */}
           <div className={billboardBase}>
-            <div className="flex items-center justify-between border-b border-sky-500/50 bg-sky-950/60 px-3 py-1.5 sm:px-4 sm:py-2">
+            <div className="flex items-center justify-between border-b border-sky-500/50 bg-sky-100/60 px-3 py-1.5 sm:px-4 sm:py-2">
               <button
                 type="button"
                 onClick={() => toggleBillboard(2)}
                 className="flex flex-1 items-center justify-center gap-1.5"
               >
-                <span className="text-sm font-bold tracking-widest text-sky-200 drop-shadow-[0_0_8px_rgba(56,189,248,0.4)] sm:text-lg">
+                <span className="text-sm font-bold tracking-widest text-sky-800 drop-shadow-none sm:text-lg">
                   ▼ 오늘의 할 일 ▼
                 </span>
-                <span className="text-[10px] text-sky-200/80 sm:text-xs">
+                <span className="text-[10px] text-sky-800/80 sm:text-xs">
                   {billboardExpanded[2] ? "접기" : "펼치기"}
                 </span>
               </button>
@@ -2635,7 +2635,7 @@ function MainMenuPage() {
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); openDailyTodoEdit(todayStr, dailyTodoLines); }}
-                  className="rounded-lg bg-sky-700/80 px-2 py-1 text-xs font-medium text-sky-100 hover:bg-sky-600 sm:px-3 sm:py-1.5 sm:text-sm"
+                  className="rounded-lg bg-sky-700/80 px-2 py-1 text-xs font-medium text-white hover:bg-sky-600 sm:px-3 sm:py-1.5 sm:text-sm"
                 >
                   편집
                 </button>
@@ -2644,20 +2644,20 @@ function MainMenuPage() {
             {billboardExpanded[2] && (
             <div className="min-h-[3rem] px-3 py-2 sm:min-h-[4rem] sm:px-4 sm:py-3">
               {billboardsLoading ? (
-                <p className="text-center text-xs text-slate-500 sm:text-sm">불러오는 중...</p>
+                <p className="text-center text-xs text-autumn-secondary sm:text-sm">불러오는 중...</p>
               ) : dailyTodoLines.length === 0 ? (
-                <p className="text-center text-xs text-slate-500 sm:text-sm">
+                <p className="text-center text-xs text-autumn-secondary sm:text-sm">
                   {canEditTodos ? "편집 버튼으로 할 일을 추가해 보세요." : "등록된 할 일이 없습니다."}
                 </p>
               ) : (
                 <ul className="space-y-1 sm:space-y-1.5">
                   {dailyTodoLines.map((item, i) => (
-                    <li key={i} className="rounded-lg bg-slate-800/60 px-2.5 py-1.5 sm:px-3 sm:py-2">
+                    <li key={i} className="rounded-lg bg-autumn-soft/60 px-2.5 py-1.5 sm:px-3 sm:py-2">
                       <div className="flex flex-wrap items-center gap-2">
                         <button
                           type="button"
                           onClick={() => setDailyTodoCompleteIndex((prev) => (prev?.panel === "today" && prev?.index === i ? null : { panel: "today", index: i }))}
-                          className={`min-w-0 flex-1 text-left text-sm text-slate-200 sm:text-base ${item.completed ? "line-through opacity-75" : ""}`}
+                          className={`min-w-0 flex-1 text-left text-sm text-autumn-ink sm:text-base ${item.completed ? "line-through opacity-75" : ""}`}
                         >
                           {item.text}
                         </button>
@@ -2681,16 +2681,16 @@ function MainMenuPage() {
 
           {/* 4. 내일의 할 일 */}
           <div className={billboardBase}>
-            <div className="flex items-center justify-between border-b border-violet-500/50 bg-violet-950/60 px-3 py-1.5 sm:px-4 sm:py-2">
+            <div className="flex items-center justify-between border-b border-violet-500/50 bg-violet-100/60 px-3 py-1.5 sm:px-4 sm:py-2">
               <button
                 type="button"
                 onClick={() => toggleBillboard(3)}
                 className="flex flex-1 items-center justify-center gap-1.5"
               >
-                <span className="text-sm font-bold tracking-widest text-violet-200 drop-shadow-[0_0_8px_rgba(139,92,246,0.4)] sm:text-lg">
+                <span className="text-sm font-bold tracking-widest text-violet-800 drop-shadow-none sm:text-lg">
                   ▼ 내일의 할 일 ▼
                 </span>
-                <span className="text-[10px] text-violet-200/80 sm:text-xs">
+                <span className="text-[10px] text-violet-800/80 sm:text-xs">
                   {billboardExpanded[3] ? "접기" : "펼치기"}
                 </span>
               </button>
@@ -2698,7 +2698,7 @@ function MainMenuPage() {
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); openDailyTodoEdit(tomorrowStr, dailyTodoLinesTomorrow); }}
-                  className="rounded-lg bg-violet-700/80 px-2 py-1 text-xs font-medium text-violet-100 hover:bg-violet-600 sm:px-3 sm:py-1.5 sm:text-sm"
+                  className="rounded-lg bg-violet-700/80 px-2 py-1 text-xs font-medium text-white hover:bg-violet-600 sm:px-3 sm:py-1.5 sm:text-sm"
                 >
                   편집
                 </button>
@@ -2707,20 +2707,20 @@ function MainMenuPage() {
             {billboardExpanded[3] && (
             <div className="min-h-[3rem] px-3 py-2 sm:min-h-[4rem] sm:px-4 sm:py-3">
               {billboardsLoading ? (
-                <p className="text-center text-xs text-slate-500 sm:text-sm">불러오는 중...</p>
+                <p className="text-center text-xs text-autumn-secondary sm:text-sm">불러오는 중...</p>
               ) : dailyTodoLinesTomorrow.length === 0 ? (
-                <p className="text-center text-xs text-slate-500 sm:text-sm">
+                <p className="text-center text-xs text-autumn-secondary sm:text-sm">
                   {canEditTodos ? "편집 버튼으로 할 일을 추가해 보세요." : "등록된 할 일이 없습니다."}
                 </p>
               ) : (
                 <ul className="space-y-1 sm:space-y-1.5">
                   {dailyTodoLinesTomorrow.map((item, i) => (
-                    <li key={i} className="rounded-lg bg-slate-800/60 px-2.5 py-1.5 sm:px-3 sm:py-2">
+                    <li key={i} className="rounded-lg bg-autumn-soft/60 px-2.5 py-1.5 sm:px-3 sm:py-2">
                       <div className="flex flex-wrap items-center gap-2">
                         <button
                           type="button"
                           onClick={() => setDailyTodoCompleteIndex((prev) => (prev?.panel === "tomorrow" && prev?.index === i ? null : { panel: "tomorrow", index: i }))}
-                          className={`min-w-0 flex-1 text-left text-sm text-slate-200 sm:text-base ${item.completed ? "line-through opacity-75" : ""}`}
+                          className={`min-w-0 flex-1 text-left text-sm text-autumn-ink sm:text-base ${item.completed ? "line-through opacity-75" : ""}`}
                         >
                           {item.text}
                         </button>
@@ -2750,27 +2750,27 @@ function MainMenuPage() {
               const disabled = tile.disabled;
               const content = (
                 <div
-                  className={`relative flex min-h-[5.5rem] sm:min-h-40 flex-col justify-center overflow-hidden rounded-2xl border border-slate-800/80 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 px-3 py-3 sm:px-5 sm:py-4 shadow-[0_12px_30px_rgba(0,0,0,0.5)] transition-transform transition-shadow ${
+                  className={`relative flex min-h-[5.5rem] sm:min-h-40 flex-col justify-center overflow-hidden rounded-2xl border border-autumn-border/80 bg-gradient-to-br from-autumn-surface via-autumn-surface to-autumn-canvas px-3 py-3 sm:px-5 sm:py-4 shadow-[0_8px_24px_rgba(90,57,36,0.08)] transition-transform transition-shadow ${
                     disabled
                       ? "opacity-50"
-                      : "hover:-translate-y-0.5 hover:shadow-[0_20px_40px_rgba(0,0,0,0.6)]"
+                      : "hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(90,57,36,0.14)]"
                   }`}
                 >
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(148,163,184,0.2),transparent_55%)] opacity-80" />
+                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(199,138,67,0.14),transparent_65%)] opacity-80" />
                   {tile.key === "plan" && unprocessedPendingCount > 0 && (
                     <span
-                      className="absolute right-1.5 top-1.5 flex min-w-[1.1rem] items-center justify-center rounded-full bg-red-500 px-1 py-0.5 text-[0.65rem] font-bold leading-none text-white shadow-md sm:right-2 sm:top-2 sm:min-w-[1.25rem] sm:px-1.5 sm:py-0.5 sm:text-xs"
+                      className="absolute right-1.5 top-1.5 flex min-w-[1.1rem] items-center justify-center rounded-full bg-red-600 px-1 py-0.5 text-[0.65rem] font-bold leading-none text-white shadow-md sm:right-2 sm:top-2 sm:min-w-[1.25rem] sm:px-1.5 sm:py-0.5 sm:text-xs"
                       aria-label={`미반영 주문 ${unprocessedPendingCount}건`}
                     >
                       {unprocessedPendingCount > 99 ? "99+" : unprocessedPendingCount}
                     </span>
                   )}
                   <div className="relative flex items-center gap-2 sm:gap-4">
-                    <div className="shrink-0 rounded-xl bg-slate-900/80 p-2 sm:p-3 shadow-inner [&_svg]:h-8 [&_svg]:w-8 sm:[&_svg]:h-11 sm:[&_svg]:w-11">
+                    <div className="shrink-0 rounded-xl bg-autumn-surface/80 p-2 sm:p-3 shadow-inner [&_svg]:h-8 [&_svg]:w-8 sm:[&_svg]:h-11 sm:[&_svg]:w-11">
                       {tile.icon}
                     </div>
                     <div
-                      className={`min-w-0 text-base font-semibold text-slate-50/95 leading-tight sm:text-2xl ${
+                      className={`min-w-0 text-base font-semibold text-autumn-ink/95 leading-tight sm:text-2xl ${
                         tile.key === "plan"
                           ? "whitespace-nowrap tracking-[-0.04em] sm:tracking-[-0.02em]"
                           : "tracking-tight"
@@ -2816,11 +2816,11 @@ function MainMenuPage() {
       >
         <div className="space-y-2">
           {dailyTodoSaveError && (
-            <p className="rounded-lg bg-red-900/50 px-3 py-2 text-sm text-red-200">
+            <p className="rounded-lg bg-red-100/50 px-3 py-2 text-sm text-red-800">
               {dailyTodoSaveError}
             </p>
           )}
-          <p className="text-sm text-slate-400">한 줄씩 입력하세요. 빈 줄은 저장 시 제외됩니다.</p>
+          <p className="text-sm text-autumn-secondary">한 줄씩 입력하세요. 빈 줄은 저장 시 제외됩니다.</p>
           {dailyTodoEditItems.map((item, i) => (
             <div key={i} className="flex gap-2">
               <input
@@ -2831,7 +2831,7 @@ function MainMenuPage() {
                   next[i] = { ...next[i], text: e.target.value };
                   setDailyTodoEditItems(next);
                 }}
-                className="flex-1 rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 placeholder-slate-500"
+                className="flex-1 rounded-lg border border-autumn-line bg-autumn-soft px-3 py-2 text-autumn-ink placeholder-autumn-secondary"
                 placeholder="할 일 한 줄"
               />
               <button
@@ -2839,7 +2839,7 @@ function MainMenuPage() {
                 onClick={() =>
                   setDailyTodoEditItems(dailyTodoEditItems.filter((_, j) => j !== i))
                 }
-                className="rounded-lg bg-slate-700 px-3 py-2 text-slate-300 hover:bg-slate-600"
+                className="rounded-lg bg-autumn-muted px-3 py-2 text-autumn-body hover:bg-autumn-hover"
               >
                 삭제
               </button>
@@ -2849,7 +2849,7 @@ function MainMenuPage() {
             <button
               type="button"
               onClick={() => setDailyTodoEditItems([...dailyTodoEditItems, { text: "", completed: false }])}
-              className="rounded-lg border border-slate-600 bg-slate-800 px-4 py-2 text-sm text-slate-200 hover:bg-slate-700"
+              className="rounded-lg border border-autumn-line bg-autumn-soft px-4 py-2 text-sm text-autumn-ink hover:bg-autumn-muted"
             >
               + 줄 추가
             </button>
@@ -2857,7 +2857,7 @@ function MainMenuPage() {
               type="button"
               onClick={() => setDailyTodoEditItems([])}
               disabled={dailyTodoSaving || dailyTodoEditItems.length === 0}
-              className="rounded-lg border border-red-800 bg-red-900/50 px-4 py-2 text-sm text-red-200 hover:bg-red-800/70 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="rounded-lg border border-red-300 bg-red-100/50 px-4 py-2 text-sm text-red-800 hover:bg-red-200/80 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               전체삭제
             </button>
@@ -3148,27 +3148,27 @@ function SeasonOrdersPage() {
 
   return (
     <div
-      className="flex flex-col overflow-hidden bg-slate-950 text-slate-100"
+      className="flex flex-col overflow-hidden bg-autumn-canvas text-autumn-ink"
       style={{
         height: "100dvh",
         maxHeight: "100vh",
         minHeight: "-webkit-fill-available",
       }}
     >
-      <header className="shrink-0 border-b border-slate-800 bg-slate-900/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
+      <header className="shrink-0 border-b border-autumn-border bg-autumn-surface/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
         <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-0">
           <div className="min-w-0">
             <div className="truncate text-lg font-extrabold tracking-tight sm:text-2xl">충주 친환경 육묘장</div>
-            <div className="text-xs text-slate-400 sm:text-sm">시즌 작물 주문현황</div>
+            <div className="text-xs text-autumn-secondary sm:text-sm">시즌 작물 주문현황</div>
           </div>
           <div className="flex flex-shrink-0 items-center gap-2.5 text-right text-[0.825rem] sm:gap-3 sm:text-[1.1rem]">
-            <button type="button" onClick={() => setRoleInfoOpen(true)} className="rounded-full bg-slate-800 px-2.5 py-2 text-slate-200 hover:bg-slate-700 sm:px-3.5 sm:py-2.5">
+            <button type="button" onClick={() => setRoleInfoOpen(true)} className="rounded-full bg-autumn-soft px-2.5 py-2 text-autumn-ink hover:bg-autumn-muted sm:px-3.5 sm:py-2.5">
               {ROLE_LABEL[user.role_level]}
             </button>
-            <button type="button" onClick={() => void signOut()} className="rounded-lg bg-slate-800 px-2.5 py-2 text-slate-200 hover:bg-slate-700 sm:px-3.5 sm:py-2.5">
+            <button type="button" onClick={() => void signOut()} className="rounded-lg bg-autumn-soft px-2.5 py-2 text-autumn-ink hover:bg-autumn-muted sm:px-3.5 sm:py-2.5">
               로그아웃
             </button>
-            <button type="button" onClick={() => navigate("/menu")} className="rounded-lg bg-slate-800 px-2.5 py-2 text-slate-200 hover:bg-slate-700 sm:px-3.5 sm:py-2.5">
+            <button type="button" onClick={() => navigate("/menu")} className="rounded-lg bg-autumn-soft px-2.5 py-2 text-autumn-ink hover:bg-autumn-muted sm:px-3.5 sm:py-2.5">
               메인메뉴
             </button>
           </div>
@@ -3179,7 +3179,7 @@ function SeasonOrdersPage() {
               value={ordererFilter}
               onChange={(e) => setOrdererFilter(e.target.value)}
               placeholder="주문자 검색"
-              className="min-w-0 flex-1 rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+              className="min-w-0 flex-1 rounded-lg border border-autumn-border bg-autumn-canvas/60 px-3 py-2 text-sm text-autumn-ink placeholder:text-autumn-secondary"
             />
             {ordererFilter.trim() && (
               <button
@@ -3196,7 +3196,7 @@ function SeasonOrdersPage() {
               type="button"
               onClick={() => setSortKey("orderer")}
               className={`rounded-lg px-3 py-2 text-sm font-semibold ${
-                sortKey === "orderer" ? "bg-amber-600 text-white" : "bg-slate-800 text-slate-200 hover:bg-slate-700"
+                sortKey === "orderer" ? "bg-amber-600 text-white" : "bg-autumn-soft text-autumn-ink hover:bg-autumn-muted"
               }`}
             >
               주문자별
@@ -3205,7 +3205,7 @@ function SeasonOrdersPage() {
               type="button"
               onClick={() => setSortKey("variety")}
               className={`rounded-lg px-3 py-2 text-sm font-semibold ${
-                sortKey === "variety" ? "bg-amber-600 text-white" : "bg-slate-800 text-slate-200 hover:bg-slate-700"
+                sortKey === "variety" ? "bg-amber-600 text-white" : "bg-autumn-soft text-autumn-ink hover:bg-autumn-muted"
               }`}
             >
               품종별
@@ -3214,12 +3214,12 @@ function SeasonOrdersPage() {
         </div>
       </header>
       <Modal open={roleInfoOpen} title="권한 등급 안내" onClose={() => setRoleInfoOpen(false)}>
-        <div className="space-y-2 text-sm text-slate-200">
+        <div className="space-y-2 text-sm text-autumn-ink">
           {ROLE_LEVELS.map((level) => (
-            <div key={level}>{ROLE_LABEL[level]}{level === user.role_level && <span className="ml-1 text-amber-400">* 현재 나의 등급입니다.</span>}</div>
+            <div key={level}>{ROLE_LABEL[level]}{level === user.role_level && <span className="ml-1 text-amber-700">* 현재 나의 등급입니다.</span>}</div>
           ))}
         </div>
-        <p className="mt-4 border-t border-slate-700 pt-3 text-xs text-slate-400">권한에 관한 문의는 최고관리자에게 문의바랍니다 (정효조 / 010-2604-6588)</p>
+        <p className="mt-4 border-t border-autumn-border pt-3 text-xs text-autumn-secondary">권한에 관한 문의는 최고관리자에게 문의바랍니다 (정효조 / 010-2604-6588)</p>
       </Modal>
 
       <main className="flex min-h-0 flex-1 flex-col overflow-hidden px-2 pt-2 pb-2">
@@ -3245,31 +3245,31 @@ function SeasonOrdersPage() {
           return (
             <div
               key={boardIndex}
-              className="grid h-full w-[calc(100vw-1rem)] min-w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-shrink-0 snap-start overflow-hidden rounded-xl border-4 border-slate-400 bg-slate-200/40 sm:w-[calc((100vw-2rem)/2)] sm:min-w-[calc((100vw-2rem)/2)] sm:max-w-[calc((100vw-2rem)/2)] lg:w-[calc((100vw-4rem)/3)] lg:min-w-[calc((100vw-4rem)/3)] lg:max-w-[calc((100vw-4rem)/3)]"
+              className="grid h-full w-[calc(100vw-1rem)] min-w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-shrink-0 snap-start overflow-hidden rounded-xl border-4 border-autumn-line bg-autumn-soft/40 sm:w-[calc((100vw-2rem)/2)] sm:min-w-[calc((100vw-2rem)/2)] sm:max-w-[calc((100vw-2rem)/2)] lg:w-[calc((100vw-4rem)/3)] lg:min-w-[calc((100vw-4rem)/3)] lg:max-w-[calc((100vw-4rem)/3)]"
               style={{
                 boxShadow: "0 4px 6px -1px rgba(0,0,0,0.12), 0 8px 20px -4px rgba(0,0,0,0.14), 0 0 0 1px rgba(0,0,0,0.06) inset",
                 gridTemplateRows: "auto 1fr",
                 minHeight: 0,
               }}
             >
-              <div className="flex min-h-0 shrink-0 items-center justify-between border-b-2 border-slate-400 bg-gradient-to-b from-slate-300 to-slate-400 px-3 py-2.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3)] sm:px-3 sm:py-3">
+              <div className="flex min-h-0 shrink-0 items-center justify-between border-b-2 border-autumn-line bg-gradient-to-b from-autumn-sand to-autumn-sand px-3 py-2.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3)] sm:px-3 sm:py-3">
                 <button
                   type="button"
                   onClick={() => handleCropNameOpen(boardIndex)}
-                  className="flex-1 cursor-pointer select-none text-center text-lg font-bold leading-tight text-slate-800 drop-shadow-sm sm:text-xl [font-size:clamp(0.75rem,5vw,1.75rem)]"
+                  className="flex-1 cursor-pointer select-none text-center text-lg font-bold leading-tight text-autumn-ink drop-shadow-sm sm:text-xl [font-size:clamp(0.75rem,5vw,1.75rem)]"
                 >
                   {data.boards[boardIndex] || "작물명을 터치하여 입력"}
                 </button>
                 <button
                   type="button"
                   onClick={() => handleAddOpen(boardIndex)}
-                  className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-slate-500/80 text-white shadow-md hover:bg-slate-600 sm:h-8 sm:w-8"
+                  className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-brand text-white shadow-md hover:bg-brand-dark sm:h-8 sm:w-8"
                 >
                   +
                 </button>
               </div>
               <div
-                className="min-h-0 overflow-y-auto overflow-x-hidden bg-gradient-to-b from-slate-50/95 to-white p-2 sm:p-2"
+                className="min-h-0 overflow-y-auto overflow-x-hidden bg-gradient-to-b from-autumn-surface/95 to-white p-2 sm:p-2"
                 style={{
                   boxShadow: "inset 0 2px 8px rgba(0,0,0,0.04)",
                   WebkitOverflowScrolling: "touch",
@@ -3283,8 +3283,8 @@ function SeasonOrdersPage() {
                       onClick={() => handleEditOpen(item)}
                       className={`flex w-full flex-nowrap items-center gap-x-1 overflow-hidden rounded-lg px-2 py-1.5 text-left sm:rounded-lg ${
                         item.sold
-                          ? "bg-slate-900/20 text-slate-600 opacity-60"
-                          : "bg-slate-200/40 hover:bg-slate-200/60"
+                          ? "bg-autumn-surface/20 text-autumn-secondary opacity-60"
+                          : "bg-autumn-soft/40 hover:bg-autumn-soft/60"
                       }`}
                       style={{
                         fontFamily: "'Malgun Gothic', '맑은 고딕', sans-serif",
@@ -3292,15 +3292,15 @@ function SeasonOrdersPage() {
                         letterSpacing: "-0.03em",
                       }}
                     >
-                      <span className="min-w-0 shrink font-medium text-slate-900">{item.orderer || "-"}</span>
-                      <span className="shrink-0 text-slate-500">│</span>
-                      <span className="min-w-0 shrink font-medium text-slate-900">{item.variety || "-"}</span>
-                      <span className="shrink-0 text-slate-500">│</span>
-                        <span className="min-w-0 shrink font-medium text-slate-900">
+                      <span className="min-w-0 shrink font-medium text-autumn-ink">{item.orderer || "-"}</span>
+                      <span className="shrink-0 text-autumn-secondary">│</span>
+                      <span className="min-w-0 shrink font-medium text-autumn-ink">{item.variety || "-"}</span>
+                      <span className="shrink-0 text-autumn-secondary">│</span>
+                        <span className="min-w-0 shrink font-medium text-autumn-ink">
                           {item.quantity || "-"}{item.quantity_unit === "포기" ? " 포기" : ""}
                         </span>
-                          <span className="shrink-0 text-slate-500">│</span>
-                          <span className="min-w-0 shrink font-medium text-slate-900">{formatContactDisplay(item.contact)}</span>
+                          <span className="shrink-0 text-autumn-secondary">│</span>
+                          <span className="min-w-0 shrink font-medium text-autumn-ink">{formatContactDisplay(item.contact)}</span>
                           {(item.note ?? "").trim() ? (
                             <span className="ml-1 shrink-0 rounded bg-fuchsia-600/80 px-1 py-0.5 text-[0.7rem] font-bold leading-none text-white">비고</span>
                           ) : null}
@@ -3313,7 +3313,7 @@ function SeasonOrdersPage() {
         })}
         </div>
         <div
-          className="flex min-h-0 shrink-0 items-start justify-center border-t-2 border-slate-400 bg-gradient-to-b from-slate-200 to-slate-300 px-3 py-2 text-center font-bold text-slate-800 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.25)]"
+          className="flex min-h-0 shrink-0 items-start justify-center border-t-2 border-autumn-line bg-gradient-to-b from-autumn-soft to-autumn-sand px-3 py-2 text-center font-bold text-autumn-ink shadow-[inset_0_1px_0_0_rgba(255,255,255,0.25)]"
           style={{ fontSize: "clamp(0.9rem, 3.5vw, 1.1rem)", height: "23%", minHeight: "5rem" }}
         >
           {varietyByBoard[visibleBoardIndex]?.length ? (
@@ -3335,13 +3335,13 @@ function SeasonOrdersPage() {
         title="작물명 입력"
         onClose={() => setCropNameBoardIndex(null)}
       >
-        <p className="mb-3 text-sm text-slate-400">작물명을 입력하세요</p>
+        <p className="mb-3 text-sm text-autumn-secondary">작물명을 입력하세요</p>
         <input
           type="text"
           value={cropNameInput}
           onChange={(e) => setCropNameInput(e.target.value)}
           placeholder="작물명"
-          className="mb-4 w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 placeholder-slate-500"
+          className="mb-4 w-full rounded-lg border border-autumn-line bg-autumn-soft px-3 py-2 text-autumn-ink placeholder-autumn-secondary"
           autoFocus
         />
         <div className="flex justify-end gap-2">
@@ -3357,16 +3357,16 @@ function SeasonOrdersPage() {
       >
         <div className="space-y-3">
           <div>
-            <label className="mb-1 block text-xs text-slate-400">주문자</label>
+            <label className="mb-1 block text-xs text-autumn-secondary">주문자</label>
             <input
               value={addForm.orderer}
               onChange={(e) => setAddForm((p) => ({ ...p, orderer: e.target.value }))}
-              className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-lg border border-autumn-line bg-autumn-soft px-3 py-2 text-autumn-ink"
               placeholder="주문자"
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs text-slate-400">품종</label>
+            <label className="mb-1 block text-xs text-autumn-secondary">품종</label>
             <div className="relative">
               <input
                 value={addForm.variety}
@@ -3377,12 +3377,12 @@ function SeasonOrdersPage() {
                 }}
                 onFocus={() => setVarietySuggestOpen(true)}
                 onBlur={() => setTimeout(() => setVarietySuggestOpen(false), 120)}
-                className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+                className="w-full rounded-lg border border-autumn-line bg-autumn-soft px-3 py-2 text-autumn-ink"
                 placeholder="품종"
                 autoComplete="off"
               />
               {varietySuggestOpen && addForm.variety.trim() && (
-                <div className="absolute left-0 right-0 top-full z-20 mt-1 max-h-40 overflow-auto rounded-lg border border-slate-700 bg-slate-900 shadow-xl">
+                <div className="absolute left-0 right-0 top-full z-20 mt-1 max-h-40 overflow-auto rounded-lg border border-autumn-border bg-autumn-surface shadow-xl">
                   {varietyOptions
                     .filter((x) => x.includes(addForm.variety.trim()))
                     .slice(0, 8)
@@ -3395,7 +3395,7 @@ function SeasonOrdersPage() {
                           setAddForm((p) => ({ ...p, variety: x }));
                           setVarietySuggestOpen(false);
                         }}
-                        className="block w-full px-3 py-2 text-left text-slate-100 hover:bg-slate-800"
+                        className="block w-full px-3 py-2 text-left text-autumn-ink hover:bg-autumn-soft"
                       >
                         {x}
                       </button>
@@ -3405,13 +3405,13 @@ function SeasonOrdersPage() {
             </div>
           </div>
           <div>
-            <label className="mb-1 block text-xs text-slate-400">수량</label>
+            <label className="mb-1 block text-xs text-autumn-secondary">수량</label>
             <div className="flex items-center gap-2">
               <input
                 value={addForm.quantity}
                 onChange={(e) => setAddForm((p) => ({ ...p, quantity: e.target.value }))}
                 inputMode="decimal"
-                className="w-[6.5rem] rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+                className="w-[6.5rem] rounded-lg border border-autumn-line bg-autumn-soft px-3 py-2 text-autumn-ink"
                 placeholder="예: 2.5"
               />
               <div className="flex gap-1">
@@ -3419,7 +3419,7 @@ function SeasonOrdersPage() {
                   type="button"
                   onClick={() => setAddForm((p) => ({ ...p, quantity_unit: "판" }))}
                   className={`rounded-lg px-3 py-2 text-sm font-semibold ${
-                    addForm.quantity_unit === "판" ? "bg-amber-600 text-white" : "bg-slate-700 text-slate-200 hover:bg-slate-600"
+                    addForm.quantity_unit === "판" ? "bg-amber-600 text-white" : "bg-autumn-muted text-autumn-ink hover:bg-autumn-hover"
                   }`}
                 >
                   판
@@ -3428,7 +3428,7 @@ function SeasonOrdersPage() {
                   type="button"
                   onClick={() => setAddForm((p) => ({ ...p, quantity_unit: "포기" }))}
                   className={`rounded-lg px-3 py-2 text-sm font-semibold ${
-                    addForm.quantity_unit === "포기" ? "bg-amber-600 text-white" : "bg-slate-700 text-slate-200 hover:bg-slate-600"
+                    addForm.quantity_unit === "포기" ? "bg-amber-600 text-white" : "bg-autumn-muted text-autumn-ink hover:bg-autumn-hover"
                   }`}
                 >
                   포기
@@ -3437,11 +3437,11 @@ function SeasonOrdersPage() {
             </div>
           </div>
           <div>
-            <label className="mb-1 block text-xs text-slate-400">연락처</label>
+            <label className="mb-1 block text-xs text-autumn-secondary">연락처</label>
             <input
               value={addForm.contact}
               onChange={(e) => setAddForm((p) => ({ ...p, contact: e.target.value }))}
-              className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-lg border border-autumn-line bg-autumn-soft px-3 py-2 text-autumn-ink"
               placeholder="연락처"
             />
           </div>
@@ -3460,31 +3460,31 @@ function SeasonOrdersPage() {
         {editItem && (
           <div className="space-y-3">
             <div>
-              <label className="mb-1 block text-xs text-slate-400">주문자</label>
+              <label className="mb-1 block text-xs text-autumn-secondary">주문자</label>
               <input
                 value={editForm.orderer}
                 onChange={(e) => setEditForm((p) => ({ ...p, orderer: e.target.value }))}
-                className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+                className="w-full rounded-lg border border-autumn-line bg-autumn-soft px-3 py-2 text-autumn-ink"
                 placeholder="주문자"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-slate-400">품종</label>
+              <label className="mb-1 block text-xs text-autumn-secondary">품종</label>
               <input
                 value={editForm.variety}
                 onChange={(e) => setEditForm((p) => ({ ...p, variety: e.target.value }))}
-                className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+                className="w-full rounded-lg border border-autumn-line bg-autumn-soft px-3 py-2 text-autumn-ink"
                 placeholder="품종"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-slate-400">수량</label>
+              <label className="mb-1 block text-xs text-autumn-secondary">수량</label>
               <div className="flex items-center gap-2">
                 <input
                   value={editForm.quantity}
                   onChange={(e) => setEditForm((p) => ({ ...p, quantity: e.target.value }))}
                   inputMode="decimal"
-                  className="w-[6.5rem] rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+                  className="w-[6.5rem] rounded-lg border border-autumn-line bg-autumn-soft px-3 py-2 text-autumn-ink"
                   placeholder="예: 2.5"
                 />
                 <div className="flex gap-1">
@@ -3492,7 +3492,7 @@ function SeasonOrdersPage() {
                     type="button"
                     onClick={() => setEditForm((p) => ({ ...p, quantity_unit: "판" }))}
                     className={`rounded-lg px-3 py-2 text-sm font-semibold ${
-                      editForm.quantity_unit === "판" ? "bg-amber-600 text-white" : "bg-slate-700 text-slate-200 hover:bg-slate-600"
+                      editForm.quantity_unit === "판" ? "bg-amber-600 text-white" : "bg-autumn-muted text-autumn-ink hover:bg-autumn-hover"
                     }`}
                   >
                     판
@@ -3501,7 +3501,7 @@ function SeasonOrdersPage() {
                     type="button"
                     onClick={() => setEditForm((p) => ({ ...p, quantity_unit: "포기" }))}
                     className={`rounded-lg px-3 py-2 text-sm font-semibold ${
-                      editForm.quantity_unit === "포기" ? "bg-amber-600 text-white" : "bg-slate-700 text-slate-200 hover:bg-slate-600"
+                      editForm.quantity_unit === "포기" ? "bg-amber-600 text-white" : "bg-autumn-muted text-autumn-ink hover:bg-autumn-hover"
                     }`}
                   >
                     포기
@@ -3510,20 +3510,20 @@ function SeasonOrdersPage() {
               </div>
             </div>
             <div>
-              <label className="mb-1 block text-xs text-slate-400">연락처</label>
+              <label className="mb-1 block text-xs text-autumn-secondary">연락처</label>
               <input
                 value={editForm.contact}
                 onChange={(e) => setEditForm((p) => ({ ...p, contact: e.target.value }))}
-                className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+                className="w-full rounded-lg border border-autumn-line bg-autumn-soft px-3 py-2 text-autumn-ink"
                 placeholder="연락처"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-slate-400">비고</label>
+              <label className="mb-1 block text-xs text-autumn-secondary">비고</label>
               <input
                 value={editForm.note}
                 onChange={(e) => setEditForm((p) => ({ ...p, note: e.target.value }))}
-                className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+                className="w-full rounded-lg border border-autumn-line bg-autumn-soft px-3 py-2 text-autumn-ink"
                 placeholder="비고 (터치 후 수정 시에만 입력)"
               />
             </div>
@@ -3531,7 +3531,7 @@ function SeasonOrdersPage() {
               <button
                 type="button"
                 onClick={() => handleDeleteItem(editItem)}
-                className="rounded-lg bg-red-900/60 px-4 py-2 text-sm text-red-200 hover:bg-red-800/70"
+                className="rounded-lg bg-red-100/60 px-4 py-2 text-sm text-red-800 hover:bg-red-200/80"
               >
                 삭제
               </button>
@@ -3548,7 +3548,7 @@ function SeasonOrdersPage() {
                   }}
                   className={`rounded-lg px-3 py-2 text-sm font-bold ${
                     editForm.sold
-                      ? "bg-slate-700 text-slate-200 hover:bg-slate-600"
+                      ? "bg-autumn-muted text-autumn-ink hover:bg-autumn-hover"
                       : "bg-indigo-600 text-white hover:bg-indigo-500"
                   }`}
                 >
@@ -4094,33 +4094,33 @@ function PlanningPage() {
   if (!user) return <Navigate to="/" replace />;
 
   return (
-    <div className="flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-slate-950 text-slate-100">
-      <header className="shrink-0 border-b border-slate-800 bg-slate-900/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
+    <div className="flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-autumn-canvas text-autumn-ink">
+      <header className="shrink-0 border-b border-autumn-border bg-autumn-surface/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
         <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-0">
           <div className="min-w-0">
             <div className="truncate text-lg font-extrabold tracking-tight sm:text-2xl">충주 친환경 육묘장</div>
-            <div className="text-xs text-slate-400 sm:text-sm">주문 및 파종계획</div>
+            <div className="text-xs text-autumn-secondary sm:text-sm">주문 및 파종계획</div>
           </div>
           <div className="flex flex-shrink-0 items-center gap-2.5 text-right text-[0.825rem] sm:gap-3 sm:text-[1.1rem]">
             <button
               type="button"
               onClick={() => setRoleInfoOpen(true)}
-              className="rounded-full bg-slate-800 px-2.5 py-2 text-slate-200 hover:bg-slate-700 sm:px-3.5 sm:py-2.5"
+              className="rounded-full bg-autumn-soft px-2.5 py-2 text-autumn-ink hover:bg-autumn-muted sm:px-3.5 sm:py-2.5"
             >
               {ROLE_LABEL[user.role_level]}
             </button>
             <button
               type="button"
               onClick={() => void signOut()}
-              className="rounded-lg bg-slate-800 px-2.5 py-2 text-slate-200 hover:bg-slate-700 sm:px-3.5 sm:py-2.5"
+              className="rounded-lg bg-autumn-soft px-2.5 py-2 text-autumn-ink hover:bg-autumn-muted sm:px-3.5 sm:py-2.5"
             >
               로그아웃
             </button>
-            <span className="hidden text-slate-400 sm:inline">{formatDateTimeKO(now)}</span>
+            <span className="hidden text-autumn-secondary sm:inline">{formatDateTimeKO(now)}</span>
             <button
               type="button"
               onClick={() => navigate("/menu")}
-              className="rounded-lg bg-slate-800 px-2.5 py-2 text-slate-200 hover:bg-slate-700 sm:px-3.5 sm:py-2.5"
+              className="rounded-lg bg-autumn-soft px-2.5 py-2 text-autumn-ink hover:bg-autumn-muted sm:px-3.5 sm:py-2.5"
             >
               메인메뉴
             </button>
@@ -4129,17 +4129,17 @@ function PlanningPage() {
       </header>
 
       <Modal open={roleInfoOpen} title="권한 등급 안내" onClose={() => setRoleInfoOpen(false)}>
-        <div className="space-y-2 text-sm text-slate-200">
+        <div className="space-y-2 text-sm text-autumn-ink">
           {ROLE_LEVELS.map((level) => (
             <div key={level}>
               {ROLE_LABEL[level]}
               {level === user.role_level && (
-                <span className="ml-1 text-amber-400">* 현재 나의 등급입니다.</span>
+                <span className="ml-1 text-amber-700">* 현재 나의 등급입니다.</span>
               )}
             </div>
           ))}
         </div>
-        <p className="mt-4 border-t border-slate-700 pt-3 text-xs text-slate-400">
+        <p className="mt-4 border-t border-autumn-border pt-3 text-xs text-autumn-secondary">
           권한에 관한 문의는 최고관리자에게 문의바랍니다 (정효조 / 010-2604-6588)
         </p>
       </Modal>
@@ -4147,7 +4147,7 @@ function PlanningPage() {
       {/* 권한 없음 토스트 (Lv2/Lv3이 + 버튼 클릭 시) - 화면 안에 고정 표시 */}
       {noReflectToast && (
         <div
-          className="pointer-events-none fixed left-4 right-4 top-20 z-[100] mx-auto max-w-[min(20rem,calc(100vw-2rem))] rounded-lg bg-slate-800 px-4 py-3 text-center text-sm font-medium leading-snug text-slate-100 shadow-lg ring-1 ring-slate-700 transition-opacity duration-300"
+          className="pointer-events-none fixed left-4 right-4 top-20 z-[100] mx-auto max-w-[min(20rem,calc(100vw-2rem))] rounded-lg bg-autumn-soft px-4 py-3 text-center text-sm font-medium leading-snug text-autumn-ink shadow-lg ring-1 ring-autumn-border transition-opacity duration-300"
           style={{
             opacity: noReflectToast.fading ? 0 : 1,
           }}
@@ -4158,7 +4158,7 @@ function PlanningPage() {
 
       <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
         {/* 상단 절반: 일자별 파종계획 화이트보드 (메뉴 영역 상하 50%) */}
-        <section className="flex min-h-0 shrink-0 flex-col overflow-hidden border-b border-slate-700 bg-slate-900/50" style={{ height: "50%" }}>
+        <section className="flex min-h-0 shrink-0 flex-col overflow-hidden border-b border-autumn-border bg-autumn-surface/50" style={{ height: "50%" }}>
           <div className="flex items-center justify-end gap-1.5 px-2 py-1 sm:gap-2 sm:px-3 sm:pr-4">
             {focusDate !== getLocalDateString() && (
               <button
@@ -4172,14 +4172,14 @@ function PlanningPage() {
             <button
               type="button"
               onClick={() => setCalendarOpen(true)}
-              className="rounded-lg bg-slate-800 px-3 py-2 text-sm font-medium text-slate-200 hover:bg-slate-700 sm:rounded-xl sm:px-5 sm:py-2.5 sm:text-base"
+              className="rounded-lg bg-autumn-soft px-3 py-2 text-sm font-medium text-autumn-ink hover:bg-autumn-muted sm:rounded-xl sm:px-5 sm:py-2.5 sm:text-base"
             >
               전체 파종계획 보기
             </button>
           </div>
           <div className="flex flex-1 min-h-0 overflow-x-auto overflow-y-hidden px-2 pt-1 pb-2 snap-x snap-mandatory sm:overflow-visible sm:snap-none sm:px-3 sm:pb-3">
             {planLoading ? (
-              <div className="flex flex-1 items-center justify-center text-slate-400">로딩 중...</div>
+              <div className="flex flex-1 items-center justify-center text-autumn-secondary">로딩 중...</div>
             ) : (
               <div className="flex min-h-full flex-1 flex-nowrap gap-3 sm:min-w-0 sm:gap-4">
                 {threeDays.map((dateStr) => {
@@ -4196,14 +4196,14 @@ function PlanningPage() {
                   return (
                     <div
                       key={dateStr}
-                      className="flex w-[calc(100vw-1rem)] min-w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-shrink-0 snap-start flex-col overflow-hidden rounded-xl border-4 border-slate-400 bg-slate-200/40 sm:w-auto sm:min-w-0 sm:max-w-none sm:flex-1 sm:rounded-2xl"
+                      className="flex w-[calc(100vw-1rem)] min-w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-shrink-0 snap-start flex-col overflow-hidden rounded-xl border-4 border-autumn-line bg-autumn-soft/40 sm:w-auto sm:min-w-0 sm:max-w-none sm:flex-1 sm:rounded-2xl"
                       style={{
                         boxShadow:
                           "0 4px 6px -1px rgba(0,0,0,0.12), 0 8px 20px -4px rgba(0,0,0,0.14), 0 0 0 1px rgba(0,0,0,0.06) inset",
                       }}
                     >
                       {/* 화이트보드 프레임(상단) */}
-                      <div className="flex items-center justify-between border-b-2 border-slate-400 bg-gradient-to-b from-slate-300 to-slate-400 px-3 py-2.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3)] sm:px-3 sm:py-3">
+                      <div className="flex items-center justify-between border-b-2 border-autumn-line bg-gradient-to-b from-autumn-sand to-autumn-sand px-3 py-2.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3)] sm:px-3 sm:py-3">
                         <span
                           role="button"
                           tabIndex={0}
@@ -4221,7 +4221,7 @@ function PlanningPage() {
                           onPointerUp={handlePlanDateLongPressEnd}
                           onPointerLeave={handlePlanDateLongPressEnd}
                           onPointerCancel={handlePlanDateLongPressEnd}
-                          className="flex-1 cursor-default select-none text-center text-lg font-bold leading-tight text-slate-800 drop-shadow-sm sm:text-xl [font-size:clamp(0.75rem,5vw,1.75rem)]"
+                          className="flex-1 cursor-default select-none text-center text-lg font-bold leading-tight text-autumn-ink drop-shadow-sm sm:text-xl [font-size:clamp(0.75rem,5vw,1.75rem)]"
                         >
                           {planDateHeader(dateStr)}
                         </span>
@@ -4244,13 +4244,13 @@ function PlanningPage() {
                               seed_owner: "육묘장",
                             });
                           }}
-                          className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-slate-500/80 text-white shadow-md hover:bg-slate-600 sm:h-8 sm:w-8"
+                          className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-brand text-white shadow-md hover:bg-brand-dark sm:h-8 sm:w-8"
                         >
                           +
                         </button>
                       </div>
                       {/* 쓰기 면: 파종 내용만 스크롤, 트레이 합계는 하단 고정 */}
-                      <div className="flex min-h-0 flex-1 flex-col bg-gradient-to-b from-slate-50/95 to-white">
+                      <div className="flex min-h-0 flex-1 flex-col bg-gradient-to-b from-autumn-surface/95 to-white">
                         <div
                           className="plan-whiteboard-scroll min-h-0 flex-1 space-y-1 p-2 sm:space-y-1 sm:p-2"
                           style={{
@@ -4277,29 +4277,29 @@ function PlanningPage() {
                                   seed_owner: item.seed_owner || "육묘장",
                                 });
                               }}
-                              className="flex w-full flex-nowrap items-center gap-x-1 overflow-hidden rounded-lg bg-slate-200/40 px-2 py-1.5 text-left hover:bg-slate-200/60 sm:rounded-lg"
+                              className="flex w-full flex-nowrap items-center gap-x-1 overflow-hidden rounded-lg bg-autumn-soft/40 px-2 py-1.5 text-left hover:bg-autumn-soft/60 sm:rounded-lg"
                               style={{
                                 fontFamily: "'Malgun Gothic', '맑은 고딕', sans-serif",
                                 fontSize: "clamp(1.125rem, 3.75vw, 1.425rem)",
                                 letterSpacing: "-0.03em",
                               }}
                             >
-                              <span className="min-w-0 shrink font-medium text-slate-900">{item.orderer || "-"}</span>
-                              <span className="shrink-0 text-slate-500">│</span>
-                              <span className="min-w-0 shrink font-medium text-slate-900">{item.crop || "-"}</span>
-                              <span className="shrink-0 text-slate-500">│</span>
-                              <span className="min-w-0 shrink font-medium text-slate-900">{item.seed_owner || "-"}</span>
-                              <span className="shrink-0 text-slate-500">│</span>
-                              <span className="min-w-0 shrink font-medium text-slate-900">
+                              <span className="min-w-0 shrink font-medium text-autumn-ink">{item.orderer || "-"}</span>
+                              <span className="shrink-0 text-autumn-secondary">│</span>
+                              <span className="min-w-0 shrink font-medium text-autumn-ink">{item.crop || "-"}</span>
+                              <span className="shrink-0 text-autumn-secondary">│</span>
+                              <span className="min-w-0 shrink font-medium text-autumn-ink">{item.seed_owner || "-"}</span>
+                              <span className="shrink-0 text-autumn-secondary">│</span>
+                              <span className="min-w-0 shrink font-medium text-autumn-ink">
                                 {item.tray_type === "직접입력" ? item.tray_custom || "-" : item.tray_type || "-"}
                               </span>
-                              <span className="shrink-0 text-slate-500">│</span>
-                              <span className="shrink-0 font-medium text-slate-900">{item.quantity || "-"}</span>
+                              <span className="shrink-0 text-autumn-secondary">│</span>
+                              <span className="shrink-0 font-medium text-autumn-ink">{item.quantity || "-"}</span>
                             </button>
                           ))}
                         </div>
                         {traySummaryEntries.length > 0 && (
-                          <div className="shrink-0 border-t-2 border-slate-400 bg-gradient-to-b from-slate-200 to-slate-300 px-2 py-2 text-center font-bold text-slate-800 text-[0.9625rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.25)]">
+                          <div className="shrink-0 border-t-2 border-autumn-line bg-gradient-to-b from-autumn-soft to-autumn-sand px-2 py-2 text-center font-bold text-autumn-ink text-[0.9625rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.25)]">
                             {traySummaryEntries.map(([tray, n]) => `${tray}구 : ${n}개`).join(" │ ")}
                           </div>
                         )}
@@ -4313,12 +4313,12 @@ function PlanningPage() {
         </section>
 
         {/* 하단 절반: 주문 추가 버튼 + 게시글 영역(나머지 전부 스크롤) */}
-        <section className="flex min-h-0 flex-1 flex-col border-t border-slate-700 bg-slate-950">
-          <div className="shrink-0 border-b border-slate-800 px-3 py-3 sm:px-4 sm:py-4">
+        <section className="flex min-h-0 flex-1 flex-col border-t border-autumn-border bg-autumn-canvas">
+          <div className="shrink-0 border-b border-autumn-border px-3 py-3 sm:px-4 sm:py-4">
             <button
               type="button"
               onClick={() => setAddUnprocessedOpen(true)}
-              className="w-full rounded-xl bg-slate-700 py-4 text-xl font-bold leading-none text-slate-100 hover:bg-slate-600 sm:rounded-2xl sm:py-5 sm:text-[2.5rem]"
+              className="w-full rounded-xl bg-autumn-muted py-4 text-xl font-bold leading-none text-autumn-ink hover:bg-autumn-hover sm:rounded-2xl sm:py-5 sm:text-[2.5rem]"
               style={{ letterSpacing: "0.15em" }}
             >
               주문 추가
@@ -4334,7 +4334,7 @@ function PlanningPage() {
             }}
           >
             {unprocessedLoading ? (
-              <div className="py-3 text-center text-xs text-slate-400 sm:py-4 sm:text-sm">로딩 중...</div>
+              <div className="py-3 text-center text-xs text-autumn-secondary sm:py-4 sm:text-sm">로딩 중...</div>
             ) : (
               <>
                 <ul className="space-y-1.5 sm:space-y-2">
@@ -4364,28 +4364,28 @@ function PlanningPage() {
                           style={{ touchAction: "pan-y" }}
                           className={`min-w-0 flex-1 rounded-lg border px-3 py-2 text-left transition-colors sm:px-4 sm:py-3 ${
                             order.reflected_at
-                              ? "border-slate-700/40 bg-slate-800/30 opacity-75 hover:bg-slate-800/40"
+                              ? "border-autumn-border/40 bg-autumn-soft/30 opacity-75 hover:bg-autumn-soft/40"
                               : "border-violet-400/35 bg-violet-400/15 hover:bg-violet-400/20"
                           }`}
                         >
                           <div className="flex flex-wrap items-baseline gap-1.5 text-xs sm:gap-2 sm:text-sm">
                             <span
-                              className={`min-w-0 flex-1 ${order.reflected_at ? "text-slate-500" : ""}`}
+                              className={`min-w-0 flex-1 ${order.reflected_at ? "text-autumn-secondary" : ""}`}
                               style={
                                 order.reflected_at
                                   ? { textDecoration: "line-through", textDecorationStyle: "double" }
                                   : undefined
                               }
                             >
-                              <span className={order.reflected_at ? "text-slate-500" : "text-slate-400"}>
+                              <span className={order.reflected_at ? "text-autumn-secondary" : "text-autumn-secondary"}>
                                 {order.created_by_email || "등록자"}
                               </span>
-                              <span className={`ml-2 whitespace-pre-wrap break-words ${order.reflected_at ? "text-slate-500" : "text-slate-100"}`}>
+                              <span className={`ml-2 whitespace-pre-wrap break-words ${order.reflected_at ? "text-autumn-secondary" : "text-autumn-ink"}`}>
                                 {order.content}
                               </span>
                             </span>
                             {order.reflected_at && (
-                              <span className="shrink-0 rounded bg-slate-700/50 px-2 py-0.5 text-xs font-medium text-slate-500">
+                              <span className="shrink-0 rounded bg-autumn-muted/50 px-2 py-0.5 text-xs font-medium text-autumn-secondary">
                                 반영완료
                               </span>
                             )}
@@ -4396,7 +4396,7 @@ function PlanningPage() {
                   })()}
                 </ul>
                 {visibleUnprocessed.length > UNPROCESSED_PAGE_SIZE && (
-                  <div className="sticky bottom-0 z-10 mt-2 flex flex-wrap items-center justify-center gap-1.5 border-t border-slate-800 bg-slate-950/95 p-2 backdrop-blur sm:gap-2 sm:p-3">
+                  <div className="sticky bottom-0 z-10 mt-2 flex flex-wrap items-center justify-center gap-1.5 border-t border-autumn-border bg-autumn-canvas/95 p-2 backdrop-blur sm:gap-2 sm:p-3">
                     <button
                       type="button"
                       disabled={unprocessedPage <= 1}
@@ -4404,7 +4404,7 @@ function PlanningPage() {
                         setUnprocessedPage((p) => Math.max(1, p - 1));
                         scrollUnprocessedToTop();
                       }}
-                      className="rounded-lg bg-slate-800 px-2 py-1 text-xs text-slate-200 disabled:opacity-50 hover:bg-slate-700 sm:px-3 sm:py-1.5 sm:text-sm"
+                      className="rounded-lg bg-autumn-soft px-2 py-1 text-xs text-autumn-ink disabled:opacity-50 hover:bg-autumn-muted sm:px-3 sm:py-1.5 sm:text-sm"
                     >
                       이전
                     </button>
@@ -4427,7 +4427,7 @@ function PlanningPage() {
                         className={`min-w-[1.75rem] rounded-lg px-1.5 py-1 text-xs sm:min-w-[2rem] sm:px-2 sm:py-1.5 sm:text-sm ${
                           p === unprocessedPage
                             ? "bg-amber-600 text-white"
-                            : "bg-slate-800 text-slate-200 hover:bg-slate-700"
+                            : "bg-autumn-soft text-autumn-ink hover:bg-autumn-muted"
                         }`}
                       >
                         <span className="relative inline-flex items-start justify-center">
@@ -4448,7 +4448,7 @@ function PlanningPage() {
                           }
                           if (!hasPending) return null;
                           return (
-                            <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-red-500 shadow-[0_0_0_2px_rgba(15,23,42,0.85)]" />
+                            <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-red-600 shadow-[0_0_0_2px_rgba(255,252,247,0.95)]" />
                           );
                         })()}
                         </span>
@@ -4473,7 +4473,7 @@ function PlanningPage() {
                         );
                         scrollUnprocessedToTop();
                       }}
-                      className="rounded-lg bg-slate-800 px-2 py-1 text-xs text-slate-200 disabled:opacity-50 hover:bg-slate-700 sm:px-3 sm:py-1.5 sm:text-sm"
+                      className="rounded-lg bg-autumn-soft px-2 py-1 text-xs text-autumn-ink disabled:opacity-50 hover:bg-autumn-muted sm:px-3 sm:py-1.5 sm:text-sm"
                     >
                       다음
                     </button>
@@ -4505,7 +4505,7 @@ function PlanningPage() {
       >
         <div className="space-y-3">
           {addPlanError && (
-            <div className="rounded-lg border border-red-800 bg-red-950/50 px-3 py-2 text-sm text-red-200">
+            <div className="rounded-lg border border-red-300 bg-red-100/50 px-3 py-2 text-sm text-red-800">
               {addPlanError}
             </div>
           )}
@@ -4580,17 +4580,17 @@ function PlanningPage() {
       >
         <div className="space-y-3">
           {addUnprocessedError && (
-            <div className="rounded-lg bg-red-950/50 border border-red-800 px-3 py-2 text-sm text-red-200">
+            <div className="rounded-lg bg-red-100/50 border border-red-300 px-3 py-2 text-sm text-red-800">
               {addUnprocessedError}
             </div>
           )}
           <div>
-            <label className="mb-1 block text-sm text-slate-300">내용</label>
+            <label className="mb-1 block text-sm text-autumn-body">내용</label>
             <textarea
               value={addUnprocessedText}
               onChange={(e) => setAddUnprocessedText(e.target.value)}
               placeholder="전화/문자/구두 주문 내용을 입력하세요. 붙여넣기 가능합니다."
-              className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-slate-100 placeholder-slate-500 min-h-[120px]"
+              className="w-full rounded-xl border border-autumn-border bg-autumn-surface px-4 py-3 text-autumn-ink placeholder-autumn-secondary min-h-[120px]"
               rows={4}
             />
           </div>
@@ -4677,11 +4677,11 @@ function PlanningPage() {
         {editOrder && (
           <div className="space-y-3">
             <div>
-              <label className="mb-1 block text-sm text-slate-300">내용</label>
+              <label className="mb-1 block text-sm text-autumn-body">내용</label>
               <textarea
                 value={editOrderContent}
                 onChange={(e) => setEditOrderContent(e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-slate-100 min-h-[100px]"
+                className="w-full rounded-xl border border-autumn-border bg-autumn-surface px-4 py-3 text-autumn-ink min-h-[100px]"
                 rows={4}
               />
             </div>
@@ -4703,7 +4703,7 @@ function PlanningPage() {
       >
         {deleteOrder && (
           <div className="space-y-3">
-            <p className="text-slate-200">정말로 삭제하시겠습니까?</p>
+            <p className="text-autumn-ink">정말로 삭제하시겠습니까?</p>
             <div className="flex gap-2">
               <PrimaryButton onClick={() => void handleDeleteOrderConfirm()} disabled={deleteOrderBusy}>
                 삭제
@@ -4720,7 +4720,7 @@ function PlanningPage() {
         title="파종계획 반영"
         onClose={() => setReflectOrder(null)}
       >
-        <p className="text-slate-200">파종계획에 반영 하시겠습니까?</p>
+        <p className="text-autumn-ink">파종계획에 반영 하시겠습니까?</p>
         <div className="mt-4 flex gap-2">
           <PrimaryButton onClick={handleReflectConfirm}>확인</PrimaryButton>
           <SecondaryButton onClick={() => setReflectOrder(null)}>취소</SecondaryButton>
@@ -4733,7 +4733,7 @@ function PlanningPage() {
         title="파종 현황 반영"
         onClose={() => setReflectPlanToOrdersDate(null)}
       >
-        <p className="text-slate-200">파종 현황에 반영하시겠습니까?</p>
+        <p className="text-autumn-ink">파종 현황에 반영하시겠습니까?</p>
         <div className="mt-4 flex flex-col gap-2">
           <div className="flex gap-2">
             <PrimaryButton
@@ -4757,7 +4757,7 @@ function PlanningPage() {
             <SecondaryButton onClick={() => setReflectPlanToOrdersDate(null)}>취소</SecondaryButton>
           </div>
           {reflectPlanToOrdersBusy && (
-            <p className="animate-fade-in text-center text-sm text-amber-300">
+            <p className="animate-fade-in text-center text-sm text-amber-700">
               잠시만 기다려주십시오.. 반영중입니다
             </p>
           )}
@@ -4770,7 +4770,7 @@ function PlanningPage() {
         title="반영 취소"
         onClose={() => setUnreflectOrder(null)}
       >
-        <p className="text-slate-200">
+        <p className="text-autumn-ink">
           이 게시글의 파종계획 반영을 취소하시겠습니까? 파종계획에서도 해당 항목이 제거됩니다.
         </p>
         <div className="mt-4 flex gap-2">
@@ -4793,7 +4793,7 @@ function PlanningPage() {
         {planItemPopup && (
           <div className="space-y-3">
             {planItemSaveError && (
-              <div className="rounded-lg border border-red-800 bg-red-950/50 px-3 py-2 text-sm text-red-200">
+              <div className="rounded-lg border border-red-300 bg-red-100/50 px-3 py-2 text-sm text-red-800">
                 {planItemSaveError}
               </div>
             )}
@@ -4848,7 +4848,7 @@ function PlanningPage() {
               </div>
             </div>
             {planItemPopup.source_unprocessed_id && (
-              <p className="text-xs text-amber-400">
+              <p className="text-xs text-amber-700">
                 미처리 주문에서 반영된 항목입니다. 삭제 시 해당 게시글은 반영 전 상태로 돌아갑니다.
               </p>
             )}
@@ -4889,8 +4889,8 @@ function PlanningPage() {
       >
         <div className="space-y-3">
           {reflectOrder && (
-            <div className="rounded-lg border border-slate-700 bg-slate-800/50 px-3 py-2 text-sm text-slate-200">
-              <div className="mb-1 text-xs text-slate-400">게시글 내용</div>
+            <div className="rounded-lg border border-autumn-border bg-autumn-soft/50 px-3 py-2 text-sm text-autumn-ink">
+              <div className="mb-1 text-xs text-autumn-secondary">게시글 내용</div>
               <div className="whitespace-pre-wrap break-words">{reflectOrder.content}</div>
             </div>
           )}
@@ -4974,7 +4974,7 @@ function PlanningPage() {
 
       {/* 전체일정 캘린더 */}
       {calendarOpen && (
-        <div className="modal-safe-area fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+        <div className="modal-safe-area fixed inset-0 z-50 flex items-center justify-center bg-autumn-overlay/55">
           <button
             type="button"
             onClick={() => setCalendarOpen(false)}
@@ -4982,10 +4982,10 @@ function PlanningPage() {
             aria-label="닫기"
           />
           <div
-            className="relative max-h-[90vh] w-full max-w-md overflow-auto rounded-xl border border-slate-700 bg-slate-950 shadow-2xl sm:rounded-2xl"
+            className="relative max-h-[90vh] w-full max-w-md overflow-auto rounded-xl border border-autumn-border bg-autumn-canvas shadow-2xl sm:rounded-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b border-slate-800 px-3 py-2 sm:px-4 sm:py-3">
+            <div className="flex items-center justify-between border-b border-autumn-border px-3 py-2 sm:px-4 sm:py-3">
               <button
                 type="button"
                 onClick={() => {
@@ -4994,11 +4994,11 @@ function PlanningPage() {
                     setCalendarMonth(12);
                   } else setCalendarMonth((m) => m - 1);
                 }}
-                className="rounded-lg px-2 py-1.5 text-slate-300 hover:bg-slate-800 sm:px-3 sm:py-2"
+                className="rounded-lg px-2 py-1.5 text-autumn-body hover:bg-autumn-soft sm:px-3 sm:py-2"
               >
                 ‹
               </button>
-              <div className="text-base font-semibold text-slate-100 sm:text-lg">
+              <div className="text-base font-semibold text-autumn-ink sm:text-lg">
                 {calendarYear}년 {PLAN_MONTH_KO[calendarMonth - 1]}
               </div>
               <button
@@ -5009,7 +5009,7 @@ function PlanningPage() {
                     setCalendarMonth(1);
                   } else setCalendarMonth((m) => m + 1);
                 }}
-                className="rounded-lg px-2 py-1.5 text-slate-300 hover:bg-slate-800 sm:px-3 sm:py-2"
+                className="rounded-lg px-2 py-1.5 text-autumn-body hover:bg-autumn-soft sm:px-3 sm:py-2"
               >
                 ›
               </button>
@@ -5018,7 +5018,7 @@ function PlanningPage() {
               {PLAN_WEEKDAY_KO.map((w) => (
                 <div
                   key={w}
-                  className="flex h-7 items-center justify-center text-xs font-medium text-slate-400 sm:h-9 sm:text-sm"
+                  className="flex h-7 items-center justify-center text-xs font-medium text-autumn-secondary sm:h-9 sm:text-sm"
                 >
                   {w}
                 </div>
@@ -5035,13 +5035,13 @@ function PlanningPage() {
                       setFocusDate(clampPlanDate(dateStr));
                       setCalendarOpen(false);
                     }}
-                    className="flex h-9 w-full flex-col items-center justify-center rounded-lg text-xs text-slate-200 hover:bg-slate-800 sm:h-12 sm:rounded-xl sm:text-sm"
+                    className="flex h-9 w-full flex-col items-center justify-center rounded-lg text-xs text-autumn-ink hover:bg-autumn-soft sm:h-12 sm:rounded-xl sm:text-sm"
                   >
                     <span>{d}</span>
                     {planCounts[
                       `${calendarYear}-${String(calendarMonth).padStart(2, "0")}-${String(d).padStart(2, "0")}`
                     ] != null && (
-                      <span className="text-xs text-amber-400">
+                      <span className="text-xs text-amber-700">
                         {planCounts[
                           `${calendarYear}-${String(calendarMonth).padStart(2, "0")}-${String(d).padStart(2, "0")}`
                         ]}
@@ -5052,11 +5052,11 @@ function PlanningPage() {
                 ),
               )}
             </div>
-            <div className="border-t border-slate-800 p-3">
+            <div className="border-t border-autumn-border p-3">
               <button
                 type="button"
                 onClick={() => setCalendarOpen(false)}
-                className="w-full rounded-lg bg-slate-800 py-2 text-slate-200 hover:bg-slate-700"
+                className="w-full rounded-lg bg-autumn-soft py-2 text-autumn-ink hover:bg-autumn-muted"
               >
                 닫기
               </button>
@@ -5282,44 +5282,44 @@ function CertificatePage() {
 
   if (!user) return <Navigate to="/" replace />;
   return (
-    <div className="flex min-h-screen flex-col bg-slate-950 text-slate-100">
-      <header className="shrink-0 border-b border-slate-800 bg-slate-900/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
+    <div className="flex min-h-screen flex-col bg-autumn-canvas text-autumn-ink">
+      <header className="shrink-0 border-b border-autumn-border bg-autumn-surface/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
         <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-0">
           <div className="min-w-0">
             <div className="truncate text-lg font-extrabold tracking-tight sm:text-2xl">충주 친환경 육묘장</div>
-            <div className="text-xs text-slate-400 sm:text-sm">육묘확인서 발급</div>
+            <div className="text-xs text-autumn-secondary sm:text-sm">육묘확인서 발급</div>
           </div>
           <div className="flex flex-shrink-0 items-center gap-2.5 text-right text-[0.825rem] sm:gap-3 sm:text-[1.1rem]">
-            <button type="button" onClick={() => setRoleInfoOpen(true)} className="rounded-full bg-slate-800 px-2.5 py-2 text-slate-200 hover:bg-slate-700 sm:px-3.5 sm:py-2.5">
+            <button type="button" onClick={() => setRoleInfoOpen(true)} className="rounded-full bg-autumn-soft px-2.5 py-2 text-autumn-ink hover:bg-autumn-muted sm:px-3.5 sm:py-2.5">
               {ROLE_LABEL[user.role_level]}
             </button>
-            <button type="button" onClick={() => void signOut()} className="rounded-lg bg-slate-800 px-2.5 py-2 text-slate-200 hover:bg-slate-700 sm:px-3.5 sm:py-2.5">
+            <button type="button" onClick={() => void signOut()} className="rounded-lg bg-autumn-soft px-2.5 py-2 text-autumn-ink hover:bg-autumn-muted sm:px-3.5 sm:py-2.5">
               로그아웃
             </button>
-            <span className="hidden text-slate-400 sm:inline">{formatDateTimeKO(now)}</span>
-            <button type="button" onClick={() => navigate("/menu")} className="rounded-lg bg-slate-800 px-2.5 py-2 text-slate-200 hover:bg-slate-700 sm:px-3.5 sm:py-2.5">
+            <span className="hidden text-autumn-secondary sm:inline">{formatDateTimeKO(now)}</span>
+            <button type="button" onClick={() => navigate("/menu")} className="rounded-lg bg-autumn-soft px-2.5 py-2 text-autumn-ink hover:bg-autumn-muted sm:px-3.5 sm:py-2.5">
               메인메뉴
             </button>
           </div>
         </div>
       </header>
       <Modal open={roleInfoOpen} title="권한 등급 안내" onClose={() => setRoleInfoOpen(false)}>
-        <div className="space-y-2 text-sm text-slate-200">
+        <div className="space-y-2 text-sm text-autumn-ink">
           {ROLE_LEVELS.map((level) => (
-            <div key={level}>{ROLE_LABEL[level]}{level === user.role_level && <span className="ml-1 text-amber-400">* 현재 나의 등급입니다.</span>}</div>
+            <div key={level}>{ROLE_LABEL[level]}{level === user.role_level && <span className="ml-1 text-amber-700">* 현재 나의 등급입니다.</span>}</div>
           ))}
         </div>
-        <p className="mt-4 border-t border-slate-700 pt-3 text-xs text-slate-400">권한에 관한 문의는 최고관리자에게 문의바랍니다 (정효조 / 010-2604-6588)</p>
+        <p className="mt-4 border-t border-autumn-border pt-3 text-xs text-autumn-secondary">권한에 관한 문의는 최고관리자에게 문의바랍니다 (정효조 / 010-2604-6588)</p>
       </Modal>
       <main className="flex flex-1 flex-col items-center justify-center px-6 py-8">
         <button
           type="button"
           onClick={() => setFormOpen(true)}
-          className="rounded-xl border-2 border-lime-400/80 bg-lime-400/30 px-6 py-4 text-lg font-bold text-lime-100 shadow-[0_0_20px_rgba(134,239,172,0.4)] hover:bg-lime-400/50 sm:rounded-2xl sm:px-8 sm:py-5 sm:text-xl"
+          className="rounded-xl border-2 border-lime-400/80 bg-lime-400/30 px-6 py-4 text-lg font-bold text-lime-800 shadow-[0_4px_14px_rgba(90,57,36,0.1)] hover:bg-lime-400/50 sm:rounded-2xl sm:px-8 sm:py-5 sm:text-xl"
         >
           육묘확인서 발급
         </button>
-        <Link to="/menu" className="mt-6 rounded-xl border border-slate-700 bg-slate-900 px-4 py-2 text-sm text-slate-100 hover:bg-slate-800">
+        <Link to="/menu" className="mt-6 rounded-xl border border-autumn-border bg-autumn-surface px-4 py-2 text-sm text-autumn-ink hover:bg-autumn-soft">
           메인메뉴로 돌아가기
         </Link>
       </main>
@@ -5339,13 +5339,13 @@ function CertificatePage() {
         >
           <div className="relative flex max-h-[70vh] flex-col gap-3 overflow-y-auto sm:gap-4">
             <div>
-              <span className="mb-2 block text-sm font-semibold text-slate-300">1. 기간 설정</span>
+              <span className="mb-2 block text-sm font-semibold text-autumn-body">1. 기간 설정</span>
               <div className="mb-3 flex w-full gap-2">
-                <span className="text-xs text-slate-400">연도</span>
+                <span className="text-xs text-autumn-secondary">연도</span>
                 <select
                   value={form.year}
                   onChange={(e) => setForm((p) => ({ ...p, year: Number(e.target.value) }))}
-                  className="flex-1 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100"
+                  className="flex-1 rounded-lg border border-autumn-border bg-autumn-surface px-3 py-2 text-autumn-ink"
                 >
                   {availableYears.map((y) => (
                     <option key={y} value={y}>{y}년</option>
@@ -5362,21 +5362,21 @@ function CertificatePage() {
               </div>
             </div>
             <div>
-              <span className="mb-2 block text-sm font-semibold text-slate-300">2. 고객정보</span>
+              <span className="mb-2 block text-sm font-semibold text-autumn-body">2. 고객정보</span>
               <div className="flex flex-col gap-2">
                 <div className="relative">
-                  <span className="text-xs text-slate-400">성명</span>
+                  <span className="text-xs text-autumn-secondary">성명</span>
                   <input
                     value={form.customerName}
                     onChange={(e) => setForm((p) => ({ ...p, customerName: e.target.value }))}
                     onFocus={(e) => e.target.select?.()}
-                    className="mt-0.5 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 placeholder:text-slate-500 placeholder:opacity-50"
+                    className="mt-0.5 w-full rounded-lg border border-autumn-border bg-autumn-surface px-3 py-2 text-autumn-ink placeholder:text-autumn-secondary placeholder:opacity-50"
                     placeholder="육묘확인서에 실제 발급될 이름 or 법인명 입력"
                     autoComplete="off"
                   />
                   {form.customerName.trim().length >= 1 &&
                     !autocompleteCustomers.includes(form.customerName.trim()) && (
-                    <div className="absolute left-0 right-0 top-full z-20 mt-0.5 max-h-40 overflow-auto rounded-lg border border-slate-700 bg-slate-900 shadow-xl">
+                    <div className="absolute left-0 right-0 top-full z-20 mt-0.5 max-h-40 overflow-auto rounded-lg border border-autumn-border bg-autumn-surface shadow-xl">
                       {autocompleteCustomers
                         .filter((c) => c.includes(form.customerName.trim()))
                         .slice(0, 10)
@@ -5399,7 +5399,7 @@ function CertificatePage() {
                                 setForm((p) => ({ ...p, customerName: c }));
                               }
                             }}
-                            className="block w-full px-3 py-2 text-left text-slate-100 hover:bg-slate-800"
+                            className="block w-full px-3 py-2 text-left text-autumn-ink hover:bg-autumn-soft"
                           >
                             {c}
                           </button>
@@ -5409,7 +5409,7 @@ function CertificatePage() {
                 </div>
                 <TextField label="주소" value={form.address} onChange={(v) => setForm((p) => ({ ...p, address: v }))} size="lg" />
                 <div>
-                  <span className="text-xs text-slate-400">생년월일 (YYYYMMDD-0******) / 사업자번호 (000-00-00000)</span>
+                  <span className="text-xs text-autumn-secondary">생년월일 (YYYYMMDD-0******) / 사업자번호 (000-00-00000)</span>
                   <input
                     value={form.businessNumber || form.birthId}
                     onChange={(e) => {
@@ -5421,7 +5421,7 @@ function CertificatePage() {
                         setForm((p) => ({ ...p, businessNumber: "" }));
                       }
                     }}
-                    className="mt-0.5 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100"
+                    className="mt-0.5 w-full rounded-lg border border-autumn-border bg-autumn-surface px-3 py-2 text-autumn-ink"
                     placeholder="000000-0****** 또는 000-00-00000"
                     inputMode="numeric"
                   />
@@ -5430,26 +5430,26 @@ function CertificatePage() {
               </div>
             </div>
             <div>
-              <span className="mb-2 block text-sm font-semibold text-slate-300">3. 작물정보</span>
+              <span className="mb-2 block text-sm font-semibold text-autumn-body">3. 작물정보</span>
               <div ref={cropContainerRef} className="relative">
-                <span className="text-xs text-slate-400">품목 (작물 전체 또는 특정 작물 다중 선택)</span>
+                <span className="text-xs text-autumn-secondary">품목 (작물 전체 또는 특정 작물 다중 선택)</span>
                 <button
                   type="button"
                   onClick={() => setCropDropdownOpen((o) => !o)}
-                  className="mt-0.5 w-full cursor-pointer rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-left text-slate-100 hover:bg-slate-800"
+                  className="mt-0.5 w-full cursor-pointer rounded-lg border border-autumn-border bg-autumn-surface px-3 py-2 text-left text-autumn-ink hover:bg-autumn-soft"
                 >
                   {form.cropAll ? (
                     "작물 전체"
                   ) : form.selectedCrops.length > 0 ? (
                     form.selectedCrops.join(", ")
                   ) : (
-                    <span className="text-slate-500">작물 선택</span>
+                    <span className="text-autumn-secondary">작물 선택</span>
                   )}
                 </button>
                 {cropDropdownOpen && (
-                  <div ref={cropDropdownRef} className="absolute left-0 right-0 top-full z-30 mt-0.5 w-full min-w-[12rem] rounded-lg border border-slate-700 bg-slate-900 shadow-xl">
+                  <div ref={cropDropdownRef} className="absolute left-0 right-0 top-full z-30 mt-0.5 w-full min-w-[12rem] rounded-lg border border-autumn-border bg-autumn-surface shadow-xl">
                     <div className="max-h-[calc(40px*5+2px)] overflow-y-auto overscroll-contain">
-                      <label className="flex cursor-pointer items-center gap-2 px-3 py-2.5 text-left text-slate-100 hover:bg-slate-800">
+                      <label className="flex cursor-pointer items-center gap-2 px-3 py-2.5 text-left text-autumn-ink hover:bg-autumn-soft">
                         <input
                           type="checkbox"
                           checked={form.cropAll}
@@ -5460,14 +5460,14 @@ function CertificatePage() {
                               selectedCrops: e.target.checked ? [] : p.selectedCrops,
                             }));
                           }}
-                          className="h-4 w-4 rounded border-slate-600 bg-slate-800 text-amber-500"
+                          className="h-4 w-4 rounded border-autumn-line bg-autumn-soft text-amber-700"
                         />
                         작물 전체
                       </label>
                       {autocompleteCrops.map((c) => (
                         <label
                           key={c}
-                          className="flex cursor-pointer items-center gap-2 px-3 py-2.5 text-left text-slate-100 hover:bg-slate-800"
+                          className="flex cursor-pointer items-center gap-2 px-3 py-2.5 text-left text-autumn-ink hover:bg-autumn-soft"
                         >
                           <input
                             type="checkbox"
@@ -5482,13 +5482,13 @@ function CertificatePage() {
                                   : p.selectedCrops.filter((x) => x !== c),
                               }));
                             }}
-                            className="h-4 w-4 rounded border-slate-600 bg-slate-800 text-amber-500 disabled:opacity-50"
+                            className="h-4 w-4 rounded border-autumn-line bg-autumn-soft text-amber-700 disabled:opacity-50"
                           />
                           {c}
                         </label>
                       ))}
                     </div>
-                    <div className="shrink-0 border-t border-slate-700 p-2">
+                    <div className="shrink-0 border-t border-autumn-border p-2">
                       <button
                         type="button"
                         onClick={() => setCropDropdownOpen(false)}
@@ -5503,7 +5503,7 @@ function CertificatePage() {
               </div>
             </div>
             <div>
-              <span className="mb-2 block text-sm font-semibold text-slate-300">4. 발급일자</span>
+              <span className="mb-2 block text-sm font-semibold text-autumn-body">4. 발급일자</span>
               <DateWheel
                 label="발급일"
                 value={form.issueDate}
@@ -5513,7 +5513,7 @@ function CertificatePage() {
               />
             </div>
             <div>
-              <label className="flex cursor-pointer items-center gap-2 text-slate-200">
+              <label className="flex cursor-pointer items-center gap-2 text-autumn-ink">
                 <input
                   type="checkbox"
                   checked={form.addAmountInfo}
@@ -5531,7 +5531,7 @@ function CertificatePage() {
                     }
                   }}
                   disabled={!form.cropAll && form.selectedCrops.length === 0}
-                  className="h-4 w-4 rounded border-slate-600 bg-slate-800 text-amber-500 disabled:opacity-50"
+                  className="h-4 w-4 rounded border-autumn-line bg-autumn-soft text-amber-700 disabled:opacity-50"
                 />
                 <span className="text-sm font-medium">금액정보 추가하기</span>
               </label>
@@ -5547,20 +5547,20 @@ function CertificatePage() {
                     );
                     setAmountPopupOpen(true);
                   }}
-                  className="mt-1 text-xs text-emerald-400 underline hover:text-emerald-300"
+                  className="mt-1 text-xs text-emerald-700 underline hover:text-emerald-700"
                 >
                   가격정보 반영완료 (클릭 시 수정)
                 </button>
               )}
             </div>
             {amountPopupOpen && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-black/60 p-4">
-                <div className="w-full max-w-sm rounded-xl border border-slate-700 bg-slate-900 p-4 shadow-xl">
-                  <p className="mb-3 text-center text-sm font-medium text-slate-200">작물 가격을 입력하세요</p>
+              <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-autumn-overlay/55 p-4">
+                <div className="w-full max-w-sm rounded-xl border border-autumn-border bg-autumn-surface p-4 shadow-xl">
+                  <p className="mb-3 text-center text-sm font-medium text-autumn-ink">작물 가격을 입력하세요</p>
                   <div className="mb-4 space-y-2">
                     {uniqueCropsForAmount.map((crop) => (
                       <div key={crop} className="flex items-center justify-between gap-2">
-                        <span className="shrink-0 text-sm text-slate-300">{crop}</span>
+                        <span className="shrink-0 text-sm text-autumn-body">{crop}</span>
                         <div className="flex flex-1 items-center gap-1">
                           <input
                             type="number"
@@ -5569,9 +5569,9 @@ function CertificatePage() {
                             value={amountInputs[crop] ?? ""}
                             onChange={(e) => setAmountInputs((p) => ({ ...p, [crop]: e.target.value }))}
                             placeholder="0"
-                            className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-right text-slate-100"
+                            className="w-full rounded-lg border border-autumn-line bg-autumn-soft px-3 py-2 text-right text-autumn-ink"
                           />
-                          <span className="text-sm text-slate-400">원</span>
+                          <span className="text-sm text-autumn-secondary">원</span>
                         </div>
                       </div>
                     ))}
@@ -5649,7 +5649,7 @@ function CertificatePage() {
 
       {createPortal(
         <Modal open={issueConfirmOpen} onClose={() => setIssueConfirmOpen(false)} title="육묘확인서 발급">
-          <p className="mb-4 text-base text-slate-200">육묘확인서를 발급합니다</p>
+          <p className="mb-4 text-base text-autumn-ink">육묘확인서를 발급합니다</p>
           <div className="flex gap-2">
             <SecondaryButton onClick={() => setIssueConfirmOpen(false)} size="lg">취소</SecondaryButton>
             <PrimaryButton
@@ -5668,13 +5668,13 @@ function CertificatePage() {
         <Modal open={previewOpen} onClose={() => { setPreviewOpen(false); setPreviewCertData(null); setIssueInProgress(false); }} title="육묘확인서 미리보기" titleSize="lg">
           <div className="relative">
             {issueInProgress && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-autumn-overlay/45">
                 <div
-                  className="rounded-xl px-6 py-4 text-center font-bold shadow-[0_0_20px_rgba(250,204,21,0.6)]"
+                  className="rounded-xl px-6 py-4 text-center font-bold shadow-[0_4px_14px_rgba(90,57,36,0.1)]"
                   style={{
-                    backgroundColor: "#1e1b4b",
-                    border: "3px solid #facc15",
-                    color: "#fef08a",
+                    backgroundColor: "#fff2ce",
+                    border: "3px solid #b78739",
+                    color: "#6f4b18",
                     fontSize: "1.125rem",
                   }}
                 >
@@ -5687,7 +5687,7 @@ function CertificatePage() {
                 type="button"
                 onClick={handleIssue}
                 disabled={issueInProgress}
-                className="rounded-xl border-2 border-lime-400/80 bg-lime-400/40 px-5 py-2.5 font-bold text-lime-950 shadow-[0_0_12px_rgba(134,239,172,0.5)] hover:bg-lime-400/60 disabled:opacity-50"
+                className="rounded-xl border-2 border-lime-400/80 bg-lime-400/40 px-5 py-2.5 font-bold text-lime-950 shadow-[0_4px_14px_rgba(90,57,36,0.1)] hover:bg-lime-400/60 disabled:opacity-50"
               >
                 발급
               </button>
@@ -5696,7 +5696,7 @@ function CertificatePage() {
               {previewCertData && stampDataUrl && (
                 <div
                   ref={previewWrapRef}
-                  className="relative shrink-0 overflow-hidden bg-slate-800 p-2"
+                  className="relative shrink-0 overflow-hidden bg-autumn-soft p-2"
                   style={{
                     aspectRatio: `${A4_MM.w} / ${A4_MM.h}`,
                     maxHeight: "70vh",
@@ -5744,33 +5744,33 @@ function AdminPage() {
   if (user.role_level !== 0) return <Navigate to="/menu" replace />;
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-950 text-slate-100">
-      <header className="shrink-0 border-b border-slate-800 bg-slate-900/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
+    <div className="flex min-h-screen flex-col bg-autumn-canvas text-autumn-ink">
+      <header className="shrink-0 border-b border-autumn-border bg-autumn-surface/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
         <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-0">
           <div className="min-w-0">
             <div className="truncate text-lg font-extrabold tracking-tight sm:text-2xl">충주 친환경 육묘장</div>
-            <div className="text-xs text-slate-400 sm:text-sm">관리자 메뉴</div>
+            <div className="text-xs text-autumn-secondary sm:text-sm">관리자 메뉴</div>
           </div>
           <div className="flex flex-shrink-0 items-center gap-2.5 text-right text-[0.825rem] sm:gap-3 sm:text-[1.1rem]">
             <button
               type="button"
               onClick={() => setRoleInfoOpen(true)}
-              className="rounded-full bg-slate-800 px-2.5 py-2 text-slate-200 hover:bg-slate-700 sm:px-3.5 sm:py-2.5"
+              className="rounded-full bg-autumn-soft px-2.5 py-2 text-autumn-ink hover:bg-autumn-muted sm:px-3.5 sm:py-2.5"
             >
               {ROLE_LABEL[user.role_level]}
             </button>
             <button
               type="button"
               onClick={() => void signOut()}
-              className="rounded-lg bg-slate-800 px-2.5 py-2 text-slate-200 hover:bg-slate-700 sm:px-3.5 sm:py-2.5"
+              className="rounded-lg bg-autumn-soft px-2.5 py-2 text-autumn-ink hover:bg-autumn-muted sm:px-3.5 sm:py-2.5"
             >
               로그아웃
             </button>
-            <span className="hidden text-slate-400 sm:inline">{formatDateTimeKO(now)}</span>
+            <span className="hidden text-autumn-secondary sm:inline">{formatDateTimeKO(now)}</span>
             <button
               type="button"
               onClick={() => navigate("/menu")}
-              className="rounded-lg bg-slate-800 px-2.5 py-2 text-slate-200 hover:bg-slate-700 sm:px-3.5 sm:py-2.5"
+              className="rounded-lg bg-autumn-soft px-2.5 py-2 text-autumn-ink hover:bg-autumn-muted sm:px-3.5 sm:py-2.5"
             >
               메인메뉴
             </button>
@@ -5778,17 +5778,17 @@ function AdminPage() {
         </div>
       </header>
       <Modal open={roleInfoOpen} title="권한 등급 안내" onClose={() => setRoleInfoOpen(false)}>
-        <div className="space-y-2 text-sm text-slate-200">
+        <div className="space-y-2 text-sm text-autumn-ink">
           {ROLE_LEVELS.map((level) => (
             <div key={level}>
               {ROLE_LABEL[level]}
               {level === user.role_level && (
-                <span className="ml-1 text-amber-400">* 현재 나의 등급입니다.</span>
+                <span className="ml-1 text-amber-700">* 현재 나의 등급입니다.</span>
               )}
             </div>
           ))}
         </div>
-        <p className="mt-4 border-t border-slate-700 pt-3 text-xs text-slate-400">
+        <p className="mt-4 border-t border-autumn-border pt-3 text-xs text-autumn-secondary">
           권한에 관한 문의는 최고관리자에게 문의바랍니다 (정효조 / 010-2604-6588)
         </p>
       </Modal>
@@ -5796,13 +5796,13 @@ function AdminPage() {
         <div className="flex flex-col gap-3">
           <Link
             to="/admin/approvals"
-            className="rounded-xl border border-slate-700 bg-slate-900 px-6 py-4 text-center text-slate-100 hover:bg-slate-800"
+            className="rounded-xl border border-autumn-border bg-autumn-surface px-6 py-4 text-center text-autumn-ink hover:bg-autumn-soft"
           >
             가입승인
           </Link>
           <Link
             to="/admin/staff"
-            className="rounded-xl border border-slate-700 bg-slate-900 px-6 py-4 text-center text-slate-100 hover:bg-slate-800"
+            className="rounded-xl border border-autumn-border bg-autumn-surface px-6 py-4 text-center text-autumn-ink hover:bg-autumn-soft"
           >
             직원관리
           </Link>
@@ -5874,17 +5874,17 @@ function AdminApprovalsPage() {
   if (user.role_level !== 0) return <Navigate to="/menu" replace />;
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-950 text-slate-100">
-      <header className="shrink-0 border-b border-slate-800 bg-slate-900/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
+    <div className="flex min-h-screen flex-col bg-autumn-canvas text-autumn-ink">
+      <header className="shrink-0 border-b border-autumn-border bg-autumn-surface/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
         <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-0">
           <div className="min-w-0">
             <div className="truncate text-lg font-extrabold tracking-tight sm:text-2xl">충주 친환경 육묘장</div>
-            <div className="text-xs text-slate-400 sm:text-sm">가입승인</div>
+            <div className="text-xs text-autumn-secondary sm:text-sm">가입승인</div>
           </div>
           <button
             type="button"
             onClick={() => navigate("/admin")}
-            className="flex-shrink-0 rounded-lg bg-slate-800 px-2 py-1 text-xs text-slate-200 hover:bg-slate-700 sm:px-3 sm:py-1.5 sm:text-base"
+            className="flex-shrink-0 rounded-lg bg-autumn-soft px-2 py-1 text-xs text-autumn-ink hover:bg-autumn-muted sm:px-3 sm:py-1.5 sm:text-base"
           >
             관리자 메뉴
           </button>
@@ -5892,44 +5892,44 @@ function AdminApprovalsPage() {
       </header>
       <main className="flex-1 overflow-auto px-4 py-6">
         {error && (
-          <div className="mb-4 rounded-lg border border-red-800 bg-red-950/50 px-4 py-2 text-sm text-red-200">
+          <div className="mb-4 rounded-lg border border-red-300 bg-red-100/50 px-4 py-2 text-sm text-red-800">
             {error}
           </div>
         )}
         {loading ? (
-          <p className="text-center text-slate-400">로딩 중...</p>
+          <p className="text-center text-autumn-secondary">로딩 중...</p>
         ) : pending.length === 0 ? (
-          <p className="text-center text-slate-400">승인 대기 중인 가입 요청이 없습니다.</p>
+          <p className="text-center text-autumn-secondary">승인 대기 중인 가입 요청이 없습니다.</p>
         ) : (
           <>
-            <p className="mb-3 text-xs text-slate-500">
+            <p className="mb-3 text-xs text-autumn-secondary">
               각 사용자에 대해 부여할 등급을 선택한 뒤 승인하세요. Lv1으로 승인된 사용자는 다음 로그인 시 푸시 알림 허용 안내를 받습니다.
             </p>
             <ul className="space-y-3">
             {pending.map((u) => (
               <li
                 key={u.id}
-                className="flex flex-col gap-3 rounded-xl border border-slate-700 bg-slate-900/80 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+                className="flex flex-col gap-3 rounded-xl border border-autumn-border bg-autumn-surface/80 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
               >
                 <div className="min-w-0 shrink-0">
-                  <div className="truncate font-medium text-slate-200" title={u.email || u.name || ""}>
+                  <div className="truncate font-medium text-autumn-ink" title={u.email || u.name || ""}>
                     {u.email || u.name || "(이메일/이름 없음)"}
                   </div>
                   {u.email && u.name && (
-                    <div className="mt-0.5 truncate text-xs text-slate-500" title={`${u.email} · ${u.name}`}>
+                    <div className="mt-0.5 truncate text-xs text-autumn-secondary" title={`${u.email} · ${u.name}`}>
                       {u.email} · {u.name}
                     </div>
                   )}
                 </div>
-                <div className="flex shrink-0 flex-wrap items-center gap-2 border-t border-slate-700 pt-3 sm:border-t-0 sm:pt-0">
-                  <span className="text-xs text-slate-500">등급:</span>
+                <div className="flex shrink-0 flex-wrap items-center gap-2 border-t border-autumn-border pt-3 sm:border-t-0 sm:pt-0">
+                  <span className="text-xs text-autumn-secondary">등급:</span>
                   <select
                     value={roleByUserId[u.id] ?? 3}
                     onChange={(e) =>
                       setRoleByUserId((prev) => ({ ...prev, [u.id]: Number(e.target.value) }))
                     }
                     disabled={approvingId !== null}
-                    className="min-w-[10rem] rounded-lg border border-slate-600 bg-slate-800 px-2 py-1.5 text-sm text-slate-200 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand disabled:opacity-50"
+                    className="min-w-[10rem] rounded-lg border border-autumn-line bg-autumn-soft px-2 py-1.5 text-sm text-autumn-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand disabled:opacity-50"
                   >
                     {ROLE_LEVELS.map((lv) => (
                       <option key={lv} value={lv}>
@@ -6016,17 +6016,17 @@ function AdminStaffPage() {
   if (user.role_level !== 0) return <Navigate to="/menu" replace />;
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-950 text-slate-100">
-      <header className="shrink-0 border-b border-slate-800 bg-slate-900/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
+    <div className="flex min-h-screen flex-col bg-autumn-canvas text-autumn-ink">
+      <header className="shrink-0 border-b border-autumn-border bg-autumn-surface/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
         <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-0">
           <div className="min-w-0">
             <div className="truncate text-lg font-extrabold tracking-tight sm:text-2xl">충주 친환경 육묘장</div>
-            <div className="text-xs text-slate-400 sm:text-sm">직원관리</div>
+            <div className="text-xs text-autumn-secondary sm:text-sm">직원관리</div>
           </div>
           <button
             type="button"
             onClick={() => navigate("/admin")}
-            className="flex-shrink-0 rounded-lg bg-slate-800 px-2 py-1 text-xs text-slate-200 hover:bg-slate-700 sm:px-3 sm:py-1.5 sm:text-base"
+            className="flex-shrink-0 rounded-lg bg-autumn-soft px-2 py-1 text-xs text-autumn-ink hover:bg-autumn-muted sm:px-3 sm:py-1.5 sm:text-base"
           >
             관리자 메뉴
           </button>
@@ -6034,42 +6034,42 @@ function AdminStaffPage() {
       </header>
       <main className="flex-1 overflow-auto px-4 py-6">
         {error && (
-          <div className="mb-4 rounded-lg border border-red-800 bg-red-950/50 px-4 py-2 text-sm text-red-200">
+          <div className="mb-4 rounded-lg border border-red-300 bg-red-100/50 px-4 py-2 text-sm text-red-800">
             {error}
           </div>
         )}
         {loading ? (
-          <p className="text-center text-slate-400">로딩 중...</p>
+          <p className="text-center text-autumn-secondary">로딩 중...</p>
         ) : list.filter((u) => u.id !== user.id).length === 0 ? (
-          <p className="text-center text-slate-400">승인된 직원이 없습니다. (본인 제외)</p>
+          <p className="text-center text-autumn-secondary">승인된 직원이 없습니다. (본인 제외)</p>
         ) : (
           <ul className="space-y-3">
             {list.filter((u) => u.id !== user.id).map((u) => (
               <li
                 key={u.id}
-                className="flex flex-col gap-3 rounded-xl border border-slate-700 bg-slate-900/80 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+                className="flex flex-col gap-3 rounded-xl border border-autumn-border bg-autumn-surface/80 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
               >
                 <div className="min-w-0 shrink-0">
-                  <div className="truncate font-medium text-slate-200" title={u.email || u.name || ""}>
+                  <div className="truncate font-medium text-autumn-ink" title={u.email || u.name || ""}>
                     {u.email || u.name || "(이메일/이름 없음)"}
                   </div>
                   {u.email && u.name && (
-                    <div className="mt-0.5 truncate text-xs text-slate-500" title={`${u.email} · ${u.name}`}>
+                    <div className="mt-0.5 truncate text-xs text-autumn-secondary" title={`${u.email} · ${u.name}`}>
                       {u.email} · {u.name}
                     </div>
                   )}
                 </div>
-                <div className="flex shrink-0 flex-wrap items-center gap-2 border-t border-slate-700 pt-3 sm:border-t-0 sm:pt-0">
-                  <span className="text-xs text-slate-500">현재 등급:</span>
-                  <span className="text-sm text-slate-300">{ROLE_LABEL[u.role_level]}</span>
-                  <span className="text-xs text-slate-500">변경:</span>
+                <div className="flex shrink-0 flex-wrap items-center gap-2 border-t border-autumn-border pt-3 sm:border-t-0 sm:pt-0">
+                  <span className="text-xs text-autumn-secondary">현재 등급:</span>
+                  <span className="text-sm text-autumn-body">{ROLE_LABEL[u.role_level]}</span>
+                  <span className="text-xs text-autumn-secondary">변경:</span>
                   <select
                     value={roleByUserId[u.id] ?? u.role_level}
                     onChange={(e) =>
                       setRoleByUserId((prev) => ({ ...prev, [u.id]: Number(e.target.value) }))
                     }
                     disabled={savingId !== null}
-                    className="min-w-[10rem] rounded-lg border border-slate-600 bg-slate-800 px-2 py-1.5 text-sm text-slate-200 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand disabled:opacity-50"
+                    className="min-w-[10rem] rounded-lg border border-autumn-line bg-autumn-soft px-2 py-1.5 text-sm text-autumn-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand disabled:opacity-50"
                   >
                     {ROLE_LEVELS.map((lv) => (
                       <option key={lv} value={lv}>

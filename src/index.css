@@ -15,7 +15,12 @@ html {
   overflow: hidden;
 }
 body {
-  @apply bg-slate-950 text-slate-50;
+  @apply bg-autumn-canvas text-autumn-ink;
+  color-scheme: light;
+  /* iOS standalone keeps light status-bar text; give only its safe area a dark backing. */
+  background-image: linear-gradient(#5a3924, #5a3924);
+  background-size: 100% env(safe-area-inset-top, 0px);
+  background-repeat: no-repeat;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   overflow: hidden;
   max-width: 100vw;
@@ -72,21 +77,21 @@ textarea {
   overflow-y: scroll !important;
   scrollbar-gutter: stable;
   scrollbar-width: thin;
-  scrollbar-color: rgb(100 116 139) rgba(203, 213, 225, 0.5);
+  scrollbar-color: rgb(143 113 83) rgba(226, 210, 188, 0.5);
 }
 .plan-whiteboard-scroll::-webkit-scrollbar {
   width: 10px;
 }
 .plan-whiteboard-scroll::-webkit-scrollbar-track {
-  background: rgba(203, 213, 225, 0.5);
+  background: rgba(226, 210, 188, 0.5);
   border-radius: 5px;
 }
 .plan-whiteboard-scroll::-webkit-scrollbar-thumb {
-  background: rgb(100 116 139);
+  background: rgb(143 113 83);
   border-radius: 5px;
 }
 .plan-whiteboard-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgb(71 85 105);
+  background: rgb(121 89 63);
 }
 
 /* 주문 및 파종계획: 미처리 주문 리스트 스크롤 (높이 고정으로 스크롤바·터치 스크롤 보장) */
@@ -106,11 +111,11 @@ textarea {
   width: 6px;
 }
 .unprocessed-list-scroll::-webkit-scrollbar-track {
-  background: rgb(30 41 59);
+  background: rgb(237 224 205);
   border-radius: 3px;
 }
 .unprocessed-list-scroll::-webkit-scrollbar-thumb {
-  background: rgb(71 85 105);
+  background: rgb(121 89 63);
   border-radius: 3px;
 }
 
@@ -145,8 +150,34 @@ textarea {
 .order-list-thead th {
   position: sticky;
   top: 0;
-  background: rgb(15 23 42 / 0.95);
+  background: rgb(245 237 225 / 0.98);
   z-index: 1;
-  box-shadow: 0 1px 0 0 rgb(51 65 85 / 0.5);
+  box-shadow: 0 1px 0 0 rgb(219 199 173 / 0.7);
 }
 
+
+/* 가을 테마: 색과 질감만 변경하며 레이아웃·스크롤 동작은 유지합니다. */
+.autumn-shell {
+  background-image:
+    radial-gradient(ellipse at 100% 0%, rgb(193 127 57 / 0.12), transparent 45%),
+    radial-gradient(ellipse at 0% 100%, rgb(111 122 67 / 0.07), transparent 45%);
+}
+
+::selection {
+  background: #e8c69b;
+  color: #39291f;
+}
+
+button, a, input, select, textarea {
+  -webkit-tap-highlight-color: rgb(153 79 48 / 0.14);
+}
+
+button:focus-visible, a:focus-visible {
+  outline: 2px solid #994f30;
+  outline-offset: 3px;
+}
+
+input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid rgb(153 79 48 / 0.45);
+  outline-offset: 2px;
+}

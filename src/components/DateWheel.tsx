@@ -96,19 +96,19 @@ export const DateWheel: React.FC<DateWheelProps> = ({
   return (
     <>
       <div className={`flex flex-col gap-1 text-left ${isLg ? "text-base" : "text-sm"}`}>
-        <span className="text-slate-200">{label}</span>
+        <span className="text-autumn-ink">{label}</span>
         <button
           type="button"
           onClick={() => !disabled && setOpen(true)}
           disabled={disabled}
-          className={`w-full rounded-xl border border-slate-700 bg-slate-900 text-left text-slate-50 shadow-inner shadow-black/40 focus:border-brand focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:opacity-50 ${isLg ? "px-4 py-3 text-base" : "px-3 py-2"}`}
+          className={`w-full rounded-xl border border-autumn-border bg-autumn-surface text-left text-autumn-ink shadow-inner shadow-autumn-shadow/5 focus:border-brand focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:opacity-50 ${isLg ? "px-4 py-3 text-base" : "px-3 py-2"}`}
         >
           {display}
         </button>
       </div>
 
       {open && (
-        <div className="modal-safe-area fixed inset-0 z-[60] flex items-center justify-center bg-black/60">
+        <div className="modal-safe-area fixed inset-0 z-[60] flex items-center justify-center bg-autumn-overlay/55">
           <button
             type="button"
             onClick={() => setOpen(false)}
@@ -116,15 +116,15 @@ export const DateWheel: React.FC<DateWheelProps> = ({
             aria-label="닫기"
           />
           <div
-            className="relative w-full max-w-md rounded-2xl border border-slate-700 bg-slate-950 shadow-2xl"
+            className="relative w-full max-w-md rounded-2xl border border-autumn-border bg-autumn-canvas shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b border-slate-800 px-4 py-3">
-              <div className="text-lg font-semibold text-slate-100">{label}</div>
+            <div className="flex items-center justify-between border-b border-autumn-border px-4 py-3">
+              <div className="text-lg font-semibold text-autumn-ink">{label}</div>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded-lg px-3 py-2 text-slate-300 hover:bg-slate-800"
+                className="rounded-lg px-3 py-2 text-autumn-body hover:bg-autumn-soft"
               >
                 닫기
               </button>
@@ -135,17 +135,17 @@ export const DateWheel: React.FC<DateWheelProps> = ({
                 <button
                   type="button"
                   onClick={prevMonth}
-                  className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-800 text-xl text-slate-200 hover:bg-slate-700"
+                  className="flex h-12 w-12 items-center justify-center rounded-xl bg-autumn-soft text-xl text-autumn-ink hover:bg-autumn-muted"
                 >
                   ‹
                 </button>
-                <div className="text-xl font-semibold text-slate-100">
+                <div className="text-xl font-semibold text-autumn-ink">
                   {year}년 {MONTH_KO[month - 1]}
                 </div>
                 <button
                   type="button"
                   onClick={nextMonth}
-                  className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-800 text-xl text-slate-200 hover:bg-slate-700"
+                  className="flex h-12 w-12 items-center justify-center rounded-xl bg-autumn-soft text-xl text-autumn-ink hover:bg-autumn-muted"
                 >
                   ›
                 </button>
@@ -155,7 +155,7 @@ export const DateWheel: React.FC<DateWheelProps> = ({
                 {WEEKDAY_KO.map((w) => (
                   <div
                     key={w}
-                    className="flex h-11 items-center justify-center text-sm font-medium text-slate-400"
+                    className="flex h-11 items-center justify-center text-sm font-medium text-autumn-secondary"
                   >
                     {w}
                   </div>
@@ -171,7 +171,7 @@ export const DateWheel: React.FC<DateWheelProps> = ({
                       className={`flex h-12 w-full items-center justify-center rounded-xl text-base transition-colors ${
                         d === day
                           ? "bg-brand font-semibold text-white"
-                          : "text-slate-200 hover:bg-slate-800"
+                          : "text-autumn-ink hover:bg-autumn-soft"
                       }`}
                     >
                       {d}
