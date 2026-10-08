@@ -197,23 +197,15 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   user-select: none;
   contain: strict;
 }
-.autumn-atmosphere::before {
+.autumn-welcome > .autumn-atmosphere::before {
   content: "";
   position: absolute;
-  right: 2%;
-  bottom: 1rem;
-  width: 320px;
-  height: 124px;
-  background: url("./assets/autumn-garden.svg") center / contain no-repeat;
-  opacity: 0.28;
-}
-.autumn-welcome > .autumn-atmosphere::before {
   right: 50%;
   bottom: max(2rem, 5vh);
-  width: min(640px, 94vw);
-  height: min(248px, 36vw, calc(100vh - 540px));
+  width: min(560px, 94vw);
+  height: min(294px, 45vw, calc(100vh - 540px));
   transform: translateX(50%);
-  opacity: 0.9;
+  background: url("./assets/autumn-garden.svg") center / contain no-repeat;
 }
 .autumn-leaf {
   position: absolute;
@@ -236,17 +228,45 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   85% { opacity: 0.22; }
   100% { transform: translate3d(-18px, calc(100vh + 56px), 0) rotate(90deg); opacity: 0; }
 }
-/* Header art appears only where wide screens have genuinely spare space. */
-@media (min-width: 1280px) {
-  .autumn-menu > header {
-    background-image: url("./assets/autumn-garden.svg");
-    background-position: 40% center;
-    background-size: 170px 66px;
-    background-repeat: no-repeat;
-  }
+/* Opaque, layout-owned sprites: no fixed bottom artwork to crop on iOS. */
+.autumn-friends {
+  display: block;
+  pointer-events: none;
+  user-select: none;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  image-rendering: pixelated;
+}
+.autumn-friends--garden { background-image: url("./assets/autumn-garden.svg"); }
+.autumn-friends--friends { background-image: url("./assets/autumn-friends.svg"); }
+.autumn-friends--rabbit { background-image: url("./assets/autumn-rabbit.svg"); }
+.autumn-friends--acorn { background-image: url("./assets/autumn-acorn.svg"); }
+.autumn-friends--moon { background-image: url("./assets/autumn-moon.svg"); }
+.autumn-menu-garden { width: 100%; height: 100%; max-width: 280px; justify-self: center; }
+.autumn-menu-title { position: relative; }
+.autumn-title-friends { position: absolute; right: 0; top: -2px; width: 78px; height: 32px; }
+.autumn-menu-account { position: relative; }
+.autumn-account-friends { flex: 1 1 0%; min-width: 0; height: 0; position: relative; }
+.autumn-account-friends::before { content: ""; position: absolute; inset: -13px 0; background: inherit; background-size: contain; background-position: left center; background-repeat: no-repeat; }
+.autumn-export-group { position: relative; }
+.autumn-export-group > button { flex-shrink: 0; }
+.autumn-export-friend { position: absolute; left: calc(100% + 4px); top: 50%; transform: translateY(-50%); width: clamp(0px, calc(100vw - 355px), 92px); height: 32px; }
+.autumn-outdoor-summary { display: flex; align-items: center; flex: 1 1 auto; }
+.autumn-outdoor-summary > span:not(.autumn-friends) { flex-shrink: 0; }
+.autumn-summary-friends { flex: 1 1 0%; min-width: 0; height: 0; position: relative; margin-left: 8px; }
+.autumn-summary-friends::before { content: ""; position: absolute; inset: -14px 0; background: inherit; background-size: contain; background-position: right center; background-repeat: no-repeat; }
+.autumn-planning-friends { flex: 1 1 0%; min-width: 0; height: 30px; margin-right: -6px; background-position: left center; }
+@media (min-width: 640px) {
+  .autumn-title-friends { display: none; }
+  .autumn-account-friends { display: none; }
+  .autumn-export-friend { height: 42px; }
+  .autumn-planning-friends { height: 36px; margin-right: -8px; }
+}
+@media (max-width: 359px) {
+  .autumn-title-friends { width: 52px; height: 28px; }
 }
 @media (max-width: 639px) {
-  .autumn-atmosphere::before { width: 220px; height: 86px; opacity: 0.2; }
   .autumn-leaf:nth-child(2) { display: none; }
   .autumn-leaf { width: 14px; height: 17px; }
 }
@@ -258,6 +278,28 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   .autumn-leaf { display: none; animation: none; }
 }
 @media print {
-  .autumn-atmosphere { display: none; }
-  .autumn-menu > header { background-image: none; }
+  .autumn-atmosphere, .autumn-friends { display: none; }
 }
+
+/* Slightly clearer paper surfaces; completed posts keep their muted, struck-through state. */
+.autumn-menu-tile { border-color: #ccb28f; background-color: #fffaf0; box-shadow: 0 5px 14px rgb(90 57 36 / 0.11); }
+.autumn-order-post { border-color: #baa183; background-color: #fff9ed; box-shadow: 0 2px 5px rgb(90 57 36 / 0.09); }
+.autumn-order-post:hover { background-color: #f9ebd6; }
+.autumn-order-post--done { border-color: #c7b498; background-color: #e7dcc9; opacity: 1; }
+.autumn-order-post--done:hover { background-color: #e2d3ba; }
+
+@media (min-width: 1100px) {
+  .autumn-title-friends { display: block; position: absolute; right: 24px; top: 0; width: min(110px, max(0px, calc(100% - 410px))); height: 52px; }
+}
+
+@media (max-width: 480px) {
+  div:has(> button:nth-of-type(2)) > .autumn-planning-friends { display: none; }
+}
+@media print {
+  .autumn-atmosphere, .autumn-friends { display: none; }
+}
+
+/* Fill the safe-area-adjusted root, so the final menu row stays reachable on iOS. */
+.autumn-menu { height: 100%; }
+
+.autumn-order-post--done .text-autumn-secondary { color: #69513c; }

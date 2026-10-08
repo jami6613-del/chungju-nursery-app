@@ -1,5 +1,6 @@
 import React from "react";
 import { AutumnAtmosphere } from "./components/AutumnAtmosphere";
+import { AutumnFriends } from "./components/AutumnFriends";
 import { createPortal } from "react-dom";
 import { Routes, Route, Navigate, useNavigate, Link, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
@@ -1138,7 +1139,7 @@ function DashboardPage() {
         )}
 
         <div className="mb-2 flex shrink-0 flex-wrap items-center justify-between gap-2 sm:mb-3">
-          <div className="flex items-center gap-2">
+          <div className="autumn-export-group flex items-center gap-2">
             {canExportExcel(user) && (
               <button
                 type="button"
@@ -1151,6 +1152,7 @@ function DashboardPage() {
                 엑셀로 추출
               </button>
             )}
+            <AutumnFriends variant="acorn" className="autumn-export-friend" />
           </div>
           <div className="flex items-center gap-2">
           <button
@@ -1420,9 +1422,10 @@ function DashboardPage() {
             <span className="text-green-700">실내</span>
             <span className="ml-1 text-autumn-ink">: {stageCounts.indoor}판</span>
           </span>
-          <span>
+          <span className="autumn-outdoor-summary">
             <span className="text-orange-700">야외</span>
             <span className="ml-1 text-autumn-ink">: {stageCounts.outdoor}판</span>
+            <AutumnFriends variant="moon" className="autumn-summary-friends" />
           </span>
         </div>
 
@@ -2485,7 +2488,8 @@ function MainMenuPage() {
       <AutumnAtmosphere />
       <header className="shrink-0 border-b border-autumn-border bg-autumn-canvas/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-0">
-          <div className="min-w-0 flex-1 sm:min-w-0">
+          <div className="autumn-menu-title min-w-0 flex-1 sm:min-w-0">
+            <AutumnFriends variant="friends" className="autumn-title-friends" />
             <div className="break-words text-[1.35rem] font-extrabold leading-tight tracking-tight sm:text-[2.06rem] md:text-[2.35rem]">
               충주 친환경 육묘장
             </div>
@@ -2493,7 +2497,8 @@ function MainMenuPage() {
               제작자 : 정효조(010-2604-6588 / jami6613@gmail.com)
             </div>
           </div>
-          <div className="flex flex-shrink-0 items-center justify-end gap-1.5 text-right text-xs sm:gap-3 sm:text-base">
+          <div className="autumn-menu-account flex flex-shrink-0 items-center justify-end gap-1.5 text-right text-xs sm:gap-3 sm:text-base">
+            <AutumnFriends variant="moon" className="autumn-account-friends" />
             <span className="max-w-[8rem] truncate text-autumn-secondary sm:max-w-none">{user.name || user.email}</span>
             <button
               type="button"
@@ -2762,7 +2767,7 @@ function MainMenuPage() {
               const disabled = tile.disabled;
               const content = (
                 <div
-                  className={`relative flex min-h-[5.5rem] sm:min-h-40 flex-col justify-center overflow-hidden rounded-2xl border border-autumn-border/80 bg-gradient-to-br from-autumn-surface via-autumn-surface to-autumn-canvas px-3 py-3 sm:px-5 sm:py-4 shadow-[0_8px_24px_rgba(90,57,36,0.08)] transition-transform transition-shadow ${
+                  className={`autumn-menu-tile relative flex min-h-[5.5rem] sm:min-h-40 flex-col justify-center overflow-hidden rounded-2xl border border-autumn-border/80 bg-gradient-to-br from-autumn-surface via-autumn-surface to-autumn-canvas px-3 py-3 sm:px-5 sm:py-4 shadow-[0_8px_24px_rgba(90,57,36,0.08)] transition-transform transition-shadow ${
                     disabled
                       ? "opacity-50"
                       : "hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(90,57,36,0.14)]"
@@ -2812,6 +2817,7 @@ function MainMenuPage() {
                 </button>
               );
             })}
+            <AutumnFriends variant="garden" className="autumn-menu-garden" />
           </div>
         </section>
       </main>
@@ -4174,6 +4180,7 @@ function PlanningPage() {
         {/* 상단 절반: 일자별 파종계획 화이트보드 (메뉴 영역 상하 50%) */}
         <section className="flex min-h-0 shrink-0 flex-col overflow-hidden border-b border-autumn-border bg-autumn-surface/50" style={{ height: "50%" }}>
           <div className="flex items-center justify-end gap-1.5 px-2 py-1 sm:gap-2 sm:px-3 sm:pr-4">
+            <AutumnFriends variant="friends" className="autumn-planning-friends" />
             {focusDate !== getLocalDateString() && (
               <button
                 type="button"
@@ -4376,9 +4383,9 @@ function PlanningPage() {
                             if (unprocessedTouchMovedRef.current) return;
                           }}
                           style={{ touchAction: "pan-y" }}
-                          className={`min-w-0 flex-1 rounded-lg border px-3 py-2 text-left transition-colors sm:px-4 sm:py-3 ${
+                          className={`autumn-order-post min-w-0 flex-1 rounded-lg border px-3 py-2 text-left transition-colors sm:px-4 sm:py-3 ${
                             order.reflected_at
-                              ? "border-autumn-border/40 bg-autumn-soft/30 opacity-75 hover:bg-autumn-soft/40"
+                              ? "autumn-order-post--done border-autumn-border/40 bg-autumn-soft/30 opacity-75 hover:bg-autumn-soft/40"
                               : "border-violet-400/35 bg-violet-400/15 hover:bg-violet-400/20"
                           }`}
                         >

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 68 34" shape-rendering="crispEdges">
+<!-- Original autumn pixel friends: hand-drawn for Chungju Nursery. -->
+<g transform="translate(0 1) scale(1)"><g><path fill="#be812f" d="M8 0h12v2h5v4h3v5h2v10h-2v5h-5v3H8v-2H3v-5H0V10h3V5h5z"/><path fill="#f9cb54" d="M8 2h12v2h4v4h3v13h-3v4h-5v2H9v-3H4v-4H2V11h3V7h3z"/><path fill="#ffe7a0" d="M8 4h10v2H9v3H6v7H4v-6h3z"/><path fill="#d79b39" d="M22 8h3v4h-3zm-2 13h4v3h-4zM6 18h4v4H6z"/><path fill="#805537" d="M9 12h3v4H9zm10 0h3v4h-3zm-6 8h5v2h-5z"/><path fill="#ed9770" d="M5 17h5v2H5zm15 0h5v2h-5z"/></g></g><g transform="translate(39 1) scale(0.85)"><g>
+<path fill="#704235" d="M12 0h3v5h6v3h4v5h3v5h-2v12h-3v4h-5v3h-4v-3H9v3H5v-4H2V18H0v-6h3V8h4V5h5z"/>
+<path fill="#dc954b" d="M3 17h21v11h-3v4h-5v1h-5v-2H6v-3H3z"/>
+<path fill="#f1bf69" d="M4 17h15v3h-3v10H8v-2H5v-4H4z"/>
+<path fill="#a6513b" d="M7 7h13v3h4v4h2v3H2v-4h3v-3h2z"/>
+<path fill="#d16c41" d="M7 8h4v4H5v3H3v-2h2v-3h2zm7 0h4v3h-4zm5 5h4v2h-4z"/>
+<path fill="#754536" d="M5 14h3v3H5zm5-3h3v3h-3zm5 3h3v3h-3zm6-4h3v3h-3z"/>
+<path fill="#3a7159" d="M14 2h5V0h5v4h-3v2h-7z"/>
+<path fill="#7fb581" d="M17 2h5v2h-5z"/>
+<path fill="#573c38" d="M7 21h3v4H7zm11 0h3v4h-3zM12 27h5v2h-5z"/>
+<path fill="#fff7de" d="M7 21h1v1H7zm11 0h1v1h-1z"/>
+<path fill="#e78070" d="M4 25h5v2H4zm15 0h5v2h-5z"/>
+<path fill="#416b67" d="M0 24h3v3H0zm25-3h3v3h-3zm-7 11h4v3h-4zm-12 0h4v3H6z"/>
+</g></g>
+</svg>
