@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 124" shape-rendering="crispEdges">
+  <!-- Original pixel garden: maple, harvest moon, rabbit and songpyeon. -->
+  <path fill="#efd9a4" d="M247 8h20v4h8v8h4v20h-4v8h-8v4h-20v-4h-8v-8h-4V20h4v-8h8z"/>
+  <path fill="#f9e9bf" d="M247 12h16v4h8v8h4v12h-4v8h-8v4h-16v-4h-4v-8h-4V24h4v-8h4z"/>
+  <path fill="#e4ca91" d="M263 32h8v8h-8zm-20-12h8v4h-8zm12 20h4v4h-4z"/>
+  <path fill="#d9c69e" d="M288 56h12v4h8v4h-28v-4h8zM174 24h12v4h8v4h-28v-4h8z" opacity=".55"/>
+  <path fill="#cab787" d="M24 112h72v4H24zm104 4h160v4H128z" opacity=".45"/>
+  <path fill="#82593e" d="M60 60h12v44h8v8H52v-8h8zM48 68h8v8h8v8H56v-8h-8zm28-8h8v12h-8v8h-8v-8h8z"/>
+  <path fill="#ac7950" d="M64 64h4v40h-4zm-8 40h8v4h-8z"/>
+  <path fill="#ae5439" d="M40 16h40v8h16v12h12v28H96v12H80v8H40v-8H24V64H12V44h8V32h12V24h8z"/>
+  <path fill="#c76a3c" d="M36 20h40v8h20v16h8v16H88v12H64v-8H44v8H28V60H16V44h12V32h8z"/>
+  <path fill="#df9850" d="M40 16h32v8h12v12H68v8H48v-8H32V24h8zM24 44h20v12H28v4H16V48h8zM80 48h20v8H88v8H76V52h4z"/>
+  <path fill="#edba69" d="M44 20h16v8H44zm20 12h12v4H64zM28 48h8v4h-8z"/>
+  <path fill="#a95538" d="M108 80h4v4h4v8h-8v-4h-4v-4h4zM38 96h4v4h8v4H38zM86 100h8v4h-4v4h-8v-4h4z"/>
+  <path fill="#a5a06b" d="M16 100h4v8h4v-4h4v8H12v-8h4zm78 4h4v8h4v-12h4v16H90v-8h4zm172 0h4v8h4v-4h4v8h-16v-8h4z"/>
+  <path fill="#d6bea0" d="M161 102h40v12h-40z"/>
+  <path fill="#ae876d" d="M166 62h8v16h8V58h8v24h8v24h-8v8h-24v-4h-8V86h8z"/>
+  <path fill="#fff1d6" d="M168 64h4v20h12V60h4v24h8v20h-8v8h-20v-4h-8V88h8z"/>
+  <path fill="#dbab94" d="M168 68h4v12h-4zm16-4h4v16h-4zM164 96h4v4h-4zm24 0h4v4h-4z"/>
+  <path fill="#6b4b39" d="M168 90h4v4h-4zm16 0h4v4h-4zm-8 8h4v2h-4z"/>
+  <path fill="#ad6040" d="M164 102h28v4h-16v8h-8v-8h-4z"/>
+  <path fill="#c99557" d="M211 104h40v12h-40zm-4-4h48v4h-48z"/>
+  <path fill="#9c7549" d="M215 108h4v8h-4zm12 0h4v8h-4zm12 0h4v8h-4z"/>
+  <path fill="#f8e6c8" d="M210 96h4v-4h8v4h4v4h-16z"/>
+  <path fill="#a1a877" d="M224 92h4v-4h8v4h4v8h-16z"/>
+  <path fill="#dbaa97" d="M238 96h4v-4h8v4h4v4h-16z"/>
+  <path fill="#ddb16b" d="M128 104h8v4h-4v4h-8v-4h4zm158-8h8v4h-4v4h-8v-4h4z"/>
+  <path fill="#b57b4f" d="M146 114h8v2h-8zm-112 2h8v2h-8zm260-4h8v2h-8z"/>
+</svg>

@@ -181,3 +181,83 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   outline: 2px solid rgb(153 79 48 / 0.45);
   outline-offset: 2px;
 }
+
+/* Original, local pixel art. The page background stays below this isolated layer;
+   all existing content paints above it, without changing layout or hit targets. */
+.autumn-stage {
+  position: relative;
+  isolation: isolate;
+}
+.autumn-atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  contain: strict;
+}
+.autumn-atmosphere::before {
+  content: "";
+  position: absolute;
+  right: 2%;
+  bottom: 1rem;
+  width: 320px;
+  height: 124px;
+  background: url("./assets/autumn-garden.svg") center / contain no-repeat;
+  opacity: 0.28;
+}
+.autumn-welcome > .autumn-atmosphere::before {
+  right: 50%;
+  bottom: max(2rem, 5vh);
+  width: min(640px, 94vw);
+  height: min(248px, 36vw, calc(100vh - 540px));
+  transform: translateX(50%);
+  opacity: 0.9;
+}
+.autumn-leaf {
+  position: absolute;
+  top: -32px;
+  left: 8%;
+  width: 20px;
+  height: 24px;
+  background: url("./assets/maple-leaf.svg") center / contain no-repeat;
+  opacity: 0;
+  animation: autumn-leaf-drift 28s steps(140, end) infinite;
+  animation-delay: -8s;
+}
+.autumn-leaf:nth-child(2) { left: 36%; width: 14px; height: 17px; animation-duration: 34s; animation-delay: -25s; }
+.autumn-leaf:nth-child(3) { left: 68%; width: 16px; height: 20px; animation-duration: 31s; animation-delay: -14s; }
+.autumn-leaf:nth-child(4) { left: 91%; animation-duration: 38s; animation-delay: -32s; }
+@keyframes autumn-leaf-drift {
+  0% { transform: translate3d(0, -24px, 0) rotate(-20deg); opacity: 0; }
+  12% { opacity: 0.26; }
+  45% { transform: translate3d(26px, 48vh, 0) rotate(35deg); }
+  85% { opacity: 0.22; }
+  100% { transform: translate3d(-18px, calc(100vh + 56px), 0) rotate(90deg); opacity: 0; }
+}
+/* Header art appears only where wide screens have genuinely spare space. */
+@media (min-width: 1280px) {
+  .autumn-menu > header {
+    background-image: url("./assets/autumn-garden.svg");
+    background-position: 40% center;
+    background-size: 170px 66px;
+    background-repeat: no-repeat;
+  }
+}
+@media (max-width: 639px) {
+  .autumn-atmosphere::before { width: 220px; height: 86px; opacity: 0.2; }
+  .autumn-leaf:nth-child(2) { display: none; }
+  .autumn-leaf { width: 14px; height: 17px; }
+}
+/* Small-height windows leave all of the available space to work and sign-in. */
+@media (max-height: 640px) {
+  .autumn-welcome > .autumn-atmosphere::before { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .autumn-leaf { display: none; animation: none; }
+}
+@media print {
+  .autumn-atmosphere { display: none; }
+  .autumn-menu > header { background-image: none; }
+}

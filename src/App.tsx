@@ -1,4 +1,5 @@
 import React from "react";
+import { AutumnAtmosphere } from "./components/AutumnAtmosphere";
 import { createPortal } from "react-dom";
 import { Routes, Route, Navigate, useNavigate, Link, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
@@ -117,7 +118,8 @@ function PushPermissionGate({
 
   if (status === "denied") {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-autumn-canvas px-6 text-center text-autumn-ink">
+      <div className="autumn-stage flex min-h-screen flex-col items-center justify-center bg-autumn-canvas px-6 text-center text-autumn-ink">
+        <AutumnAtmosphere />
         <div className="mb-2 text-2xl font-bold">알림 허용이 필요합니다</div>
         <p className="mb-6 text-sm text-autumn-body">
           주문 및 파종계획에 새 게시글이 등록되면 바로 알려드리려면 알림을 허용해 주세요. Lv1 사용자는 알림을 허용해야 메인메뉴로 이동할 수 있습니다.
@@ -129,7 +131,8 @@ function PushPermissionGate({
 
   if (status === "error" && errorMessage) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-autumn-canvas px-6 text-center text-autumn-ink">
+      <div className="autumn-stage flex min-h-screen flex-col items-center justify-center bg-autumn-canvas px-6 text-center text-autumn-ink">
+        <AutumnAtmosphere />
         <div className="mb-2 text-2xl font-bold">알림 설정 실패</div>
         <p className="mb-6 text-sm text-autumn-body">{errorMessage}</p>
         <PrimaryButton onClick={() => { setStatus("idle"); setErrorMessage(null); }}>다시 시도</PrimaryButton>
@@ -145,7 +148,8 @@ function PushPermissionGate({
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-autumn-canvas px-6 text-center text-autumn-ink">
+    <div className="autumn-stage flex min-h-screen flex-col items-center justify-center bg-autumn-canvas px-6 text-center text-autumn-ink">
+      <AutumnAtmosphere />
       <div className="mb-2 text-2xl font-bold">푸시 알림 허용</div>
       <p className="mb-6 text-sm text-autumn-body">
         주문 및 파종계획에 새로 등록된 게시글이 있을 때 푸시 알림을 받으려면 알림을 허용해 주세요. Lv1 사용자는 앱 사용을 위해 알림 허용이 필요합니다.
@@ -206,7 +210,8 @@ function Lv0NicknameAutoSet({ onRefresh }: { onRefresh: () => Promise<void> }) {
     };
   }, [onRefresh]);
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-autumn-canvas text-autumn-ink">
+    <div className="autumn-stage flex min-h-screen flex-col items-center justify-center bg-autumn-canvas text-autumn-ink">
+      <AutumnAtmosphere />
       <div className="mb-2 text-lg font-semibold">충주 친환경 육묘장</div>
       <div className="text-sm text-autumn-secondary">닉네임 설정 중...</div>
     </div>
@@ -246,7 +251,8 @@ function NicknameGate({
     }
   };
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-autumn-canvas px-6 text-autumn-ink">
+    <div className="autumn-stage flex min-h-screen flex-col items-center justify-center bg-autumn-canvas px-6 text-autumn-ink">
+      <AutumnAtmosphere />
       <div className="mb-2 text-2xl font-bold">닉네임 설정</div>
       <p className="mb-6 text-sm text-autumn-body">
         메인화면에 표시할 닉네임을 3~8글자 한글로 입력해 주세요.
@@ -270,7 +276,8 @@ function NicknameGate({
 
 function SupabaseSetupPage() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-autumn-canvas px-6 text-center text-autumn-ink">
+    <div className="autumn-stage flex min-h-screen flex-col items-center justify-center bg-autumn-canvas px-6 text-center text-autumn-ink">
+      <AutumnAtmosphere />
       <div className="mb-2 text-2xl font-extrabold">충주 친환경 육묘장</div>
       <div className="mb-6 text-sm text-autumn-body">
         Supabase 환경변수가 설정되지 않아 앱을 시작할 수 없습니다.
@@ -390,7 +397,8 @@ function LoginPage() {
 
   if (pendingMessage && !user?.is_approved) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center bg-autumn-canvas px-6 text-center text-autumn-ink">
+      <div className="autumn-stage flex h-screen flex-col items-center justify-center bg-autumn-canvas px-6 text-center text-autumn-ink">
+        <AutumnAtmosphere />
         <div className="mb-2 text-2xl font-bold">가입 신청 완료</div>
         <p className="mb-6 text-sm text-autumn-body">{pendingMessage}</p>
         <PrimaryButton
@@ -408,7 +416,8 @@ function LoginPage() {
 
   if (user && !user.is_approved) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center bg-autumn-canvas px-6 text-center text-autumn-ink">
+      <div className="autumn-stage flex h-screen flex-col items-center justify-center bg-autumn-canvas px-6 text-center text-autumn-ink">
+        <AutumnAtmosphere />
         <div className="mb-2 text-2xl font-bold">승인 대기 중</div>
         <p className="mb-6 text-sm text-autumn-body">
           관리자 승인 후 로그인할 수 있습니다. 최고관리자에게 문의하세요.
@@ -445,7 +454,8 @@ function LoginPage() {
   }
 
   return (
-    <div className="autumn-shell flex min-h-screen flex-col bg-autumn-canvas px-4 py-6 text-autumn-ink sm:px-6 sm:py-10">
+    <div className="autumn-stage autumn-shell flex min-h-screen flex-col bg-autumn-canvas px-4 py-6 text-autumn-ink sm:px-6 sm:py-10 autumn-welcome">
+      <AutumnAtmosphere />
       <div className="mb-6 sm:mb-10">
         <div className="text-2xl font-extrabold tracking-tight sm:text-3xl">충주 친환경 육묘장</div>
         <div className="mt-1 text-sm text-autumn-secondary">사내 전용 파종·출하 관리</div>
@@ -1065,7 +1075,8 @@ function DashboardPage() {
   useTouchScroll(listScrollRef);
 
   return (
-    <div className="order-list-page flex h-[100dvh] flex-col overflow-hidden bg-autumn-canvas text-autumn-ink">
+    <div className="autumn-stage order-list-page flex h-[100dvh] flex-col overflow-hidden bg-autumn-canvas text-autumn-ink">
+      <AutumnAtmosphere />
       <header className="shrink-0 border-b border-autumn-border bg-autumn-surface/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
         <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-0">
           <div className="min-w-0">
@@ -2470,7 +2481,8 @@ function MainMenuPage() {
     "rounded-xl border-2 border-autumn-line/80 bg-autumn-surface/95 shadow-[0_3px_14px_rgba(90,57,36,0.06)] overflow-hidden sm:rounded-2xl";
 
   return (
-    <div className="autumn-shell flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-gradient-to-b from-autumn-canvas via-autumn-canvas to-autumn-surface text-autumn-ink">
+    <div className="autumn-stage autumn-menu autumn-shell flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-gradient-to-b from-autumn-canvas via-autumn-canvas to-autumn-surface text-autumn-ink">
+      <AutumnAtmosphere />
       <header className="shrink-0 border-b border-autumn-border bg-autumn-canvas/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-0">
           <div className="min-w-0 flex-1 sm:min-w-0">
@@ -3148,13 +3160,14 @@ function SeasonOrdersPage() {
 
   return (
     <div
-      className="flex flex-col overflow-hidden bg-autumn-canvas text-autumn-ink"
+      className="autumn-stage flex flex-col overflow-hidden bg-autumn-canvas text-autumn-ink"
       style={{
         height: "100dvh",
         maxHeight: "100vh",
         minHeight: "-webkit-fill-available",
       }}
     >
+      <AutumnAtmosphere />
       <header className="shrink-0 border-b border-autumn-border bg-autumn-surface/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
         <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-0">
           <div className="min-w-0">
@@ -4094,7 +4107,8 @@ function PlanningPage() {
   if (!user) return <Navigate to="/" replace />;
 
   return (
-    <div className="flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-autumn-canvas text-autumn-ink">
+    <div className="autumn-stage flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-autumn-canvas text-autumn-ink">
+      <AutumnAtmosphere />
       <header className="shrink-0 border-b border-autumn-border bg-autumn-surface/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
         <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-0">
           <div className="min-w-0">
@@ -5282,7 +5296,8 @@ function CertificatePage() {
 
   if (!user) return <Navigate to="/" replace />;
   return (
-    <div className="flex min-h-screen flex-col bg-autumn-canvas text-autumn-ink">
+    <div className="autumn-stage flex min-h-screen flex-col bg-autumn-canvas text-autumn-ink">
+      <AutumnAtmosphere />
       <header className="shrink-0 border-b border-autumn-border bg-autumn-surface/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
         <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-0">
           <div className="min-w-0">
@@ -5744,7 +5759,8 @@ function AdminPage() {
   if (user.role_level !== 0) return <Navigate to="/menu" replace />;
 
   return (
-    <div className="flex min-h-screen flex-col bg-autumn-canvas text-autumn-ink">
+    <div className="autumn-stage flex min-h-screen flex-col bg-autumn-canvas text-autumn-ink">
+      <AutumnAtmosphere />
       <header className="shrink-0 border-b border-autumn-border bg-autumn-surface/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
         <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-0">
           <div className="min-w-0">
@@ -5874,7 +5890,8 @@ function AdminApprovalsPage() {
   if (user.role_level !== 0) return <Navigate to="/menu" replace />;
 
   return (
-    <div className="flex min-h-screen flex-col bg-autumn-canvas text-autumn-ink">
+    <div className="autumn-stage flex min-h-screen flex-col bg-autumn-canvas text-autumn-ink">
+      <AutumnAtmosphere />
       <header className="shrink-0 border-b border-autumn-border bg-autumn-surface/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
         <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-0">
           <div className="min-w-0">
@@ -6016,7 +6033,8 @@ function AdminStaffPage() {
   if (user.role_level !== 0) return <Navigate to="/menu" replace />;
 
   return (
-    <div className="flex min-h-screen flex-col bg-autumn-canvas text-autumn-ink">
+    <div className="autumn-stage flex min-h-screen flex-col bg-autumn-canvas text-autumn-ink">
+      <AutumnAtmosphere />
       <header className="shrink-0 border-b border-autumn-border bg-autumn-surface/80 px-3 py-2 backdrop-blur sm:px-4 sm:py-3">
         <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-0">
           <div className="min-w-0">
