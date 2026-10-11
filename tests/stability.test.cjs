@@ -29,6 +29,7 @@ function loadSource(file, { names, mocks = {}, globals = {}, env } = {}) {
 }
 
 const quantities = loadSource('src/App.tsx', { names: ['planQuantityDisplay', 'planQuantityParse', 'planQuantityToParts', 'addPlanQuantity'] });
+const pendingPlans = loadSource('src/lib/pendingPlans.ts');
 const ui = loadSource('src/components/ui.tsx');
 
 test('planning display and parsing preserve separate decimal quantities', () => {
@@ -114,17 +115,18 @@ test('plan to actual API inserts base and extra decimals as distinct fields', as
   const payloads = [];
   const supabase = { from: (table) => {
     assert.equal(table, 'orders');
-    return { insert: (payload) => {
+    return { select: () => ({ in: async () => ({ data: [], error: null }) }), insert: (payload) => {
       payloads.push(payload);
       return { select: () => ({ single: async () => ({ data: { id: `order-${payloads.length}`, ...payload }, error: null }) }) };
     } };
   } };
-  const { addOrdersFromPlanItems } = loadSource('src/lib/planningApi.ts', { mocks: { '../supabaseClient': { supabase } } });
+  const { addOrdersFromPlanItems } = loadSource('src/lib/planningApi.ts', { mocks: { '../supabaseClient': { supabase }, './pendingPlans': pendingPlans } });
   const fixtures = ['3.5+0.5', '3,25+0,125', '0.1+0.2', '12', '+0.5', ''];
-  const items = fixtures.map((quantity) => ({ quantity, orderer: ' 테스트 ', crop: ' 상추 ', plan_date: '2026-10-08', tray_type: '200', seed_owner: '육묘장' }));
+  const items = fixtures.map((quantity, index) => ({ id: `plan-${index}`, quantity, orderer: ' 테스트 ', crop: ' 상추 ', plan_date: '2026-10-08', tray_type: '200', seed_owner: '육묘장' }));
   const results = await addOrdersFromPlanItems(items, 'test-user');
   assert.equal(results.length, fixtures.length);
   assert.deepEqual(payloads.map((p) => [p.quantity_base, p.quantity_extra]), [[3.5, .5], [3.25, .125], [.1, .2], [12, 0], [0, .5], [0, 0]]);
+  assert.equal(payloads[0].source_sowing_plan_id, 'plan-0');
   assert.equal(payloads[0].customer_name, '테스트');
   assert.equal(payloads[0].tray_type, '200');
   assert.equal(payloads[0].created_by, 'test-user');
@@ -286,4 +288,80 @@ test('actual push gate requests only the mocked permission and sends an ArrayBuf
   assert.equal(saved, 1);
   assert.equal(completed, 1);
   assert.equal(storage.get('qa-consent_qa-user'), '1');
+});
+
+
+function planFixture(id, overrides = {}) {
+  return { id, plan_date: '2026-10-11', orderer: '김 농부', crop: '상추', quantity: '3.5+0.5', tray_type: '200', tray_custom: '', seed_owner: '육묘장', created_at: '2026-10-01T00:00:00Z', ...overrides };
+}
+function orderFixture(overrides = {}) {
+  return { id: 'actual-1', sowing_date: '2026-10-11', customer_name: '김 농부', crop_name: '상추', quantity_base: 3.5, quantity_extra: .5, tray_type: '200', seed_owner: '육묘장', created_at: '2026-10-02T00:00:00Z', ...overrides };
+}
+
+test('pending search includes today and later months, excludes past, accepts partial and spaced names literally', () => {
+  const plans = pendingPlans.getPendingPlans([
+    planFixture('next-year', { plan_date: '2027-02-01' }),
+    planFixture('past', { plan_date: '2026-10-10' }), planFixture('today'),
+    planFixture('literal', { orderer: '김%_농부' }), planFixture('different', { orderer: '이농부' }),
+  ], [], '2026-10-11');
+  assert.deepEqual(Array.from(pendingPlans.searchPendingPlans(plans, ' 김농 '), p => p.id), ['today', 'next-year']);
+  assert.deepEqual(Array.from(pendingPlans.searchPendingPlans(plans, '%_'), p => p.id), ['literal']);
+  assert.equal(pendingPlans.searchPendingPlans(plans, '   ').length, 0);
+  assert.equal(pendingPlans.searchPendingPlans(plans, '없음').length, 0);
+});
+
+test('linked actual excludes precisely its plan even after edits to actual or plan fields', () => {
+  const plans = [planFixture('linked', { quantity: '100' }), planFixture('pending')];
+  const orders = [orderFixture({ source_sowing_plan_id: 'linked', sowing_date: '2026-09-01', customer_name: '수정됨' })];
+  assert.deepEqual(Array.from(pendingPlans.getPendingPlans(plans, orders, '2026-10-11'), p => p.id), ['pending']);
+});
+
+test('one legacy actual consumes one identical plan and respects custom tray, extra amount and creation time', () => {
+  const plans = [planFixture('a'), planFixture('b'), planFixture('custom', { tray_type: '직접입력', tray_custom: '105' })];
+  assert.deepEqual(Array.from(pendingPlans.getPendingPlans(plans, [orderFixture()], '2026-10-11'), p => p.id), ['b', 'custom']);
+  assert.equal(pendingPlans.getPendingPlans([planFixture('a')], [orderFixture({ quantity_extra: 1 })], '2026-10-11').length, 1);
+  assert.equal(pendingPlans.getPendingPlans([planFixture('a')], [orderFixture({ created_at: '2026-09-01T00:00:00Z' })], '2026-10-11').length, 1);
+  assert.equal(pendingPlans.getPendingPlans([plans[2]], [orderFixture({ tray_type: '105' })], '2026-10-11').length, 0);
+});
+
+test('today rolls over at Korean midnight regardless of browser timezone', () => {
+  assert.equal(pendingPlans.getKoreaPlanDate(new Date('2026-10-11T14:59:59Z')), '2026-10-11');
+  assert.equal(pendingPlans.getKoreaPlanDate(new Date('2026-10-11T15:00:00Z')), '2026-10-12');
+});
+
+test('future plan API paginates beyond 500 and surfaces database failures', async () => {
+  const requests = [];
+  function api(error) {
+    const supabase = { from(table) {
+      const query = { select() { return query; }, gte(column, value) { assert.equal(column, 'plan_date'); assert.equal(value, '2026-10-11'); return query; },
+        or(value) { assert.match(value, /source_sowing_plan_id.not.is.null/); return query; }, order() { return query; },
+        async range(start, end) {
+          requests.push([table, start, end]);
+          if (error) return { error: { message: 'database unavailable' } };
+          return { data: table === 'orders' ? [] : Array.from({ length: start === 0 ? 500 : 1 }, (_, index) => planFixture(`p-${start + index}`)), error: null };
+        },
+      }; return query;
+    } };
+    return loadSource('src/lib/planningApi.ts', { mocks: { '../supabaseClient': { supabase }, './pendingPlans': pendingPlans } });
+  }
+  const results = await api(false).fetchPendingSowingPlans('2026-10-11');
+  assert.equal(results.length, 501);
+  assert.ok(requests.some(([table, start, end]) => table === 'sowing_plan_items' && start === 500 && end === 999));
+  await assert.rejects(() => api(true).fetchPendingSowingPlans('2026-10-11'), /database unavailable/);
+});
+
+test('repeated reflection skips linked plans and retains IDs on new actuals', async () => {
+  const inserted = [];
+  const supabase = { from() { return {
+    select: () => ({ in: async () => ({ data: [{ source_sowing_plan_id: 'reflected' }], error: null }) }),
+    insert: (payload) => {
+      inserted.push(payload);
+      return { select: () => ({ single: async () => ({ data: { id: 'actual', ...payload }, error: null }) }) };
+    },
+  }; } };
+  const { addOrdersFromPlanItems } = loadSource('src/lib/planningApi.ts', { mocks: { '../supabaseClient': { supabase }, './pendingPlans': pendingPlans } });
+  const result = await addOrdersFromPlanItems([planFixture('reflected'), planFixture('pending')], 'user');
+  assert.equal(result.length, 1);
+  assert.equal(inserted.length, 1);
+  assert.equal(inserted[0].source_sowing_plan_id, 'pending');
 });

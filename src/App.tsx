@@ -26,6 +26,7 @@ import {
 } from "./lib/planningApi";
 import { DateWheel } from "./components/DateWheel";
 import { Modal } from "./components/Modal";
+import { PlanOrdererSearch } from "./components/PlanOrdererSearch";
 import { TextField, SelectField, PrimaryButton, SecondaryButton } from "./components/ui";
 import { fetchDailyTodos, saveDailyTodos, type DailyTodoItem } from "./lib/dailyTodosApi";
 import {
@@ -3631,6 +3632,7 @@ function PlanningPage() {
   const [addPlanBusy, setAddPlanBusy] = React.useState(false);
   const [addPlanError, setAddPlanError] = React.useState<string | null>(null);
   const [calendarOpen, setCalendarOpen] = React.useState(false);
+  const [planOrdererSearchOpen, setPlanOrdererSearchOpen] = React.useState(false);
   const [calendarYear, setCalendarYear] = React.useState(new Date().getFullYear());
   const [calendarMonth, setCalendarMonth] = React.useState(new Date().getMonth() + 1);
   const [planCounts, setPlanCounts] = React.useState<Record<string, number>>({});
@@ -5019,6 +5021,8 @@ function PlanningPage() {
         </div>
       </Modal>
 
+      {planOrdererSearchOpen && <PlanOrdererSearch onClose={() => setPlanOrdererSearchOpen(false)} />}
+
       {/* 전체일정 캘린더 */}
       {calendarOpen && (
         <div className="modal-safe-area fixed inset-0 z-50 flex items-center justify-center bg-autumn-overlay/55">
@@ -5059,6 +5063,14 @@ function PlanningPage() {
                 className="rounded-lg px-2 py-1.5 text-autumn-body hover:bg-autumn-soft sm:px-3 sm:py-2"
               >
                 ›
+              </button>
+            </div>
+            <div className="border-b border-autumn-border px-3 py-2 sm:px-4">
+              <button type="button" onClick={() => {
+                setCalendarOpen(false);
+                setPlanOrdererSearchOpen(true);
+              }} className="w-full rounded-lg bg-brand px-3 py-2.5 text-sm font-medium text-white hover:bg-brand-dark">
+                주문자 이름으로 예정 파종 검색
               </button>
             </div>
             <div className="grid grid-cols-7 gap-0.5 p-2 sm:gap-1 sm:p-4">

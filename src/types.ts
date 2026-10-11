@@ -10,6 +10,7 @@ export interface AppUser {
 
 export interface Order {
   id: string;
+  source_sowing_plan_id?: string | null;
   customer_name: string;
   crop_name: string;
   seed_owner: "육묘장" | "주문자";

@@ -2,6 +2,8 @@ import { supabase } from "../supabaseClient";
 import type { Order, SowingPlanItem, UnprocessedOrder } from "../types";
 import type { SeedOwner } from "../types";
 
+import { getPendingPlans } from "./pendingPlans";
+
 const DEFAULT_SEED_OWNER: SeedOwner = "육묘장";
 
 /** 새 컬럼(tray_type, tray_custom, seed_owner)이 테이블에 없을 때 true */
@@ -72,6 +74,31 @@ export async function fetchSowingPlanItems(
     .order("plan_date", { ascending: true })
     .order("created_at", { ascending: true });
   return ((data as Record<string, unknown>[]) ?? []).map(mapPlanRow);
+}
+
+/** 현재 달이나 3일 표시 범위와 관계없이 오늘 이후 미반영 계획을 모두 조회. */
+export async function fetchPendingSowingPlans(today: string): Promise<SowingPlanItem[]> {
+  async function fetchAll(table: string, dateColumn: string): Promise<Record<string, unknown>[]> {
+    const rows: Record<string, unknown>[] = [];
+    const pageSize = 500;
+    for (let start = 0; ; start += pageSize) {
+      let query = supabase.from(table).select("*");
+      query = table === "orders"
+        ? query.or(`sowing_date.gte.${today},source_sowing_plan_id.not.is.null`)
+        : query.gte(dateColumn, today);
+      const { data, error } = await query.order(dateColumn, { ascending: true })
+        .order("created_at", { ascending: true }).order("id", { ascending: true })
+        .range(start, start + pageSize - 1);
+      if (error) throw new Error(error.message);
+      const page = (data as Record<string, unknown>[]) ?? [];
+      rows.push(...page);
+      if (page.length < pageSize) return rows;
+    }
+  }
+  const [plans, orders] = await Promise.all([
+    fetchAll("sowing_plan_items", "plan_date"), fetchAll("orders", "sowing_date"),
+  ]);
+  return getPendingPlans(plans.map(mapPlanRow), orders as unknown as Order[], today);
 }
 
 export async function fetchUnprocessedOrders(): Promise<UnprocessedOrder[]> {
@@ -370,8 +397,13 @@ export async function addOrdersFromPlanItems(
   createdBy: string,
 ): Promise<Order[]> {
   if (planItems.length === 0) return [];
+  const { data: existing, error: existingError } = await supabase.from("orders")
+    .select("source_sowing_plan_id").in("source_sowing_plan_id", planItems.map((item) => item.id));
+  if (existingError) throw new Error(existingError.message);
+  const reflected = new Set((existing ?? []).map((row) => row.source_sowing_plan_id));
   const results: Order[] = [];
   for (const item of planItems) {
+    if (reflected.has(item.id)) continue;
     const i = (item.quantity || "").indexOf("+");
     const baseStr = i >= 0 ? (item.quantity || "").slice(0, i).trim() : (item.quantity || "").trim();
     const extraStr = i >= 0 ? (item.quantity || "").slice(i + 1).trim() : "";
@@ -379,6 +411,7 @@ export async function addOrdersFromPlanItems(
     const quantity_extra = parseFloat(extraStr.replace(",", ".")) || 0;
     const trayType = item.tray_type === "직접입력" ? (item.tray_custom || "").trim() : (item.tray_type || "").trim();
     const payload = {
+      source_sowing_plan_id: item.id,
       customer_name: (item.orderer || "").trim(),
       crop_name: (item.crop || "").trim(),
       seed_owner: item.seed_owner === "주문자" ? "주문자" : "육묘장",
@@ -392,6 +425,7 @@ export async function addOrdersFromPlanItems(
       created_by: createdBy,
     };
     const { data, error } = await supabase.from("orders").insert(payload).select().single();
+    if (error?.code === "23505") continue;
     if (error) throw new Error(error.message);
     if (data) results.push(data as Order);
   }
