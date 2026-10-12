@@ -1077,8 +1077,6 @@ function DashboardPage() {
     shipped: "bg-slate-800 text-white",                // 출하 완료: 남색(범례와 동일)
   };
 
-  const listScrollRef = React.useRef<HTMLDivElement>(null);
-  useTouchScroll(listScrollRef);
 
   return (
     <div className="autumn-stage order-list-page flex h-[100dvh] flex-col overflow-hidden bg-autumn-canvas text-autumn-ink">
@@ -1435,7 +1433,6 @@ function DashboardPage() {
         </div>
 
         <div
-          ref={listScrollRef}
           className="order-list-scroll-area min-h-0 flex-1 overflow-auto rounded-xl border border-autumn-border bg-autumn-surface sm:rounded-2xl"
         >
           <div className="pb-[max(3rem,env(safe-area-inset-bottom)+2rem)] min-h-full">

@@ -119,10 +119,13 @@ textarea {
   border-radius: 3px;
 }
 
-/* 파종 및 출하현황: 리스트 영역만 스크롤 (JS 터치 fallback 포함) */
+/* 파종 및 출하현황: 브라우저가 터치 속도와 관성을 직접 처리 */
 .order-list-scroll-area {
   -webkit-overflow-scrolling: touch;
   overflow: auto;
+  touch-action: pan-x pan-y;
+  overscroll-behavior: contain;
+  scroll-behavior: auto;
 }
 
 /* 파종 및 출하현황: 모바일에서 파종작물 5글자(줄임표 없음), 출하수량 우측 배치 */

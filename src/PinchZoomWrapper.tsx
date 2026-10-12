@@ -85,6 +85,7 @@ export function PinchZoomWrapper({ children }: { children: React.ReactNode }) {
         const clientY = e.touches[0].clientY;
         const now = Date.now();
         if (
+          scaleRef.current > MIN_SCALE &&
           now - lastTapTimeRef.current <= DOUBLE_TAP_MS &&
           Math.hypot(clientX - lastTapXRef.current, clientY - lastTapYRef.current) <= DOUBLE_TAP_MAX_DIST
         ) {
@@ -106,6 +107,11 @@ export function PinchZoomWrapper({ children }: { children: React.ReactNode }) {
     };
 
     const handleTouchMove = (e: TouchEvent) => {
+      // A swipe must never count as the first tap of a zoom-reset gesture.
+      if (e.touches.length !== 1 || Math.hypot(
+        e.touches[0].clientX - lastTapXRef.current,
+        e.touches[0].clientY - lastTapYRef.current,
+      ) > 8) lastTapTimeRef.current = 0;
       if (e.touches.length === 1 && scaleRef.current > MIN_SCALE) {
         e.preventDefault();
         const rect = el.getBoundingClientRect();
@@ -175,14 +181,16 @@ export function PinchZoomWrapper({ children }: { children: React.ReactNode }) {
   return (
     <div
       ref={wrapperRef}
-      className="min-h-full w-full touch-pan-x touch-pan-y overflow-hidden"
-      style={{ touchAction: "none" }}
+      className="min-h-full w-full overflow-hidden"
+      style={{ touchAction: scale > MIN_SCALE ? "none" : "pan-x pan-y" }}
     >
       <div
         className="min-h-full w-full origin-top-left"
         style={{
           transformOrigin: "0 0",
-          transform: `translate(${translateX}px, ${translateY}px) scale(${scale})`,
+          transform: scale > MIN_SCALE
+            ? `translate(${translateX}px, ${translateY}px) scale(${scale})`
+            : "none",
           transition,
         }}
       >
