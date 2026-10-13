@@ -5093,7 +5093,12 @@ function PlanningPage() {
                     }}
                     className="flex h-9 w-full flex-col items-center justify-center rounded-lg text-xs text-autumn-ink hover:bg-autumn-soft sm:h-12 sm:rounded-xl sm:text-sm"
                   >
-                    <span>{d}</span>
+                    <span
+                      aria-current={`${calendarYear}-${String(calendarMonth).padStart(2, "0")}-${String(d).padStart(2, "0")}` === getLocalDateString(now) ? "date" : undefined}
+                      className={`inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full sm:h-6 sm:w-6 ${`${calendarYear}-${String(calendarMonth).padStart(2, "0")}-${String(d).padStart(2, "0")}` === getLocalDateString(now) ? "border border-amber-300/70 bg-amber-100/70" : ""}`}
+                    >
+                      {d}
+                    </span>
                     {planCounts[
                       `${calendarYear}-${String(calendarMonth).padStart(2, "0")}-${String(d).padStart(2, "0")}`
                     ] != null && (
