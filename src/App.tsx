@@ -48,6 +48,8 @@ import { createCertificatePdf, ordersToRows, type CertificateInput } from "./lib
 import { CUSTOMER_PRESETS, EXCLUDED_ORDERERS_FROM_AUTOCOMPLETE, getCustomerPreset, getOrdererForCertificate } from "./lib/certificatePresets";
 import { CertificateContent } from "./components/CertificateContent";
 
+const TransactionStatementPage = React.lazy(() => import("./components/TransactionStatementPage").then(module => ({ default: module.TransactionStatementPage })));
+
 const TRAY_OPTIONS = ["200", "406", "72", "128", "포트", "105", "164", "직접입력"];
 
 const PUSH_CONSENT_STORAGE_KEY = "push_consent_lv1";
@@ -2443,6 +2445,19 @@ function MainMenuPage() {
       ),
     },
     {
+      key: "statements",
+      title: "거래명세서 출력",
+      to: "/statements",
+      disabled: !user.is_approved || !canWriteOrders(user),
+      icon: (
+        <svg viewBox="0 0 40 40" className="h-11 w-11 text-orange-800" aria-hidden="true">
+          <rect x="8" y="5" width="24" height="30" rx="3" fill="currentColor" opacity="0.15" />
+          <path d="M13 12h14M13 18h14M13 24h7M13 29h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <circle cx="27" cy="25" r="4" fill="currentColor" opacity="0.6" />
+        </svg>
+      ),
+    },
+    {
       key: "seasonOrders",
       title: "시즌 작물 주문현황",
       to: "/season-orders",
@@ -2762,7 +2777,7 @@ function MainMenuPage() {
           </div>
         </section>
 
-        {/* 하단: 메뉴 버튼 5개 (모바일 2x2, PC도 2열). 전광판이 많아도 아래로 스크롤하면 보임 */}
+        {/* 하단: 2열 메뉴. 전광판이 많아도 마지막 메뉴까지 스크롤 가능 */}
         <section className="shrink-0 pb-4 pt-1" style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom, 0px))" }}>
           <div className="grid w-full max-w-3xl mx-auto grid-cols-2 gap-3 sm:gap-4">
             {tiles.map((tile) => {
@@ -6168,6 +6183,7 @@ function AppRoutes() {
       <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/planning" element={<PlanningPage />} />
       <Route path="/certificate" element={<CertificatePage />} />
+      <Route path="/statements" element={<React.Suspense fallback={<div className="p-6">거래명세서 기능을 여는 중…</div>}><TransactionStatementPage /></React.Suspense>} />
       <Route path="/season-orders" element={<SeasonOrdersPage />} />
       <Route path="/admin" element={<AdminPage />} />
       <Route path="/admin/approvals" element={<AdminApprovalsPage />} />

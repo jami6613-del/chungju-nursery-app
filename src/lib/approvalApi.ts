@@ -30,6 +30,8 @@ export async function approveUser(userId: string, roleLevel: number): Promise<vo
     new_role_level: roleLevel,
   });
   if (error) throw new Error(error.message);
+  const { error: accessError } = await supabase.rpc("sync_statement_staff", { target_user_id: userId });
+  if (accessError) throw new Error("회원 승인은 처리됐지만 거래명세서 접근권한을 반영하지 못했습니다. 같은 등급으로 다시 저장해 주세요.");
 }
 
 /** 승인된 전체 직원 목록 (최고관리자만, 직원관리 메뉴용). RPC로 RLS 우회해 모든 승인 계정 조회 */
